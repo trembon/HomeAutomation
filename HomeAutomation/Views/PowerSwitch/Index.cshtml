@@ -1,0 +1,44 @@
+﻿@model HomeAutomation.Models.PowerSwitch.ListPowerSwitchModel
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<div class="row">
+    @foreach (var ps in Model.PowerSwitches)
+    {
+        <div class="col-md-6 light-block">
+            <a data-id="@ps.ID" data-is-on="@(ps.IsOn ? 1 : 0)">
+                <h2>@ps.Name</h2>
+
+                <div class="row">
+                    <div class="col">
+                        <span class="far fa-clock"></span>
+                        @if (ps.TurnOnAt.HasValue)
+                        {
+                            <span class="value" title="@ps.TurnOnAt.Value">@ps.TurnOnAt.Value.TimeOfDay.ToString(@"hh\:mm")</span>
+                        }
+                        else
+                        {
+                            <span class="value">Manuell</span>
+                        }
+                    </div>
+                    <div class="col-1">
+                        <span class="indicator @(ps.IsOn ? "far" : "fas") fa-lightbulb"></span>
+                    </div>
+                    <div class="col">
+                        <span class="fas fa-clock"></span>
+                        @if (ps.TurnOffAt.HasValue)
+                        {
+                            <span class="value" title="@ps.TurnOffAt.Value">@ps.TurnOffAt.Value.TimeOfDay.ToString(@"hh\:mm")</span>
+                        }
+                        else
+                        {
+                            <span class="value">Manuell</span>
+                        }
+                    </div>
+                </div>
+            </a>
+        </div>
+    }
+</div>

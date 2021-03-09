@@ -1,0 +1,26 @@
+﻿@{
+    ViewData["Title"] = "Home Page";
+}
+
+<div class="row">
+    <div class="col-md-6 link-block">
+        <a asp-controller="Camera" asp-action="Index" class="text-center">
+            <span class="fa fa-video"></span>
+            <h2>Övervakning</h2>
+        </a>
+    </div>
+
+    <div class="col-md-6 link-block">
+        <a asp-controller="PowerSwitch" asp-action="Index" class="text-center">
+            <span class="fa fa-lightbulb"></span>
+            <h2>Strömbrytare</h2>
+        </a>
+    </div>
+
+    <div class="col-md-6 link-block">
+        <a asp-controller="Sensor" asp-action="Index" class="text-center">
+            <span class="fa fa-tachometer-alt"></span>
+            <h2>Mätare</h2>
+        </a>
+    </div>
+</div>

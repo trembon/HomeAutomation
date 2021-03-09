@@ -1,0 +1,17 @@
+﻿@model HomeAutomation.Models.Camera.ListCameraModel
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<div class="row">
+    @foreach (var camera in Model.Cameras)
+    {
+        <div class="col-md-6 camera-block">
+            <a href="@camera.URL">
+                <div class="img" style="background-image: url('@camera.ThumbnailURL')"></div>
+                <h2>@camera.Name</h2>
+            </a>
+        </div>
+    }
+</div>

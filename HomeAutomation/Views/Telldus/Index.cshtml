@@ -1,0 +1,53 @@
+﻿@model HomeAutomation.Models.Telldus.ListDevicesModel
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<h2>Telldus Devices</h2>
+
+<p>
+    <a asp-action="AddDevice" class="btn btn-success">Add Device</a>
+</p>
+<table class="table">
+    <thead>
+        <tr>
+            <th style="width: 15%;">Tellstick ID</th>
+            <th>Name</th>
+            <th style="width: 17%;"></th>
+            <th style="width: 13%;"></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model.Devices)
+        {
+            <tr data-device-id="@item.ID">
+                <td>@item.ID</td>
+                <td>@item.Name</td>
+                <td>
+                    <div class="dropdown">
+                        <button class="btn btn-warning dropdown-toggle" type="button" id="dropdown-c-@item.ID" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            Commands
+                        </button>
+                        <div class="dropdown-menu" aria-labelledby="dropdown-c-@item.ID">
+                            @foreach (var method in item.SupportedMethods.ToString().Split(new[] { ", " }, StringSplitOptions.None))
+                            {
+                                <a class="dropdown-item" href="#" data-telldus-method="@method">@method</a>
+                            }
+                        </div>
+                    </div>
+                </td>
+                <td>
+                    <div class="dropdown">
+                        <button class="btn btn-danger dropdown-toggle" type="button" id="dropdown-a-@item.ID" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            Actions
+                        </button>
+                        <div class="dropdown-menu" aria-labelledby="dropdown-a-@item.ID">
+                            <a class="dropdown-item" asp-action="Remove" asp-route-deviceId="@item.ID">Remove</a>
+                        </div>
+                    </div>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

@@ -1,0 +1,38 @@
+﻿@model HomeAutomation.Models.Sensor.ListSensorsModel
+
+@{
+    ViewData["Title"] = "Index";
+
+    Dictionary<HomeAutomation.Database.Enums.SensorValueType, string> iconMapping = new Dictionary<HomeAutomation.Database.Enums.SensorValueType, string>()
+    {
+        { HomeAutomation.Database.Enums.SensorValueType.Temperature, "thermometer-three-quarters" },
+        { HomeAutomation.Database.Enums.SensorValueType.Humidity, "tint" }
+    };
+
+    Dictionary<HomeAutomation.Database.Enums.SensorValueType, string> postfixMapping = new Dictionary<HomeAutomation.Database.Enums.SensorValueType, string>()
+    {
+        { HomeAutomation.Database.Enums.SensorValueType.Temperature, "&#x2103;" },
+        { HomeAutomation.Database.Enums.SensorValueType.Humidity, "%" }
+    };
+}
+
+<div class="row">
+    @foreach (var sensor in Model.Sensors)
+    {
+        <div class="col-md-6 sensor-block">
+            <a>
+                <h2>@sensor.Name</h2>
+
+                <div class="row">
+                    @foreach (var kvp in sensor.Values)
+                    {
+                        <div class="col">
+                            <span class="fa fa-@iconMapping[kvp.Key]"></span>
+                            <span class="value">@kvp.Value @Html.Raw(postfixMapping[kvp.Key])</span>
+                        </div>
+                    }
+                </div>
+            </a>
+        </div>
+    }
+</div>
