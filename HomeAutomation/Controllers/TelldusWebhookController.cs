@@ -48,12 +48,12 @@ namespace HomeAutomation.Controllers
         }
 
         [HttpPost("telldus/sensorupdates")]
-        public async Task<ActionResult> TelldusSensorUpdate(SensorUpdatesModel model)
+        public async Task<ActionResult<bool>> TelldusSensorUpdate(SensorUpdatesModel model)
         {
             lock (duplicationRequestLock)
             {
                 if (IsDuplicateRequest($"{model.SensorID}|{model.Type}|{model.Value}"))
-                    return Ok();
+                    return Ok(false);
             }
 
             await TelldusLogStream(new { Timestamp = model?.Timestamp, Message = $"DEVICE {model?.SensorID}: {model?.Type.ToString()} - {model?.Value}" });
@@ -82,7 +82,7 @@ namespace HomeAutomation.Controllers
                 if(sensor != null)
                     sensor.LatestValues[model.Type] = sensorValue;
 
-                return Ok();
+                return Ok(true);
             }
             catch(Exception ex)
             {
@@ -92,12 +92,12 @@ namespace HomeAutomation.Controllers
         }
 
         [HttpPost("telldus/deviceevents")]
-        public async Task<ActionResult> TelldusDeviceEvents(DeviceEventsModel model)
+        public async Task<ActionResult<bool>> TelldusDeviceEvents(DeviceEventsModel model)
         {
             lock (duplicationRequestLock)
             {
                 if (IsDuplicateRequest($"{model.DeviceID}|{model.Command}|{model.Parameter}"))
-                    return Ok();
+                    return Ok(false);
             }
 
             await TelldusLogStream(new { Message = $"DEVICEID {model?.DeviceID}: {model?.Command.ToString()} ({model?.Parameter})" });
@@ -109,20 +109,20 @@ namespace HomeAutomation.Controllers
                 _ = triggerService.FireTriggersFromDevice(device, state);
             }
 
-            return Ok();
+            return Ok(true);
         }
 
         [HttpPost("telldus/rawevents")]
-        public async Task<ActionResult> TelldusRawEvents(TelldusRawDeviceEventsModel model)
+        public async Task<ActionResult<bool>> TelldusRawEvents(TelldusRawDeviceEventsModel model)
         {
             lock (duplicationRequestLock)
             {
                 if (IsDuplicateRequest(model.RawData))
-                    return Ok();
+                    return Ok(false);
             }
 
             await TelldusLogStream(new { Message = $"RAW: {model?.RawData} (Controller {model?.ControllerID})" });
-            return Ok();
+            return Ok(true);
         }
 
         private async Task TelldusLogStream(object data)
@@ -138,23 +138,20 @@ namespace HomeAutomation.Controllers
         private bool IsDuplicateRequest(string request)
         {
             DateTime now = DateTime.UtcNow;
-            string controller = Request.HttpContext.Connection.RemoteIpAddress.ToString();
 
-            duplicationRequestLog.RemoveAll(dr => now.AddSeconds(-20) > dr.requestTime);
+            int ignoreDuplicateWebhooksInSeconds = configuration.GetValue("Telldus:IgnoreDuplicateWebhooksInSeconds", 10);
+            duplicationRequestLog.RemoveAll(dr => now.AddSeconds(-ignoreDuplicateWebhooksInSeconds) > dr.RequestTime);
 
-            var record = duplicationRequestLog.FirstOrDefault(dr => dr.request == request);
-            if(record == null)
+            var record = duplicationRequestLog.FirstOrDefault(dr => dr.Request.Equals(request, StringComparison.InvariantCultureIgnoreCase));
+            if (record == null)
             {
-                duplicationRequestLog.Add(new DuplicateRecord(controller, request, now));
+                duplicationRequestLog.Add(new DuplicateRecord( request, now));
                 return false;
             }
-
-            if (record.controller == controller)
-                return false;
 
             return true;
         }
 
-        private record DuplicateRecord(string controller, string request, DateTime requestTime);
+        private record DuplicateRecord(string Request, DateTime RequestTime);
     }
 }
