@@ -14,6 +14,8 @@ namespace HomeAutomation.Entities.Action
 
         public int[] Devices { get; set; }
 
+        public string UniqueID => $"{nameof(Action)}_{ID}";
+
         public abstract Task Execute(ActionExecutionArguments arguments);
 
         public virtual string ToSourceString()

@@ -13,6 +13,8 @@ namespace HomeAutomation.Entities.Triggers
 
         public int[] Actions { get; set; }
 
+        public string UniqueID => $"{nameof(Trigger)}_{ID}";
+
         public virtual string ToSourceString()
         {
             return null;

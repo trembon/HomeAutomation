@@ -18,6 +18,8 @@ namespace HomeAutomation.Entities.Devices
 
         public string SourceID { get; set; }
 
+        public string UniqueID => $"{nameof(Device)}_{ID}";
+
         public override string ToString()
         {
             return $"{Name} (ID: {ID})";

@@ -2,25 +2,47 @@
 using HomeAutomation.Services;
 using Microsoft.Extensions.DependencyInjection;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace HomeAutomation.Entities.Action
 {
     public class DelayAction : Action
     {
+        private static object delayLock = new object();
+        private static ConcurrentDictionary<string, CancellationTokenSource> delayCancellationTokens = new ConcurrentDictionary<string, CancellationTokenSource>();
+
         public int[] Actions { get; set; }
 
         public TimeSpan Delay { get; set; }
+
+        /// <summary>
+        /// If this delay action is called again from the same source, cancel the old delay and create a new delay.
+        /// </summary>
+        public bool Extend { get; set; }
 
         public override Task Execute(ActionExecutionArguments arguments)
         {
             if(Actions != null)
             {
-                // TODO: add possibility to cancel delay, for example if motion is detected again before device is turned off, keep it running for x more minutes
-                var scopeFactory = arguments.GetService<IServiceScopeFactory>();
-                _ = Task.Delay(Delay).ContinueWith(task => ExecuteDelayedActions(scopeFactory, this));
+                lock (delayLock)
+                {
+                    var cancellationTokenSource = new CancellationTokenSource();
+
+                    if (Extend)
+                    {
+                        if (delayCancellationTokens.TryRemove(arguments.Source.UniqueID, out CancellationTokenSource currentTokenSource))
+                            currentTokenSource.Cancel();
+
+                        delayCancellationTokens.TryAdd(arguments.Source.UniqueID, cancellationTokenSource);
+                    }
+
+                    var scopeFactory = arguments.GetService<IServiceScopeFactory>();
+                    _ = Task.Delay(Delay, cancellationTokenSource.Token).ContinueWith(task => ExecuteDelayedActions(scopeFactory, this), cancellationTokenSource.Token);
+                }
             }
 
             return Task.CompletedTask;
