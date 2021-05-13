@@ -31,13 +31,14 @@ namespace HomeAutomation.Entities.Action
                 lock (delayLock)
                 {
                     var cancellationTokenSource = new CancellationTokenSource();
+                    string cancellationTokenId = $"{arguments.Source.UniqueID}|{this.UniqueID}";
 
                     if (Extend)
                     {
-                        if (delayCancellationTokens.TryRemove(arguments.Source.UniqueID, out CancellationTokenSource currentTokenSource))
+                        if (delayCancellationTokens.TryRemove(cancellationTokenId, out CancellationTokenSource currentTokenSource))
                             currentTokenSource.Cancel();
 
-                        delayCancellationTokens.TryAdd(arguments.Source.UniqueID, cancellationTokenSource);
+                        delayCancellationTokens.TryAdd(cancellationTokenId, cancellationTokenSource);
                     }
 
                     var scopeFactory = arguments.GetService<IServiceScopeFactory>();
