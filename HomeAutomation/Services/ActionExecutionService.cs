@@ -40,6 +40,12 @@ namespace HomeAutomation.Services
                 return;
             }
 
+            if (action.Disabled)
+            {
+                logger.LogInformation($"Action with ID {actionId} is disabled");
+                return;
+            }
+
             bool meetConditions = await evaluateConditionService.MeetConditions(action, action.Conditions);
             if (!meetConditions)
             {

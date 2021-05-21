@@ -15,6 +15,8 @@ namespace HomeAutomation.Entities.Triggers
 
         public string UniqueID => $"{nameof(Trigger)}_{ID}";
 
+        public bool Disabled { get; set; }
+
         public int[] Actions { get; set; }
 
         [JsonProperty(ItemConverterType = typeof(BaseTypeConverter<Condition>))]

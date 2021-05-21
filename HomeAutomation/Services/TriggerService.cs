@@ -55,6 +55,12 @@ namespace HomeAutomation.Services
             // fire all triggers found
             foreach (var trigger in triggers)
             {
+                if (trigger.Disabled)
+                {
+                    logger.LogInformation($"Trigger with ID {trigger.ID} is disabled");
+                    continue;
+                }
+
                 bool meetConditions = await evaluateConditionService.MeetConditions(trigger, trigger.Conditions);
                 if (!meetConditions)
                 {

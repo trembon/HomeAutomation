@@ -15,6 +15,8 @@ namespace HomeAutomation.Entities.Action
 
         public string UniqueID => $"{nameof(Action)}_{ID}";
 
+        public bool Disabled { get; set; }
+
         public int[] Devices { get; set; }
 
         [JsonProperty(ItemConverterType = typeof(BaseTypeConverter<Condition>))]
