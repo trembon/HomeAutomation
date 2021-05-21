@@ -1,0 +1,29 @@
+﻿@section scripts{
+    <script>
+        var connection = new signalR.HubConnectionBuilder().withUrl("/logHub").build();
+
+        connection.on("ReceiveLogOutput", function (message) {
+            appendMessage(message);
+        });
+
+        connection.start().then(function () {
+            appendMessage('Connected!');
+        }).catch(function (err) {
+            return console.error(err.toString());
+        });
+
+        function appendMessage(data) {
+            if (data && data.message) {
+                $('#messages').append('<div class="row"><div class="col-md-2">' + new Date().toLocaleString() + '</div><div class="col-md-2">' + data.logLevel + '</div><div class="col-md-8">' + data.message + '</div></div>');
+            }
+        }
+    </script>
+}
+
+<div id="messages" class="container-fluid">
+    <div class="row">
+        <div class="col-md-2">Timestamp</div>
+        <div class="col-md-2">Level</div>
+        <div class="col-md-8">Message</div>
+    </div>
+</div>

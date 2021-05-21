@@ -355,3 +355,8 @@ MigrationBackup/
 /HomeAutomation/wwwroot/css/all.min.css
 /HomeAutomation/appsettings.json
 /HomeAutomation/database.json
+
+
+## CUSTOM RULES ##
+# allow logs folder in views
+!HomeAutomation/HomeAutomation/Views/Logs

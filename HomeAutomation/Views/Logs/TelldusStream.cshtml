@@ -1,0 +1,38 @@
+﻿
+@{
+    ViewData["Title"] = "Telldus Log Stream";
+}
+
+@section scripts{
+    <script>
+        var connection = new signalR.HubConnectionBuilder().withUrl("/logHub").build();
+
+        connection.on("ReceiveTelldusLogStream", function (message) {
+            appendMessage(message);
+        });
+
+        connection.start().then(function () {
+            appendMessage('Connected!');
+        }).catch(function (err) {
+            return console.error(err.toString());
+        });
+
+        function appendMessage(data) {
+            var timestamp = new Date().toLocaleString();
+            if (data.timestamp) {
+                timestamp = data.timestamp;
+            }
+
+            if (data && data.message) {
+                $('#messages').append('<div class="row"><div class="col-md-3">' + timestamp + '</div><div class="col-md-9">' + data.message + '</div></div>');
+            }
+        }
+    </script>
+}
+
+<div id="messages" class="container-fluid">
+    <div class="row">
+        <div class="col-md-3">Timestamp</div>
+        <div class="col-md-9">Message</div>
+    </div>
+</div>
