@@ -17,12 +17,14 @@ namespace HomeAutomation.Services
     public class ActionExecutionService : IActionExecutionService
     {
         private readonly IJsonDatabaseService memoryEntitiesService;
+        private readonly IEvaluateConditionService evaluateConditionService;
         private readonly IServiceProvider serviceProvider;
         private readonly ILogger<ActionExecutionService> logger;
 
-        public ActionExecutionService(IJsonDatabaseService memoryEntitiesService, IServiceProvider serviceProvider, ILogger<ActionExecutionService> logger)
+        public ActionExecutionService(IJsonDatabaseService memoryEntitiesService, IEvaluateConditionService evaluateConditionService, IServiceProvider serviceProvider, ILogger<ActionExecutionService> logger)
         {
             this.memoryEntitiesService = memoryEntitiesService;
+            this.evaluateConditionService = evaluateConditionService;
             this.serviceProvider = serviceProvider;
             this.logger = logger;
         }
@@ -33,7 +35,17 @@ namespace HomeAutomation.Services
 
             var action = memoryEntitiesService.Actions.FirstOrDefault(a => a.ID == actionId);
             if (action == null)
+            {
+                logger.LogError($"Action with ID {actionId} was not found");
                 return;
+            }
+
+            bool meetConditions = await evaluateConditionService.MeetConditions(action, action.Conditions);
+            if (!meetConditions)
+            {
+                logger.LogInformation($"Action with ID {actionId} didnt meet the configured conditions");
+                return;
+            }
 
             var devices = new List<Device>(action.Devices?.Length ?? 0);
             if (action.Devices != null)

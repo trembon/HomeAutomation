@@ -15,16 +15,16 @@ namespace HomeAutomation.ScheduledJobs
     {
         private readonly IJsonDatabaseService jsonDatabaseService;
         private readonly ISunDataService sunDataService;
-        private readonly IActionExecutionService actionExecutionService;
+        private readonly ITriggerService triggerService;
 
-        public TriggerScheduledJob(IJsonDatabaseService jsonDatabaseService, ISunDataService sunDataService, IActionExecutionService actionExecutionService)
+        public TriggerScheduledJob(IJsonDatabaseService jsonDatabaseService, ISunDataService sunDataService, ITriggerService triggerService)
         {
             this.jsonDatabaseService = jsonDatabaseService;
             this.sunDataService = sunDataService;
-            this.actionExecutionService = actionExecutionService;
+            this.triggerService = triggerService;
         }
 
-        public async Task Execute(IJobExecutionContext context)
+        public Task Execute(IJobExecutionContext context)
         {
             // get the from and to dates
             DateTime from = context.PreviousFireTimeUtc.HasValue ? context.PreviousFireTimeUtc.Value.LocalDateTime : DateTime.Now.AddMinutes(-5);
@@ -41,9 +41,7 @@ namespace HomeAutomation.ScheduledJobs
             }
 
             // fire all triggers found
-            foreach (var trigger in triggers)
-                foreach (int action in trigger.Actions)
-                    await actionExecutionService.Execute(action, trigger);
+            return triggerService.FireTriggers(triggers);
         }
 
         private DateTime CalculateTriggerTime(TimeSpan at, ScheduleMode mode)

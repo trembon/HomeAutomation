@@ -69,14 +69,15 @@ namespace HomeAutomation
             services.AddDbContext<DefaultContext>(options => options.UseSqlite(Configuration.GetConnectionString("Default")), ServiceLifetime.Transient);
 
             services.AddScoped<ISunDataService, SunDataService>();
+            services.AddScoped<ITriggerService, TriggerService>();
+            services.AddScoped<IActionExecutionService, ActionExecutionService>();
+            services.AddScoped<IEvaluateConditionService, EvaluateConditionService>();
 
-            services.AddSingleton<ITriggerService, TriggerService>();
             services.AddSingleton<IZWaveAPIService, ZWaveAPIService>();
             services.AddSingleton<IMessageStore, EmailReceiveService>();
             services.AddSingleton<ITelldusAPIService, TelldusAPIService>();
             services.AddSingleton<INotificationService, NotificationService>();
             services.AddSingleton<IJsonDatabaseService, JsonDatabaseService>();
-            services.AddSingleton<IActionExecutionService, ActionExecutionService>();
 
             // add quartz after all services
             services.AddQuartz();

@@ -83,7 +83,14 @@
       "type": "device",
       "events": [ "on", "off" ],
       "devices": [ 6 ],
-      "actions": [ 2, 3 ]
+      "actions": [ 2, 3 ],
+      "conditions": [
+        {
+          "type": "time",
+          "mode": "sunset",
+          "compare": "GreaterThan"
+        }
+      ]
     }
   ],
   "actions": [
@@ -98,7 +105,14 @@
       "type": "snapshot",
       "channel": "test",
       "message": "hello world",
-      "devices": [ 1 ]
+      "devices": [ 1 ],
+      "conditions": [
+        {
+          "type": "time",
+          "mode": "sunset",
+          "compare": "LesserThan"
+        }
+      ]
     },
     {
       "id": 3,

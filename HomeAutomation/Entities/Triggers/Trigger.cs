@@ -1,4 +1,6 @@
 ﻿using HomeAutomation.Base.Converters;
+using HomeAutomation.Entities.Conditions;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,9 +13,12 @@ namespace HomeAutomation.Entities.Triggers
     {
         public int ID { get; set; }
 
+        public string UniqueID => $"{nameof(Trigger)}_{ID}";
+
         public int[] Actions { get; set; }
 
-        public string UniqueID => $"{nameof(Trigger)}_{ID}";
+        [JsonProperty(ItemConverterType = typeof(BaseTypeConverter<Condition>))]
+        public Condition[] Conditions { get; set; }
 
         public virtual string ToSourceString()
         {

@@ -1,4 +1,5 @@
 ﻿using HomeAutomation.Base.Converters;
+using HomeAutomation.Entities.Conditions;
 using HomeAutomation.Models.Actions;
 using Newtonsoft.Json;
 using System;
@@ -12,9 +13,12 @@ namespace HomeAutomation.Entities.Action
     {
         public int ID { get; set; }
 
+        public string UniqueID => $"{nameof(Action)}_{ID}";
+
         public int[] Devices { get; set; }
 
-        public string UniqueID => $"{nameof(Action)}_{ID}";
+        [JsonProperty(ItemConverterType = typeof(BaseTypeConverter<Condition>))]
+        public Condition[] Conditions { get; set; }
 
         public abstract Task Execute(ActionExecutionArguments arguments);
 

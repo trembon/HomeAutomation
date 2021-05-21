@@ -1,5 +1,6 @@
 ﻿using HomeAutomation.Entities.Enums;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using MimeKit;
 using SmtpServer;
 using SmtpServer.Protocol;
@@ -18,13 +19,13 @@ namespace HomeAutomation.Services
     {
         private readonly IConfiguration configuration;
         private readonly IJsonDatabaseService jsonDatabaseService;
-        private readonly ITriggerService triggerService;
+        private readonly IServiceScopeFactory serviceScopeFactory;
 
-        public EmailReceiveService(IConfiguration configuration, IJsonDatabaseService jsonDatabaseService, ITriggerService triggerService)
+        public EmailReceiveService(IConfiguration configuration, IJsonDatabaseService jsonDatabaseService, IServiceScopeFactory serviceScopeFactory)
         {
             this.configuration = configuration;
             this.jsonDatabaseService = jsonDatabaseService;
-            this.triggerService = triggerService;
+            this.serviceScopeFactory = serviceScopeFactory;
         }
 
         public override async Task<SmtpResponse> SaveAsync(ISessionContext context, IMessageTransaction transaction, ReadOnlySequence<byte> buffer, CancellationToken cancellationToken)
@@ -47,7 +48,10 @@ namespace HomeAutomation.Services
                 var device = jsonDatabaseService.Cameras.FirstOrDefault(c => c.SourceID == sourceId);
                 if(device != null)
                 {
-                    _ = triggerService.FireTriggersFromDevice(device, DeviceEvent.Motion);
+                    using (var scope = serviceScopeFactory.CreateScope())
+                    {
+                        _ = scope.ServiceProvider.GetService<ITriggerService>().FireTriggersFromDevice(device, DeviceEvent.Motion);
+                    }
 
                     await SaveToEml(message, $"{device.ID}_{device.SourceID}");
                     saved = true;
