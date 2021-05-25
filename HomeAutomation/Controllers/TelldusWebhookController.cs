@@ -106,7 +106,7 @@ namespace HomeAutomation.Controllers
             if (device != null)
             {
                 var state = telldusAPIService.ConvertCommandToEvent(model.Command);
-                _ = triggerService.FireTriggersFromDevice(device, state);
+                await triggerService.FireTriggersFromDevice(device, state);
             }
 
             return Ok(true);
