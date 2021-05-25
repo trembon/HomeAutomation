@@ -360,3 +360,6 @@ MigrationBackup/
 ## CUSTOM RULES ##
 # allow logs folder in views
 !HomeAutomation/HomeAutomation/Views/Logs
+
+# remove all published files
+/_publish/
