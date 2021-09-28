@@ -124,6 +124,7 @@ namespace HomeAutomation
                 {
                     q.CreateScheduleJob<TriggerScheduledJob>(s => s.WithSimpleSchedule(x => x.WithIntervalInMinutes(5).RepeatForever()).StartAt(DateTimeOffset.Now.AddSeconds(20)));
                     q.CreateScheduleJob<ImportWeatherDataScheduledJob>(s => s.WithSimpleSchedule(x => x.WithIntervalInMinutes(60).RepeatForever()).StartAt(DateTimeOffset.Now.AddSeconds(20)));
+                    q.CreateScheduleJob<CleanupLogScheduleJob>(s => s.WithCronSchedule("0 0 3 1/1 * ? *").StartNow());
                 });
             }
 
