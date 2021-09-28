@@ -349,6 +349,9 @@ MigrationBackup/
 # Ionide (cross platform F# VS Code tools) working folder
 .ionide/
 /HomeAutomation/database.sqlite
+/HomeAutomation/logging.sqlite
+/HomeAutomation/logging.sqlite-shm
+/HomeAutomation/logging.sqlite-wal
 /HomeAutomation/wwwroot/libs
 /HomeAutomation/wwwroot/webfonts
 /HomeAutomation/wwwroot/js/all.min.js

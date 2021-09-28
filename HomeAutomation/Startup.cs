@@ -63,10 +63,12 @@ namespace HomeAutomation
                     options.AddProvider(new SlackLoggerProvider(Configuration["Slack:Token"]));
 
                 options.Services.AddSingleton<ILoggerProvider, HubLoggerProvider>();
+                options.AddProvider(new DatabaseLoggerProvider().Configure(logger => logger.UseSqlite(Configuration.GetConnectionString("Logging"))));
             });
 
             // register database contexts
             services.AddDbContext<DefaultContext>(options => options.UseSqlite(Configuration.GetConnectionString("Default")), ServiceLifetime.Transient);
+            services.AddDbContext<LogContext>(options => options.UseSqlite(Configuration.GetConnectionString("Logging")), ServiceLifetime.Transient);
 
             services.AddScoped<ISunDataService, SunDataService>();
             services.AddScoped<ITriggerService, TriggerService>();
@@ -90,10 +92,11 @@ namespace HomeAutomation
             services.AddSingleton(x => new SmtpServer.SmtpServer(options, x));
         }
 
-        public async void Configure(IApplicationBuilder app, DefaultContext context, IJsonDatabaseService memoryEntitiesService, SmtpServer.SmtpServer smtpServer)
+        public async void Configure(IApplicationBuilder app, DefaultContext context, LogContext logContext, IJsonDatabaseService memoryEntitiesService, SmtpServer.SmtpServer smtpServer)
         {
             memoryEntitiesService.Initialize();
             context.Database.Migrate();
+            logContext.Database.Migrate();
 
             if (HostingEnvironment.IsDevelopment())
             {
