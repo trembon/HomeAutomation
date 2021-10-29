@@ -34,12 +34,19 @@ namespace HomeAutomation.Services
             this.logger = logger;
         }
 
-        public Task FireTriggersFromDevice(Device device, DeviceEvent deviceEvent)
+        public async Task FireTriggersFromDevice(Device device, DeviceEvent deviceEvent)
         {
-            logger.LogInformation($"Firing triggers from device '{device}' and event '{deviceEvent}'");
-
             var triggers = memoryEntitiesService.StateTriggers.Where(st => st.Events.Contains(deviceEvent) && st.Devices.Contains(device.ID));
-            return FireTriggers(triggers, device);
+
+            if (triggers != null && triggers.Any())
+            {
+                logger.LogInformation($"Firing triggers ({string.Join(',', triggers.Select(x => x.ID))}) from device '{device}' and event '{deviceEvent}'");
+                await FireTriggers(triggers, device);
+            }
+            else
+            {
+                logger.LogInformation($"No triggers to fire device '{device}' and event '{deviceEvent}'");
+            }
         }
 
         public Task FireTriggers(IEnumerable<Trigger> triggers)

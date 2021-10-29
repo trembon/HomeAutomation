@@ -106,6 +106,8 @@ namespace HomeAutomation.Controllers
             if (device != null)
             {
                 var state = telldusAPIService.ConvertCommandToEvent(model.Command);
+
+                logger.LogInformation($"Telldus.DeviceEvent (DeviceID {device.ID}) - {model?.DeviceID}: {model?.Command.ToString()} ({model?.Parameter}), MappedState: {state}");
                 await triggerService.FireTriggersFromDevice(device, state);
             }
 

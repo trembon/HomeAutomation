@@ -31,14 +31,14 @@ namespace HomeAutomation.Services
 
         public async Task Execute(int actionId, IEntity source)
         {
-            logger.LogInformation($"Starting action with ID {actionId} from source '{source}'");
-
             var action = memoryEntitiesService.Actions.FirstOrDefault(a => a.ID == actionId);
             if (action == null)
             {
                 logger.LogError($"Action with ID {actionId} was not found");
                 return;
             }
+
+            logger.LogInformation($"Starting action with ID {actionId} ({action.GetType().Name}) from source '{source}'");
 
             if (action.Disabled)
             {

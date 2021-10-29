@@ -60,6 +60,8 @@ namespace HomeAutomation.Controllers
             if (device != null)
             {
                 var state = zwaveAPIService.ConvertParameterToEvent(model.ValueType, model.Value);
+
+                logger.LogInformation($"ZWave.NodeUpdate (DeviceID {device.ID}) - {model.NodeId}, {model.ValueType}: {model.Value}, MappedState: {state}");
                 _ = triggerService.FireTriggersFromDevice(device, state);
             }
 
