@@ -1,6 +1,7 @@
 ﻿using HomeAutomation.Models.Actions;
 using HomeAutomation.Services;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -63,6 +64,8 @@ namespace HomeAutomation.Entities.Action
 
             using (var scope = scopeFactory.CreateScope())
             {
+                scope.ServiceProvider.GetService<ILogger<DelayAction>>().LogInformation($"Delay complete ({delayAction.Delay}) for action with ID {delayAction.ID}, executing actions {string.Join(',', delayAction.Actions)}");
+
                 var executionService = scope.ServiceProvider.GetService<IActionExecutionService>();
                 foreach (var action in delayAction.Actions)
                     await executionService.Execute(action, delayAction);
