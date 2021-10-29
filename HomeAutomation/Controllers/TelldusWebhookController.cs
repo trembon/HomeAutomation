@@ -96,7 +96,7 @@ namespace HomeAutomation.Controllers
         {
             lock (duplicationRequestLock)
             {
-                if (IsDuplicateRequest($"{model.DeviceID}|{model.Command}|{model.Parameter}"))
+                if (IsDuplicateRequest(model.DeviceID, model.Command, model.Parameter))
                     return Ok(false);
             }
 
@@ -137,17 +137,26 @@ namespace HomeAutomation.Controllers
             }
         }
 
-        private bool IsDuplicateRequest(string request)
+        private bool IsDuplicateRequest(int deviceId, TelldusDeviceMethods command, string parameter)
+        {
+            string requestKey = $"{deviceId}|{command}";
+            if(command == TelldusDeviceMethods.Dim)
+                requestKey = $"{deviceId}|{command}|{parameter}";
+
+            return IsDuplicateRequest(requestKey);
+        }
+
+        private bool IsDuplicateRequest(string requestKey)
         {
             DateTime now = DateTime.UtcNow;
 
             int ignoreDuplicateWebhooksInSeconds = configuration.GetValue("Telldus:IgnoreDuplicateWebhooksInSeconds", 10);
             duplicationRequestLog.RemoveAll(dr => now.AddSeconds(-ignoreDuplicateWebhooksInSeconds) > dr.RequestTime);
 
-            var record = duplicationRequestLog.FirstOrDefault(dr => dr.Request.Equals(request, StringComparison.InvariantCultureIgnoreCase));
+            var record = duplicationRequestLog.FirstOrDefault(dr => dr.Request.Equals(requestKey, StringComparison.InvariantCultureIgnoreCase));
             if (record == null)
             {
-                duplicationRequestLog.Add(new DuplicateRecord( request, now));
+                duplicationRequestLog.Add(new DuplicateRecord(requestKey, now));
                 return false;
             }
 
