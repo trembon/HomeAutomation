@@ -42,15 +42,25 @@ namespace HomeAutomation.Entities.Action
                     }
 
                     var scopeFactory = arguments.GetService<IServiceScopeFactory>();
-                    _ = Task.Delay(Delay, cancellationTokenSource.Token).ContinueWith(task => ExecuteDelayedActions(scopeFactory, this), cancellationTokenSource.Token);
+                    ThreadPool.QueueUserWorkItem(task => ExecuteDelayedActions(scopeFactory, this, cancellationTokenId, cancellationTokenSource.Token));
                 }
             }
 
             return Task.CompletedTask;
         }
 
-        private static async void ExecuteDelayedActions(IServiceScopeFactory scopeFactory, DelayAction delayAction)
+        private static async void ExecuteDelayedActions(IServiceScopeFactory scopeFactory, DelayAction delayAction, string cancellationTokenId, CancellationToken cancellationToken)
         {
+            await Task.Delay(delayAction.Delay, cancellationToken);
+
+            lock (delayLock)
+            {
+                if (cancellationToken.IsCancellationRequested)
+                    return;
+
+                delayCancellationTokens.TryRemove(cancellationTokenId, out _);
+            }
+
             using (var scope = scopeFactory.CreateScope())
             {
                 var executionService = scope.ServiceProvider.GetService<IActionExecutionService>();

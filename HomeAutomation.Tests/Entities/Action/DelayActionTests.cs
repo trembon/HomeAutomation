@@ -50,7 +50,7 @@ namespace HomeAutomation.Tests.Entities.Action
 
             serviceScopeMock.Verify(x => x.CreateScope(), Times.Never);
 
-            Thread.Sleep(15);
+            Thread.Sleep(20);
 
             serviceScopeMock.Verify(x => x.CreateScope(), Times.Once);
         }
@@ -70,7 +70,7 @@ namespace HomeAutomation.Tests.Entities.Action
 
             serviceScopeMock.Verify(x => x.CreateScope(), Times.Never);
 
-            Thread.Sleep(15);
+            Thread.Sleep(30);
 
             serviceScopeMock.Verify(x => x.CreateScope(), Times.Once);
         }
