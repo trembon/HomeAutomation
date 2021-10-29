@@ -12,8 +12,8 @@ namespace HomeAutomation.Entities.Action
 {
     public class DelayAction : Action
     {
-        private static object delayLock = new object();
-        private static ConcurrentDictionary<string, CancellationTokenSource> delayCancellationTokens = new ConcurrentDictionary<string, CancellationTokenSource>();
+        private static object delayLock = new();
+        private static ConcurrentDictionary<string, CancellationTokenSource> delayCancellationTokens = new();
 
         public int[] Actions { get; set; }
 
@@ -24,7 +24,7 @@ namespace HomeAutomation.Entities.Action
         /// </summary>
         public bool Extend { get; set; }
 
-        public override Task Execute(ActionExecutionArguments arguments)
+        public override Task Execute(IActionExecutionArguments arguments)
         {
             if(Actions != null)
             {

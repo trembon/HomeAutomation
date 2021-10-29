@@ -8,13 +8,22 @@ using System.Threading.Tasks;
 
 namespace HomeAutomation.Models.Actions
 {
-    public class ActionExecutionArguments
+    public interface IActionExecutionArguments
     {
-        private IServiceProvider serviceProvider;
+        IEnumerable<Device> Devices { get; }
+
+        IEntity Source { get; }
+
+        T GetService<T>();
+    }
+
+    public class ActionExecutionArguments : IActionExecutionArguments
+    {
+        private readonly IServiceProvider serviceProvider;
 
         public IEnumerable<Device> Devices { get; }
 
-        public IEntity Source { get; set; }
+        public IEntity Source { get; }
 
         public ActionExecutionArguments(IEntity source, IEnumerable<Device> devices, IServiceProvider serviceProvider)
         {

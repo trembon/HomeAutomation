@@ -14,7 +14,7 @@ namespace HomeAutomation.Entities.Action
     {
         public DeviceState State { get; set; }
 
-        public override async Task Execute(ActionExecutionArguments arguments)
+        public override async Task Execute(IActionExecutionArguments arguments)
         {
             foreach(var device in arguments.Devices)
             {

@@ -13,7 +13,7 @@ namespace HomeAutomation.Entities.Action
 {
     public class SnapshotAction : MessageAction
     {
-        public override async Task Execute(ActionExecutionArguments arguments)
+        public override async Task Execute(IActionExecutionArguments arguments)
         {
             using (WebClient webClient = new WebClient())
             {

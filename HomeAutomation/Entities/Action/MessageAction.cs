@@ -15,13 +15,13 @@ namespace HomeAutomation.Entities.Action
 
         public string Message { get; set; }
 
-        public override Task Execute(ActionExecutionArguments arguments)
+        public override Task Execute(IActionExecutionArguments arguments)
         {
             var notificationService = arguments.GetService<INotificationService>();
             return notificationService.SendToSlack(Channel, GetProcessedMessage(arguments));
         }
 
-        protected string GetProcessedMessage(ActionExecutionArguments arguments)
+        protected string GetProcessedMessage(IActionExecutionArguments arguments)
         {
             string deviceString = string.Join(", ", arguments.Devices.Select(d => d.Name));
 

@@ -22,7 +22,7 @@ namespace HomeAutomation.Entities.Action
         [JsonProperty(ItemConverterType = typeof(BaseTypeConverter<Condition>))]
         public Condition[] Conditions { get; set; }
 
-        public abstract Task Execute(ActionExecutionArguments arguments);
+        public abstract Task Execute(IActionExecutionArguments arguments);
 
         public virtual string ToSourceString()
         {
