@@ -29,22 +29,19 @@ namespace HomeAutomation.Entities.Action
         {
             if(Actions != null)
             {
-                lock (delayLock)
+                var cancellationTokenSource = new CancellationTokenSource();
+                string cancellationTokenId = $"{arguments.Source.UniqueID}|{UniqueID}";
+
+                if (Extend)
                 {
-                    var cancellationTokenSource = new CancellationTokenSource();
-                    string cancellationTokenId = $"{arguments.Source.UniqueID}|{this.UniqueID}";
+                    if (delayCancellationTokens.TryRemove(cancellationTokenId, out CancellationTokenSource currentTokenSource))
+                        currentTokenSource.Cancel();
 
-                    if (Extend)
-                    {
-                        if (delayCancellationTokens.TryRemove(cancellationTokenId, out CancellationTokenSource currentTokenSource))
-                            currentTokenSource.Cancel();
-
-                        delayCancellationTokens.TryAdd(cancellationTokenId, cancellationTokenSource);
-                    }
-
-                    var scopeFactory = arguments.GetService<IServiceScopeFactory>();
-                    ThreadPool.QueueUserWorkItem(task => ExecuteDelayedActions(scopeFactory, this, cancellationTokenId, cancellationTokenSource.Token));
+                    delayCancellationTokens.TryAdd(cancellationTokenId, cancellationTokenSource);
                 }
+
+                var scopeFactory = arguments.GetService<IServiceScopeFactory>();
+                ThreadPool.QueueUserWorkItem(task => ExecuteDelayedActions(scopeFactory, this, cancellationTokenId, cancellationTokenSource.Token));
             }
 
             return Task.CompletedTask;
@@ -52,19 +49,20 @@ namespace HomeAutomation.Entities.Action
 
         private static async void ExecuteDelayedActions(IServiceScopeFactory scopeFactory, DelayAction delayAction, string cancellationTokenId, CancellationToken cancellationToken)
         {
-            await Task.Delay(delayAction.Delay, cancellationToken);
-
-            lock (delayLock)
+            using (var scope = scopeFactory.CreateScope())
             {
-                if (cancellationToken.IsCancellationRequested)
-                    return;
-
-                delayCancellationTokens.TryRemove(cancellationTokenId, out _);
+                scope.ServiceProvider.GetService<ILogger<DelayAction>>().LogInformation($"Delay.Sleeping :: {delayAction.ID} :: Delay:{delayAction.Delay}");
             }
+
+            await Task.Delay(delayAction.Delay, cancellationToken).ContinueWith(tsk => { }, CancellationToken.None);
+
+            delayCancellationTokens.TryRemove(cancellationTokenId, out _);
+            if (cancellationToken.IsCancellationRequested)
+                return;
 
             using (var scope = scopeFactory.CreateScope())
             {
-                scope.ServiceProvider.GetService<ILogger<DelayAction>>().LogInformation($"Delay complete ({delayAction.Delay}) for action with ID {delayAction.ID}, executing actions {string.Join(',', delayAction.Actions)}");
+                scope.ServiceProvider.GetService<ILogger<DelayAction>>().LogInformation($"Delay.WakingUp :: {delayAction.ID} :: Delay:{delayAction.Delay}, Actions:{string.Join(',', delayAction.Actions)}");
 
                 var executionService = scope.ServiceProvider.GetService<IActionExecutionService>();
                 foreach (var action in delayAction.Actions)

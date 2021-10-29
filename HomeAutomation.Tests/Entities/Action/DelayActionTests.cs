@@ -2,6 +2,7 @@
 using HomeAutomation.Entities.Action;
 using HomeAutomation.Models.Actions;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -45,14 +46,15 @@ namespace HomeAutomation.Tests.Entities.Action
 
             delayAction.Execute(arguments.Object);
 
-            arguments.VerifyGet(x => x.Source, Times.Once);
-            arguments.Verify(x => x.GetService<IServiceScopeFactory>(), Times.Once);
+            Thread.Sleep(5);
 
-            serviceScopeMock.Verify(x => x.CreateScope(), Times.Never);
+            serviceScopeMock.Verify(x => x.CreateScope(), Times.AtLeastOnce);
 
             Thread.Sleep(20);
 
-            serviceScopeMock.Verify(x => x.CreateScope(), Times.Once);
+            arguments.VerifyGet(x => x.Source, Times.Once);
+            arguments.Verify(x => x.GetService<IServiceScopeFactory>(), Times.Once);
+            serviceScopeMock.Verify(x => x.CreateScope(), Times.Exactly(2));
         }
 
         [Fact]
@@ -68,11 +70,13 @@ namespace HomeAutomation.Tests.Entities.Action
             delayAction.Execute(arguments.Object);
             delayAction.Execute(arguments.Object);
 
-            serviceScopeMock.Verify(x => x.CreateScope(), Times.Never);
+            Thread.Sleep(5);
+
+            serviceScopeMock.Verify(x => x.CreateScope(), Times.AtLeast(2));
 
             Thread.Sleep(30);
 
-            serviceScopeMock.Verify(x => x.CreateScope(), Times.Once);
+            serviceScopeMock.Verify(x => x.CreateScope(), Times.Exactly(3));
         }
 
         private Mock<IActionExecutionArguments> CreateActionExecutionArgumentsMock(Mock<IServiceScopeFactory> serviceScopeFactoryMock)
@@ -89,7 +93,10 @@ namespace HomeAutomation.Tests.Entities.Action
 
         private Mock<IServiceScopeFactory> CreateServiceScopeFactoryMock()
         {
+            var logger = new Mock<ILogger<DelayAction>>();
+
             var serviceProvider = new Mock<IServiceProvider>();
+            serviceProvider.Setup(x => x.GetService(It.Is<Type>(x => x.Name.Contains("ILogger")))).Returns(logger.Object);
 
             var serviceScope = new Mock<IServiceScope>();
             serviceScope.SetupGet(x => x.ServiceProvider).Returns(serviceProvider.Object);

@@ -40,41 +40,59 @@ namespace HomeAutomation.Services
 
             if (triggers != null && triggers.Any())
             {
-                logger.LogInformation($"Firing triggers ({string.Join(',', triggers.Select(x => x.ID))}) from device '{device}' and event '{deviceEvent}'");
-                await FireTriggers(triggers, device);
+                logger.LogInformation($"Triggers.FireAll :: {string.Join(',', triggers.Select(x => x.ID))} :: Device:{device.ID}, Event:{deviceEvent}");
+                await ExecuteTriggerActions(triggers, device);
             }
             else
             {
-                logger.LogInformation($"No triggers to fire device '{device}' and event '{deviceEvent}'");
+                logger.LogInformation($"Triggers.FireAll :: None :: Device:{device.ID}, Event:{deviceEvent}");
             }
         }
 
-        public Task FireTriggers(IEnumerable<Trigger> triggers)
+        public async Task FireTriggers(IEnumerable<Trigger> triggers)
         {
-            return FireTriggers(triggers, null);
+            if (triggers != null && triggers.Any())
+            {
+                logger.LogInformation($"Triggers.FireAll :: {string.Join(',', triggers.Select(x => x.ID))}");
+                await ExecuteTriggerActions(triggers, null);
+            }
+            else
+            {
+                logger.LogInformation($"Triggers.FireAll :: None");
+            }
         }
 
         public async Task FireTriggers(IEnumerable<Trigger> triggers, IEntity source)
         {
-            if (triggers == null || !triggers.Any())
-                return;
+            if (triggers != null && triggers.Any())
+            {
+                logger.LogInformation($"Triggers.FireAll :: {string.Join(',', triggers.Select(x => x.ID))} :: Source:{source.ToSourceString()}");
+                await ExecuteTriggerActions(triggers, source);
+            }
+            else
+            {
+                logger.LogInformation($"Triggers.FireAll :: None :: Source:{source.ToSourceString()}");
+            }
+        }
 
-            // fire all triggers found
+        private async Task ExecuteTriggerActions(IEnumerable<Trigger> triggers, IEntity source)
+        {
             foreach (var trigger in triggers)
             {
                 if (trigger.Disabled)
                 {
-                    logger.LogInformation($"Trigger with ID {trigger.ID} is disabled");
+                    logger.LogInformation($"Trigger.Fire :: {trigger.ID} :: Status:Disabled");
                     continue;
                 }
 
                 bool meetConditions = await evaluateConditionService.MeetConditions(trigger, trigger.Conditions);
                 if (!meetConditions)
                 {
-                    logger.LogInformation($"Trigger with ID {trigger.ID} didnt meet the configured conditions");
+                    logger.LogInformation($"Trigger.Fire :: {trigger.ID} :: Status:ConditionsNotMet");
                     continue;
                 }
 
+                logger.LogInformation($"Trigger.Fire :: {trigger.ID}");
                 foreach (int action in trigger.Actions)
                 {
                     await actionExecutionService.Execute(action, source ?? trigger);

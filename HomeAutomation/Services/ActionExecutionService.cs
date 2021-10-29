@@ -34,22 +34,20 @@ namespace HomeAutomation.Services
             var action = memoryEntitiesService.Actions.FirstOrDefault(a => a.ID == actionId);
             if (action == null)
             {
-                logger.LogError($"Action with ID {actionId} was not found");
+                logger.LogError($"Action.Execute :: {actionId} :: Status:NotFound");
                 return;
             }
 
-            logger.LogInformation($"Starting action with ID {actionId} ({action.GetType().Name}) from source '{source}'");
-
             if (action.Disabled)
             {
-                logger.LogInformation($"Action with ID {actionId} is disabled");
+                logger.LogInformation($"Action.Execute :: {actionId} :: Status:Disabled");
                 return;
             }
 
             bool meetConditions = await evaluateConditionService.MeetConditions(action, action.Conditions);
             if (!meetConditions)
             {
-                logger.LogInformation($"Action with ID {actionId} didnt meet the configured conditions");
+                logger.LogInformation($"Action.Execute :: {actionId} :: Status:ConditionsNotMet");
                 return;
             }
 
@@ -63,8 +61,17 @@ namespace HomeAutomation.Services
                 }
             }
 
-            var arguments = new ActionExecutionArguments(source, devices, serviceProvider);
-            await action.Execute(arguments);
+            logger.LogInformation($"Action.Execute :: {actionId} :: Source:{source.ToSourceString()}, Devices:{string.Join(',', devices.Select(x => x.ID))}");
+
+            try
+            {
+                var arguments = new ActionExecutionArguments(source, devices, serviceProvider);
+                await action.Execute(arguments);
+            }
+            catch(Exception ex)
+            {
+                logger.LogError(ex, $"Action.Execute :: {actionId} :: Error:{ex.Message}");
+            }
         }
     }
 }

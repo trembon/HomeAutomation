@@ -23,14 +23,14 @@ namespace HomeAutomation.ScheduledJobs
 
         public async Task Execute(IJobExecutionContext context)
         {
-            logger.LogInformation("Cleanup old log rows");
+            logger.LogInformation("Schedule.Cleanup :: starting");
 
             DateTime limit = DateTime.UtcNow.AddDays(-7); // TODO: place in configuration?
             var rows = await logContext.Rows.Where(x => limit > x.Timestamp).ToListAsync();
             logContext.RemoveRange(rows);
             await logContext.SaveChangesAsync();
 
-            logger.LogInformation("DONE - Cleanup old log rows");
+            logger.LogInformation("Schedule.Cleanup :: done");
         }
     }
 }

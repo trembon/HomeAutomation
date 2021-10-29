@@ -24,7 +24,7 @@ namespace HomeAutomation.ScheduledJobs
             this.triggerService = triggerService;
         }
 
-        public Task Execute(IJobExecutionContext context)
+        public async Task Execute(IJobExecutionContext context)
         {
             // get the from and to dates
             DateTime from = context.PreviousFireTimeUtc.HasValue ? context.PreviousFireTimeUtc.Value.LocalDateTime : DateTime.Now.AddMinutes(-5);
@@ -40,8 +40,9 @@ namespace HomeAutomation.ScheduledJobs
                     triggers.Add(trigger);
             }
 
-            // fire all triggers found
-            return triggerService.FireTriggers(triggers);
+            // fire all found triggers
+            if (triggers.Any())
+                await triggerService.FireTriggers(triggers);
         }
 
         private DateTime CalculateTriggerTime(TimeSpan at, ScheduleMode mode)

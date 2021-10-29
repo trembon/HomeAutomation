@@ -34,7 +34,7 @@ namespace HomeAutomation.ScheduledJobs
 
         public async Task Execute(IJobExecutionContext context)
         {
-            logger.LogInformation("Fetching weather and sun information.");
+            logger.LogInformation("Schedule.Weather :: starting");
 
             WeatherData weatherData = null;
             try
@@ -70,7 +70,7 @@ namespace HomeAutomation.ScheduledJobs
             // import weather forecast
             try
             {
-                logger.LogInformation("Updating weather information.");
+                logger.LogInformation("Schedule.Weather :: updating weather");
 
                 DateTime date = weatherData.Forecast.Tabular.Time.OrderBy(t => t.From).Select(t => t.From.Date).FirstOrDefault();
                 var previousForecast = this.context.WeatherForecast.OrderBy(wf => wf.Date).ThenBy(wf => wf.Period).Where(wf => wf.Date >= date).ToList();
