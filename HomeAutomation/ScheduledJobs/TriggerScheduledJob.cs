@@ -24,13 +24,13 @@ namespace HomeAutomation.ScheduledJobs
             this.triggerService = triggerService;
         }
 
-        public async Task Execute(IJobExecutionContext context)
+        public Task Execute(IJobExecutionContext context)
         {
             // get the from and to dates
             DateTime from = context.PreviousFireTimeUtc.HasValue ? context.PreviousFireTimeUtc.Value.LocalDateTime : DateTime.Now.AddMinutes(-5);
             DateTime to = context.FireTimeUtc.LocalDateTime;
 
-            List<Trigger> triggers = new List<Trigger>();
+            List<Trigger> triggers = new();
 
             // calculate all the triggers
             foreach (var trigger in jsonDatabaseService.ScheduledTriggers)
@@ -42,7 +42,9 @@ namespace HomeAutomation.ScheduledJobs
 
             // fire all found triggers
             if (triggers.Any())
-                await triggerService.FireTriggers(triggers);
+                return triggerService.FireTriggers(triggers);
+
+            return Task.CompletedTask;
         }
 
         private DateTime CalculateTriggerTime(TimeSpan at, ScheduleMode mode)

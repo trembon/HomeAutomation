@@ -50,7 +50,7 @@ namespace HomeAutomation.Services
                 {
                     using (var scope = serviceScopeFactory.CreateScope())
                     {
-                        _ = scope.ServiceProvider.GetService<ITriggerService>().FireTriggersFromDevice(device, DeviceEvent.Motion);
+                        await scope.ServiceProvider.GetService<ITriggerService>().FireTriggersFromDevice(device, DeviceEvent.Motion);
                     }
 
                     await SaveToEml(message, $"{device.ID}_{device.SourceID}");

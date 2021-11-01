@@ -14,8 +14,9 @@ namespace HomeAutomation.Entities.Action
     {
         public DeviceState State { get; set; }
 
-        public override async Task Execute(IActionExecutionArguments arguments)
+        public override Task Execute(IActionExecutionArguments arguments)
         {
+            List<Task> sendCommandTasks = new(arguments.Devices.Count());
             foreach(var device in arguments.Devices)
             {
                 if(device.Source == DeviceSource.Telldus)
@@ -23,8 +24,11 @@ namespace HomeAutomation.Entities.Action
                     var telldusAPIService = arguments.GetService<ITelldusAPIService>();
                     var command = telldusAPIService.ConvertStateToCommand(State);
 
-                    if(command.HasValue)
-                        await arguments.GetService<ITelldusAPIService>().SendCommand(int.Parse(device.SourceID), command.Value);
+                    if (command.HasValue)
+                    {
+                        var task = telldusAPIService.SendCommand(int.Parse(device.SourceID), command.Value);
+                        sendCommandTasks.Add(task);
+                    }
                 }
 
                 if(device.Source == DeviceSource.ZWave)
@@ -33,9 +37,14 @@ namespace HomeAutomation.Entities.Action
                     ZWaveCommandClass? command = zwaveAPIService.ConvertStateToCommand(State, out object parameter);
 
                     if (command.HasValue)
-                        await arguments.GetService<IZWaveAPIService>().SendCommand(byte.Parse(device.SourceID), command.Value, parameter);
+                    {
+                        var task = zwaveAPIService.SendCommand(byte.Parse(device.SourceID), command.Value, parameter);
+                        sendCommandTasks.Add(task);
+                    }
                 }
             }
+
+            return Task.WhenAll(sendCommandTasks);
         }
     }
 }

@@ -28,7 +28,7 @@ namespace HomeAutomation.Services
             if (conditions == null || conditions.Count() == 0)
                 return true;
 
-            List<bool> results = new List<bool>(conditions.Count());
+            List<bool> results = new(conditions.Count());
             foreach(var condition in conditions)
             {
                 var arguments = new ConditionExecutionArguments(source, serviceProvider);

@@ -34,44 +34,47 @@ namespace HomeAutomation.Services
             this.logger = logger;
         }
 
-        public async Task FireTriggersFromDevice(Device device, DeviceEvent deviceEvent)
+        public Task FireTriggersFromDevice(Device device, DeviceEvent deviceEvent)
         {
             var triggers = memoryEntitiesService.StateTriggers.Where(st => st.Events.Contains(deviceEvent) && st.Devices.Contains(device.ID));
 
             if (triggers != null && triggers.Any())
             {
                 logger.LogInformation($"Triggers.FireAll :: {string.Join(',', triggers.Select(x => x.ID))} :: Device:{device.ID}, Event:{deviceEvent}");
-                await ExecuteTriggerActions(triggers, device);
+                return ExecuteTriggerActions(triggers, device);
             }
             else
             {
                 logger.LogInformation($"Triggers.FireAll :: None :: Device:{device.ID}, Event:{deviceEvent}");
+                return Task.CompletedTask;
             }
         }
 
-        public async Task FireTriggers(IEnumerable<Trigger> triggers)
+        public Task FireTriggers(IEnumerable<Trigger> triggers)
         {
             if (triggers != null && triggers.Any())
             {
                 logger.LogInformation($"Triggers.FireAll :: {string.Join(',', triggers.Select(x => x.ID))}");
-                await ExecuteTriggerActions(triggers, null);
+                return ExecuteTriggerActions(triggers, null);
             }
             else
             {
                 logger.LogInformation($"Triggers.FireAll :: None");
+                return Task.CompletedTask;
             }
         }
 
-        public async Task FireTriggers(IEnumerable<Trigger> triggers, IEntity source)
+        public Task FireTriggers(IEnumerable<Trigger> triggers, IEntity source)
         {
             if (triggers != null && triggers.Any())
             {
                 logger.LogInformation($"Triggers.FireAll :: {string.Join(',', triggers.Select(x => x.ID))} :: Source:{source.ToSourceString()}");
-                await ExecuteTriggerActions(triggers, source);
+                return ExecuteTriggerActions(triggers, source);
             }
             else
             {
                 logger.LogInformation($"Triggers.FireAll :: None :: Source:{source.ToSourceString()}");
+                return Task.CompletedTask;
             }
         }
 
@@ -93,10 +96,14 @@ namespace HomeAutomation.Services
                 }
 
                 logger.LogInformation($"Trigger.Fire :: {trigger.ID}");
+
+                List<Task> triggerActionTasks = new(trigger.Actions.Length);
                 foreach (int action in trigger.Actions)
                 {
-                    await actionExecutionService.Execute(action, source ?? trigger);
+                    triggerActionTasks.Add(actionExecutionService.Execute(action, source ?? trigger));
                 }
+
+                await Task.WhenAll(triggerActionTasks);
             }
         }
     }
