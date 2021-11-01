@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace HomeAutomation.Services
@@ -61,6 +62,7 @@ namespace HomeAutomation.Services
                 case DeviceState.On:
                     value = 255;
                     return ZWaveCommandClass.Basic;
+
                 case DeviceState.Off:
                     value = 0;
                     return ZWaveCommandClass.Basic;
@@ -72,11 +74,35 @@ namespace HomeAutomation.Services
 
         public DeviceEvent ConvertParameterToEvent(ZWaveEventParameter parameter, object value)
         {
+            if(value is JsonElement je)
+            {
+                if (je.TryGetInt32(out int intValue))
+                {
+                    value = intValue;
+                }
+                else
+                {
+                    value = je.GetString();
+                }
+            }
+
             switch (value)
             {
                 case int intValue:
                     if (parameter == ZWaveEventParameter.Basic)
                         return intValue == 255 ? DeviceEvent.On : DeviceEvent.Off;
+
+                    if (parameter == ZWaveEventParameter.SwitchBinary)
+                        return intValue == 255 ? DeviceEvent.On : DeviceEvent.Off;
+
+                    break;
+
+                case byte byteValue:
+                    if (parameter == ZWaveEventParameter.Basic)
+                        return byteValue == 255 ? DeviceEvent.On : DeviceEvent.Off;
+
+                    if (parameter == ZWaveEventParameter.SwitchBinary)
+                        return byteValue == 255 ? DeviceEvent.On : DeviceEvent.Off;
 
                     break;
             }
