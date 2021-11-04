@@ -123,7 +123,8 @@ namespace HomeAutomation
                 app.UseQuartz(q =>
                 {
                     q.CreateScheduleJob<TriggerScheduledJob>(s => s.WithSimpleSchedule(x => x.WithIntervalInMinutes(5).RepeatForever()).StartAt(DateTimeOffset.Now.AddSeconds(20)));
-                    q.CreateScheduleJob<ImportWeatherDataScheduledJob>(s => s.WithSimpleSchedule(x => x.WithIntervalInMinutes(60).RepeatForever()).StartAt(DateTimeOffset.Now.AddSeconds(20)));
+                    //q.CreateScheduleJob<ImportWeatherDataScheduledJob>(s => s.WithSimpleSchedule(x => x.WithIntervalInMinutes(60).RepeatForever()).StartAt(DateTimeOffset.Now.AddSeconds(20)));
+                    q.CreateScheduleJob<ImportSunDataScheduleJob>(s => s.WithSimpleSchedule(x => x.WithIntervalInHours(2).RepeatForever()).StartAt(DateTimeOffset.Now.AddSeconds(30)));
                     q.CreateScheduleJob<CleanupLogScheduleJob>(s => s.WithCronSchedule("0 0 3 1/1 * ? *").StartNow());
                 });
             }

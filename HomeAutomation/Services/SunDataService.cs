@@ -41,10 +41,12 @@ namespace HomeAutomation.Services
 
                 try
                 {
-                    SunData sunData = new SunData();
-                    sunData.Date = date;
-                    sunData.Sunrise = sunrise;
-                    sunData.Sunset = sunset;
+                    SunData sunData = new()
+                    {
+                        Date = date,
+                        Sunrise = sunrise,
+                        Sunset = sunset
+                    };
 
                     context.Add(sunData);
                     bool result = context.SaveChanges() > 0;
