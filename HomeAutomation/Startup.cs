@@ -1,37 +1,25 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
-using HomeAutomation.Base.Extensions;
+﻿using HomeAutomation.Base.Extensions;
+using HomeAutomation.Base.Logging;
 using HomeAutomation.Database;
 using HomeAutomation.Hubs;
-using HomeAutomation.Base.Logging;
 using HomeAutomation.ScheduledJobs;
 using HomeAutomation.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
 using Quartz;
 using SmtpServer;
 using SmtpServer.Storage;
+using System;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace HomeAutomation
 {
-    // TODO: build memory logging that is readable on the web
-    // TODO: build memory db to present telldus raw events on web
-    // TODO: telldus retry count in config
-    // TODO: add info logging to view on the website
-
     public class Startup
     {
         public IConfiguration Configuration { get; }
@@ -92,16 +80,17 @@ namespace HomeAutomation
             services.AddSingleton(x => new SmtpServer.SmtpServer(options, x));
         }
 
-        public async void Configure(IApplicationBuilder app, DefaultContext context, LogContext logContext, IJsonDatabaseService memoryEntitiesService, SmtpServer.SmtpServer smtpServer)
+        public async void Configure(IApplicationBuilder app)
         {
-            memoryEntitiesService.Initialize();
-            context.Database.Migrate();
-            logContext.Database.Migrate();
+            app.ApplicationServices.GetService<IJsonDatabaseService>().Initialize();
+
+            app.ApplicationServices.GetService<DefaultContext>().Database.Migrate();
+            app.ApplicationServices.GetService<LogContext>().Database.Migrate();
 
             if (HostingEnvironment.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
-                await MockDatabase(context);
+                await MockDatabase(app.ApplicationServices.GetService<DefaultContext>());
             }
             else
             {
@@ -123,7 +112,6 @@ namespace HomeAutomation
                 app.UseQuartz(q =>
                 {
                     q.CreateScheduleJob<TriggerScheduledJob>(s => s.WithSimpleSchedule(x => x.WithIntervalInMinutes(5).RepeatForever()).StartAt(DateTimeOffset.Now.AddSeconds(20)));
-                    //q.CreateScheduleJob<ImportWeatherDataScheduledJob>(s => s.WithSimpleSchedule(x => x.WithIntervalInMinutes(60).RepeatForever()).StartAt(DateTimeOffset.Now.AddSeconds(20)));
                     q.CreateScheduleJob<ImportSunDataScheduleJob>(s => s.WithSimpleSchedule(x => x.WithIntervalInHours(2).RepeatForever()).StartAt(DateTimeOffset.Now.AddSeconds(30)));
                     q.CreateScheduleJob<CleanupLogScheduleJob>(s => s.WithCronSchedule("0 0 3 1/1 * ? *").StartNow());
                 });
@@ -131,7 +119,7 @@ namespace HomeAutomation
 
             if (Configuration.GetValue<bool>("SMTP:Enabled"))
             {
-                await smtpServer.StartAsync(CancellationToken.None);
+                await app.ApplicationServices.GetService<SmtpServer.SmtpServer>().StartAsync(CancellationToken.None);
             }
         }
 
