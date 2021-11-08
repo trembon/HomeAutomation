@@ -84,13 +84,18 @@ namespace HomeAutomation
         {
             app.ApplicationServices.GetService<IJsonDatabaseService>().Initialize();
 
-            app.ApplicationServices.GetService<DefaultContext>().Database.Migrate();
-            app.ApplicationServices.GetService<LogContext>().Database.Migrate();
+            using (var scope = app.ApplicationServices.CreateScope())
+            {
+                scope.ServiceProvider.GetService<DefaultContext>().Database.Migrate();
+                scope.ServiceProvider.GetService<LogContext>().Database.Migrate();
+
+                if (HostingEnvironment.IsDevelopment())
+                    await MockDatabase(scope.ServiceProvider.GetService<DefaultContext>());
+            }
 
             if (HostingEnvironment.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
-                await MockDatabase(app.ApplicationServices.GetService<DefaultContext>());
             }
             else
             {

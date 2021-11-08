@@ -366,3 +366,5 @@ MigrationBackup/
 
 # remove all published files
 /_publish/
+/HomeAutomation/database.sqlite-wal
+/HomeAutomation/database.sqlite-shm
