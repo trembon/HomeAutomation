@@ -80,6 +80,10 @@ namespace HomeAutomation.Services
                 {
                     value = intValue;
                 }
+                else if(je.TryGetDecimal(out decimal decimalValue))
+                {
+                    value = decimalValue;
+                }
                 else
                 {
                     value = je.GetString();
