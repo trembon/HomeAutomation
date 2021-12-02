@@ -36,6 +36,10 @@ namespace HomeAutomation.Services
 
         public Task FireTriggersFromDevice(Device device, DeviceEvent deviceEvent)
         {
+            // ignore events that are not known
+            if (deviceEvent == DeviceEvent.Unknown)
+                return Task.CompletedTask;
+
             var triggers = memoryEntitiesService.StateTriggers.Where(st => st.Events.Contains(deviceEvent) && st.Devices.Contains(device.ID));
 
             if (triggers != null && triggers.Any())
