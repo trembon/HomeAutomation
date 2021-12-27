@@ -76,17 +76,31 @@ namespace HomeAutomation.Services
         {
             if(value is JsonElement je)
             {
-                if (je.TryGetInt32(out int intValue))
+                switch (je.ValueKind)
                 {
-                    value = intValue;
-                }
-                else if(je.TryGetDecimal(out decimal decimalValue))
-                {
-                    value = decimalValue;
-                }
-                else
-                {
-                    value = je.GetString();
+                    case JsonValueKind.String:
+                        value = je.GetString();
+                        break;
+
+                    case JsonValueKind.Number:
+                        if (je.TryGetInt32(out int intValue))
+                        {
+                            value = intValue;
+                        }
+                        else if (je.TryGetDecimal(out decimal decimalValue))
+                        {
+                            value = decimalValue;
+                        }
+                        break;
+
+                    case JsonValueKind.True:
+                    case JsonValueKind.False:
+                        value = je.GetBoolean();
+                        break;
+
+                    default:
+                        value = null;
+                        break;
                 }
             }
 
