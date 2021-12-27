@@ -1,4 +1,5 @@
-﻿using HomeAutomation.Entities.Enums;
+﻿using HomeAutomation.Database;
+using HomeAutomation.Entities.Enums;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using MimeKit;
@@ -53,29 +54,36 @@ namespace HomeAutomation.Services
                         await scope.ServiceProvider.GetService<ITriggerService>().FireTriggersFromDevice(device, DeviceEvent.Motion);
                     }
 
-                    await SaveToEml(message, $"{device.ID}_{device.SourceID}");
+                    await SaveToEml(message, device.Source.ToString(), device.SourceID);
                     saved = true;
                 }
             }
 
             if (!saved)
-                await SaveToEml(message, "unknown");
+                await SaveToEml(message, "raw", "unknown");
 
             return SmtpResponse.Ok;
         }
 
-        private async Task SaveToEml(MimeMessage message, string path)
+        private async Task SaveToEml(MimeMessage message, string deviceSource, string deviceSourceId)
         {
-            string basePath = configuration["SMTP:Output"];
-            if (!string.IsNullOrWhiteSpace(basePath))
-            {
-                basePath = Path.Combine(basePath, path);
-                if (!Directory.Exists(basePath))
-                    Directory.CreateDirectory(basePath);
+            using var scope = serviceScopeFactory.CreateScope();
+            using var ms = new MemoryStream();
 
-                string file = Path.Combine(basePath, $"{message.MessageId}.eml");
-                await message.WriteToAsync(file);
-            }
+            await message.WriteToAsync(ms);
+
+            MailMessage mailMessage = new()
+            {
+                DeviceSource = deviceSource,
+                DeviceSourceID = deviceSourceId,
+                MessageID = message.MessageId,
+                EmlData = ms.ToArray()
+            };
+
+            var context = scope.ServiceProvider.GetService<LogContext>();
+
+            context.Add(mailMessage);
+            await context.SaveChangesAsync();
         }
     }
 }

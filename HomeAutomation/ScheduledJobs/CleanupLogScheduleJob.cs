@@ -1,9 +1,8 @@
-﻿using HomeAutomation.Database;
-using Microsoft.EntityFrameworkCore;
+﻿using EFCore.BulkExtensions;
+using HomeAutomation.Database;
 using Microsoft.Extensions.Logging;
 using Quartz;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -25,10 +24,12 @@ namespace HomeAutomation.ScheduledJobs
         {
             logger.LogInformation("Schedule.Cleanup :: starting");
 
-            DateTime limit = DateTime.UtcNow.AddDays(-7); // TODO: place in configuration?
-            var rows = await logContext.Rows.Where(x => limit > x.Timestamp).ToListAsync();
-            logContext.RemoveRange(rows);
-            await logContext.SaveChangesAsync();
+            DateTime loglimit = DateTime.UtcNow.AddDays(-7); // TODO: place in configuration?
+            _ = await logContext.Rows.Where(x => loglimit > x.Timestamp).BatchDeleteAsync();
+
+
+            DateTime maillimit = DateTime.UtcNow.AddDays(-3); // TODO: place in configuration?
+            _ = await logContext.MailMessages.Where(x => maillimit > x.Timestamp).BatchDeleteAsync();
 
             logger.LogInformation("Schedule.Cleanup :: done");
         }

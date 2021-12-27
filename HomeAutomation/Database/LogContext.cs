@@ -10,6 +10,8 @@ namespace HomeAutomation.Database
     {
         public DbSet<LogRow> Rows { get; set; }
 
+        public DbSet<MailMessage> MailMessages { get; set; }
+
         public LogContext(DbContextOptions<LogContext> options) : base(options)
         {
         }
@@ -19,6 +21,7 @@ namespace HomeAutomation.Database
             base.OnModelCreating(modelBuilder);
 
             modelBuilder.Entity<LogRow>().Property(sp => sp.Timestamp).HasConversion(v => v, v => DateTime.SpecifyKind(v, DateTimeKind.Utc));
+            modelBuilder.Entity<MailMessage>().Property(sp => sp.Timestamp).HasConversion(v => v, v => DateTime.SpecifyKind(v, DateTimeKind.Utc));
         }
     }
 }
