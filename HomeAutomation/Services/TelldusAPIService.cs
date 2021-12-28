@@ -4,6 +4,7 @@ using HomeAutomation.Entities;
 using HomeAutomation.Entities.Enums;
 using HomeAutomation.Models.Telldus;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -29,7 +30,7 @@ namespace HomeAutomation.Services
     {
         private readonly HttpClient httpClient;
         private readonly IConfiguration configuration;
-
+        private readonly ILogger<TelldusAPIService> logger;
         private object queueLock = new object();
         private Queue<QueueItem> sendQueue;
         private bool isQueueProcessing = false;
@@ -48,9 +49,11 @@ namespace HomeAutomation.Services
             }
         }
 
-        public TelldusAPIService(IConfiguration configuration)
+        public TelldusAPIService(IConfiguration configuration, ILogger<TelldusAPIService> logger)
         {
             this.configuration = configuration;
+            this.logger = logger;
+
             this.httpClient = new HttpClient();
 
             this.sendQueue = new Queue<QueueItem>();
@@ -120,12 +123,19 @@ namespace HomeAutomation.Services
                 item = sendQueue.Dequeue();
             }
 
-            // send the request to the controller
-            HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Post, $"{item.ControllerUrl}devices/{item.DeviceID}/send/{item.Command}");
+            try
+            {
+                // send the request to the controller
+                HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Post, $"{item.ControllerUrl}devices/{item.DeviceID}/send/{item.Command}");
 
-            // wait for an OK
-            var sendResult = await httpClient.SendAsync(request);
-            sendResult.EnsureSuccessStatusCode();
+                // wait for an OK
+                var sendResult = await httpClient.SendAsync(request);
+                sendResult.EnsureSuccessStatusCode();
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, $"Telldus.SendCommand :: failed, device:{item.DeviceID}, command:{item.Command}");
+            }
 
             // when done sending command, check if more is in the queue and then continue processing
             lock (queueLock)
