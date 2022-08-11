@@ -23,6 +23,7 @@ Currently integrates the following:
 
 * [ZWaveLib WebAPI](https://github.com/trembon/ZWaveLib.WebAPI) for sending and receiving events for 868 MHz devices
 * [TelldusCoreWrapper WebAPI](https://github.com/trembon/TelldusCoreWrapper.WebAPI) for sending and receiving events for 433 MHz devices.
+* [tuya-local-api](https://github.com/trembon/tuya-local-api) for sending and receiving events for Tuya devices, offline and locally.
 * [SmtpServer](http://cainosullivan.com/smtpserver) for translating mails to events from not-so-smart devices, like my IP cameras.
 * [YR.no](https://api.met.no/) for fetching sunrise and sunset data (and also storing weather data for future use).
 * [Slack](https://slack.com/) for free "sms" to my phone with whats happening.
