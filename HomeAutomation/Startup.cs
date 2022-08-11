@@ -63,6 +63,7 @@ namespace HomeAutomation
             services.AddScoped<IActionExecutionService, ActionExecutionService>();
             services.AddScoped<IEvaluateConditionService, EvaluateConditionService>();
 
+            services.AddSingleton<ITuyaAPIService, TuyaAPIService>();
             services.AddSingleton<IZWaveAPIService, ZWaveAPIService>();
             services.AddSingleton<IMessageStore, EmailReceiveService>();
             services.AddSingleton<ITelldusAPIService, TelldusAPIService>();

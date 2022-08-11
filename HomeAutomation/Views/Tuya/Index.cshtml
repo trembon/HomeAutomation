@@ -1,0 +1,28 @@
+﻿@model HomeAutomation.Models.Tuya.ListDevicesModel
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<h2>Tuya Devices</h2>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th style="width: 15%;">Device ID</th>
+            <th>IP</th>
+            <th style="width: 17%;"></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model.Devices)
+        {
+            <tr data-device-id="@item.ID">
+                <td>@item.ID</td>
+                <td>@item.IP</td>
+                <td>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

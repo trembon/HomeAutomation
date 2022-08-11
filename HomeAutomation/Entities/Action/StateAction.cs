@@ -42,6 +42,18 @@ namespace HomeAutomation.Entities.Action
                         sendCommandTasks.Add(task);
                     }
                 }
+
+                if (device.Source == DeviceSource.Tuya)
+                {
+                    var tuyaAPIService = arguments.GetService<ITuyaAPIService>();
+                    int? propertyId = tuyaAPIService.ConvertStateToPropertyId(State, device.GetType(), out object value);
+
+                    if (propertyId.HasValue)
+                    {
+                        var task = tuyaAPIService.SendCommand(device.SourceID, propertyId.Value, value);
+                        sendCommandTasks.Add(task);
+                    }
+                }
             }
 
             return Task.WhenAll(sendCommandTasks);
