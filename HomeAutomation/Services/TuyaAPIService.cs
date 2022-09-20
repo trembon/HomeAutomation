@@ -1,6 +1,7 @@
 ﻿using HomeAutomation.Entities.Devices;
 using HomeAutomation.Entities.Enums;
 using HomeAutomation.Models.Tuya;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
@@ -18,7 +19,7 @@ namespace HomeAutomation.Services
 
         int? ConvertStateToPropertyId(DeviceState state, Type deviceType, out object value);
 
-        DeviceEvent ConvertPropertyToEvent(int propertyId, Type deviceType, object value);
+        DeviceEvent ConvertPropertyToEvent(Type deviceType, Dictionary<int, object> dps);
     }
 
     public class TuyaAPIService : ITuyaAPIService
@@ -32,21 +33,21 @@ namespace HomeAutomation.Services
             this.configuration = configuration;
         }
 
-        public DeviceEvent ConvertPropertyToEvent(int propertyId, Type deviceType, object value)
+        public DeviceEvent ConvertPropertyToEvent(Type deviceType, Dictionary<int, object> dps)
         {
             switch (deviceType.Name)
             {
                 case nameof(LightbulbDevice):
-                    if (propertyId == 20)
+                    if (dps.ContainsKey(20))
                     {
-                        return Convert.ToBoolean(value) ? DeviceEvent.On : DeviceEvent.Off;
+                        return Convert.ToBoolean(dps[20]) ? DeviceEvent.On : DeviceEvent.Off;
                     }
                     break;
 
                 case nameof(PowerSwitchDevice):
-                    if (propertyId == 1)
+                    if (dps.ContainsKey(1))
                     {
-                        return Convert.ToBoolean(value) ? DeviceEvent.On : DeviceEvent.Off;
+                        return Convert.ToBoolean(dps[1]) ? DeviceEvent.On : DeviceEvent.Off;
                     }
                     break;
             }
