@@ -1,8 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace HomeAutomation.Database
 {
@@ -13,6 +9,8 @@ namespace HomeAutomation.Database
         public DbSet<SunData> SunData { get; set; }
 
         public DbSet<WeatherForecast> WeatherForecast { get; set; }
+
+        public DbSet<PhoneCall> PhoneCalls { get; set; }
 
         public DefaultContext(DbContextOptions<DefaultContext> options) : base(options)
         {
