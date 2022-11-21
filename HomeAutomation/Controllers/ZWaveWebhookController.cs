@@ -59,7 +59,7 @@ namespace HomeAutomation.Controllers
             var device = jsonDatabaseService.Devices.FirstOrDefault(s => s.Source == DeviceSource.ZWave && s.SourceID == model?.NodeId.ToString());
             if (device != null)
             {
-                var state = zwaveAPIService.ConvertParameterToEvent(model.ValueType, model.Value);
+                var state = zwaveAPIService.ConvertParameterToEvent(device.GetType(), model.ValueType, model.Value);
 
                 logger.LogInformation($"ZWave.NodeUpdate :: {device.ID} :: NodeId:{model.NodeId}, ValueType:{model.ValueType}: Value:{model.Value}, ValueObjectType:{model.Value.GetType().Name} MappedState:{state}");
                 await triggerService.FireTriggersFromDevice(device, state);

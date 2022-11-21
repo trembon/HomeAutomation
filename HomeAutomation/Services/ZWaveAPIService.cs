@@ -1,4 +1,5 @@
 ﻿using HomeAutomation.Base.Enums;
+using HomeAutomation.Entities.Devices;
 using HomeAutomation.Entities.Enums;
 using HomeAutomation.Models.ZWave;
 using Microsoft.Extensions.Configuration;
@@ -19,7 +20,7 @@ namespace HomeAutomation.Services
 
         ZWaveCommandClass? ConvertStateToCommand(DeviceState state, out object value);
 
-        DeviceEvent ConvertParameterToEvent(ZWaveEventParameter parameter, object value);
+        DeviceEvent ConvertParameterToEvent(Type deviceType, ZWaveEventParameter parameter, object value);
     }
 
     public class ZWaveAPIService : IZWaveAPIService
@@ -72,7 +73,7 @@ namespace HomeAutomation.Services
             return null;
         }
 
-        public DeviceEvent ConvertParameterToEvent(ZWaveEventParameter parameter, object value)
+        public DeviceEvent ConvertParameterToEvent(Type deviceType, ZWaveEventParameter parameter, object value)
         {
             if(value is JsonElement je)
             {
@@ -102,6 +103,15 @@ namespace HomeAutomation.Services
                         value = null;
                         break;
                 }
+            }
+
+            if(deviceType == typeof(MotionSensorDevice))
+            {
+                if (parameter == ZWaveEventParameter.SensorMotion)
+                    return DeviceEvent.Motion;
+
+                if (parameter == ZWaveEventParameter.AlarmGeneric)
+                    return DeviceEvent.Off;
             }
 
             switch (value)
