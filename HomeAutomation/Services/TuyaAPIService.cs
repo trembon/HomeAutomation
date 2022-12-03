@@ -1,10 +1,11 @@
-﻿using HomeAutomation.Entities.Devices;
+﻿using HomeAutomation.Base.Extensions;
+using HomeAutomation.Entities.Devices;
 using HomeAutomation.Entities.Enums;
 using HomeAutomation.Models.Tuya;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
@@ -15,9 +16,9 @@ namespace HomeAutomation.Services
     {
         Task<IEnumerable<DeviceModel>> GetDevices();
 
-        Task<bool> SendCommand(string deviceId, int propertyId, object value);
+        Task<bool> SendCommand(string deviceId, Dictionary<int, object> dps);
 
-        int? ConvertStateToPropertyId(DeviceState state, Type deviceType, out object value);
+        Dictionary<int, object> ConvertStateToDPS(DeviceState state, Type deviceType, Dictionary<string, string> parameters);
 
         DeviceEvent ConvertPropertyToEvent(Type deviceType, Dictionary<int, object> dps);
     }
@@ -55,45 +56,54 @@ namespace HomeAutomation.Services
             return DeviceEvent.Unknown;
         }
 
-        public int? ConvertStateToPropertyId(DeviceState state, Type deviceType, out object value)
+        public Dictionary<int, object> ConvertStateToDPS(DeviceState state, Type deviceType, Dictionary<string, string> parameters)
         {
+            Dictionary<int, object> result = new();
+
             switch (deviceType.Name)
             {
                 case nameof(LightbulbDevice):
                     if (state == DeviceState.On)
                     {
-                        value = true;
-                        return 20;
+                        result[20] = true;
+                        result[22] = 1000; // brightness: 10-1000 (1-100%)
+                        //result["23"] = 1000; // temperature: 0-1000 (0-100%)
+                        if (parameters.TryGetValue("color", out string hexColor))
+                        {
+                            result[21] = "color";
+                            result[24] = ColorTranslator.FromHtml(hexColor).ToHSVString();
+                        }
+                        else
+                        {
+                            result[21] = "white";
+                        }
                     }
                     if (state == DeviceState.Off)
                     {
-                        value = false;
-                        return 20;
+                        result[20] = false;
+                        result[21] = "white";
                     }
                     break;
 
                 case nameof(PowerSwitchDevice):
                     if (state == DeviceState.On)
                     {
-                        value = true;
-                        return 1;
+                        result[1] = true;
                     }
                     if (state == DeviceState.Off)
                     {
-                        value = false;
-                        return 1;
+                        result[1] = false;
                     }
                     break;
             }
 
-            value = null;
-            return null;
+            return result;
         }
 
         public async Task<IEnumerable<DeviceModel>> GetDevices()
         {
             string baseUrl = configuration.GetSection("Tuya:APIUrl").Get<string>();
-            HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, $"{baseUrl}devices/");
+            HttpRequestMessage request = new(HttpMethod.Get, $"{baseUrl}devices/");
 
             var response = await httpClient.SendAsync(request);
             response.EnsureSuccessStatusCode();
@@ -101,12 +111,12 @@ namespace HomeAutomation.Services
             return await response.Content.ReadAsAsync<IEnumerable<DeviceModel>>();
         }
 
-        public async Task<bool> SendCommand(string deviceId, int propertyId, object value)
+        public async Task<bool> SendCommand(string deviceId, Dictionary<int, object> dps)
         {
             string baseUrl = configuration.GetSection("Tuya:APIUrl").Get<string>();
-            HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Post, $"{baseUrl}devices/{deviceId}/send")
+            HttpRequestMessage request = new(HttpMethod.Post, $"{baseUrl}devices/{deviceId}/send")
             {
-                Content = JsonContent.Create(new { dps = propertyId.ToString(), set = value })
+                Content = JsonContent.Create(new { data = dps })
             };
 
             var sendResult = await httpClient.SendAsync(request);
