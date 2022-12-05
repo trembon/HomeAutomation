@@ -49,7 +49,7 @@ namespace HomeAutomation.ScheduledJobs
                     defaultContext.Add(call);
 
                     if (call.Type == PhoneCallType.Missed && call.Timestamp > DateTime.Now.AddDays(-7))
-                        await notificationService.SendToSlack("events", $"Missat samtal från {call.Number} ({call.Timestamp.ToString("R")})");
+                        await notificationService.SendToSlack(configuration["PhoneLog:SlackChannel"], $"Missat samtal från {call.Number} ({call.Timestamp.ToString("R")})");
                 }
 
                 if (newCalls.Any())
