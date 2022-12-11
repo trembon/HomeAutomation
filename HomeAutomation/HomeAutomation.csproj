@@ -12,7 +12,9 @@
 
   <ItemGroup>
     <Content Remove="appsettings.Development.json" />
+    <Content Remove="appsettings.Example.json" />
     <Content Remove="bundleconfig.json" />
+    <Content Remove="database.Example.json" />
     <Content Remove="database.json" />
     <Content Remove="libman.json" />
     <Content Remove="wwwroot\css\site.css" />
@@ -44,7 +46,11 @@
 
   <ItemGroup>
     <None Include="appsettings.Development.json" />
+    <None Include="appsettings.Example.json" />
     <None Include="bundleconfig.json" />
+    <None Include="database.Example.json">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
     <None Include="database.json" />
     <None Include="libman.json" />
     <None Include="wwwroot\css\site.css" />
