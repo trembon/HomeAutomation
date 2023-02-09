@@ -67,28 +67,6 @@ namespace HomeAutomation.Services
                     {
                         result[20] = true;
 
-                        // brightness: 10-1000 (1-100%)
-                        // if not specified, always go for 100%
-                        if (parameters.TryGetValue("brightness", out string brightness))
-                        {
-                            result[22] = int.Parse(brightness) * 10;
-                        }
-                        else
-                        {
-                            result[22] = 1000;
-                        }
-
-                        // temperature: 0-1000 (0-100%)
-                        // if not specified, always go for 100%
-                        if (parameters.TryGetValue("temperature", out string temperature))
-                        {
-                            result[22] = int.Parse(temperature) * 10;
-                        }
-                        else
-                        {
-                            result[22] = 1000;
-                        }
-
                         // color: HSV value of the wanted color in hex values
                         // hue 0 - 360, saturation 0 - 360, value 0 - 1000
                         // ex: 00DC004B004E > 00DC|004B|004E > hue|saturation|value
@@ -96,13 +74,34 @@ namespace HomeAutomation.Services
                         {
                             result[21] = "colour";
                             result[24] = ColorTranslator.FromHtml(hexColor).ToHSVString();
-
-                            // always go for 100% brightness when color is set, as this will change the color
-                            result[23] = 1000;
                         }
                         else
                         {
                             result[21] = "white";
+
+                            // brightness and temperature is only applicable for white light
+
+                            // brightness: 10-1000 (1-100%)
+                            // if not specified, always go for 100%
+                            if (parameters.TryGetValue("brightness", out string brightness))
+                            {
+                                result[22] = int.Parse(brightness) * 10;
+                            }
+                            else
+                            {
+                                result[22] = 1000;
+                            }
+
+                            // temperature: 0-1000 (0-100%)
+                            // if not specified, always go for 100%
+                            if (parameters.TryGetValue("temperature", out string temperature))
+                            {
+                                result[22] = int.Parse(temperature) * 10;
+                            }
+                            else
+                            {
+                                result[22] = 1000;
+                            }
                         }
                     }
                     if (state == DeviceState.Off)
