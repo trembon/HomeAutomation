@@ -1,11 +1,7 @@
 ﻿using HomeAutomation.Base.Enums;
-using HomeAutomation.Base.Extensions;
-using HomeAutomation.Entities;
 using HomeAutomation.Entities.Enums;
 using HomeAutomation.Models.Telldus;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
@@ -30,43 +26,21 @@ namespace HomeAutomation.Services
     {
         private readonly HttpClient httpClient;
         private readonly IConfiguration configuration;
-        private readonly ILogger<TelldusAPIService> logger;
-        private object queueLock = new object();
-        private Queue<QueueItem> sendQueue;
-        private bool isQueueProcessing = false;
 
-        private class QueueItem
-        {
-            public int DeviceID { get; set; }
-
-            public TelldusDeviceMethods Command { get; set; }
-
-            public string ControllerUrl { get; set; }
-
-            public override string ToString()
-            {
-                return $"ID: {DeviceID} - {Command}";
-            }
-        }
-
-        public TelldusAPIService(IConfiguration configuration, ILogger<TelldusAPIService> logger)
+        public TelldusAPIService(IConfiguration configuration)
         {
             this.configuration = configuration;
-            this.logger = logger;
-
             this.httpClient = new HttpClient();
-
-            this.sendQueue = new Queue<QueueItem>();
         }
 
         public Task<IEnumerable<DeviceModel>> GetDevices()
         {
             string[] telldusDevices = configuration.GetSection("Telldus:APIURL").Get<string[]>();
 
-            List<DeviceModel> results = new List<DeviceModel>();
+            List<DeviceModel> results = new();
             Parallel.ForEach(telldusDevices, baseUrl =>
             {
-                HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, $"{baseUrl}devices/");
+                HttpRequestMessage request = new(HttpMethod.Get, $"{baseUrl}devices/");
 
                 var sendTask = httpClient.SendAsync(request);
                 sendTask.Wait();
@@ -81,90 +55,34 @@ namespace HomeAutomation.Services
 
             return Task.FromResult(results.Distinct());
         }
-        
-        public Task<bool> SendCommand(int id, TelldusDeviceMethods command)
+
+        public async Task<bool> SendCommand(int id, TelldusDeviceMethods command)
         {
-            lock (queueLock)
-            {
-                // if same device is already in queue, remove it
-                if(sendQueue.Any(i => i.DeviceID == id))
-                    sendQueue = sendQueue.Where(i => i.DeviceID != id).ToQueue();
+            List<Task<HttpResponseMessage>> tasks = new();
 
-                string[] telldusControllers = configuration.GetSection("Telldus:APIURL").Get<string[]>();
-                for(int i = 0; i < telldusControllers.Length; i++)
-                {
-                    QueueItem item = new QueueItem { DeviceID = id, Command = command, ControllerUrl = telldusControllers[i] };
-
-                    // add one first to queue, so it will be executed next
-                    var list = sendQueue.ToList();
-                    list.Insert(i, item);
-                    sendQueue = list.ToQueue();
-
-                    // and then the other last in the queue, so total 2 tries per controller
-                    sendQueue.Enqueue(item);
-                }
-
-                if (!isQueueProcessing)
-                {
-                    isQueueProcessing = true;
-                    Task.Run(ExecuteSendCommand);
-                }
-            }
-
-            return Task.FromResult(true);
-        }
-
-        private async Task ExecuteSendCommand()
-        {
-            // get the item from the queue
-            QueueItem item = null;
-            lock (queueLock)
-            {
-                item = sendQueue.Dequeue();
-            }
-
-            try
+            string[] telldusControllers = configuration.GetSection("Telldus:APIURL").Get<string[]>();
+            for (int i = 0; i < telldusControllers.Length; i++)
             {
                 // send the request to the controller
-                HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Post, $"{item.ControllerUrl}devices/{item.DeviceID}/send/{item.Command}");
+                HttpRequestMessage request = new(HttpMethod.Post, $"{telldusControllers[i]}devices/{id}/send/{command}");
 
                 // wait for an OK
-                var sendResult = await httpClient.SendAsync(request);
-                sendResult.EnsureSuccessStatusCode();
-            }
-            catch (Exception ex)
-            {
-                logger.LogError(ex, $"Telldus.SendCommand :: failed, device:{item.DeviceID}, command:{item.Command}");
+                var task = httpClient.SendAsync(request);
+                tasks.Add(task);
             }
 
-            // when done sending command, check if more is in the queue and then continue processing
-            lock (queueLock)
-            {
-                if(sendQueue.Count > 0)
-                {
-                    // get count of controllers
-                    int controllerCount = configuration.GetSection("Telldus:APIURL").Get<string[]>().Length;
-
-                    // calculate delay, should be about 3 second delay between each controller command send
-                    int delay = 3000 / controllerCount;
-
-                    Task.Delay(delay).ContinueWith(t => ExecuteSendCommand());
-                }
-                else
-                {
-                    isQueueProcessing = false;
-                }
-            }
+            var results = await Task.WhenAll(tasks);
+            return results.All(x => x.IsSuccessStatusCode);
         }
 
         public Task<TelldusDeviceMethods> GetLastCommand(int id)
         {
             string[] telldusDevices = configuration.GetSection("Telldus:APIURL").Get<string[]>();
 
-            List<TelldusDeviceMethods> results = new List<TelldusDeviceMethods>();
+            List<TelldusDeviceMethods> results = new();
             Parallel.ForEach(telldusDevices, baseUrl =>
             {
-                HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, $"{baseUrl}devices/{id}/lastcommand");
+                HttpRequestMessage request = new(HttpMethod.Get, $"{baseUrl}devices/{id}/lastcommand");
 
                 var sendTask = httpClient.SendAsync(request);
                 sendTask.Wait();
@@ -178,8 +96,6 @@ namespace HomeAutomation.Services
             });
 
             return Task.FromResult(results.FirstOrDefault());
-
-            
         }
 
         public DeviceEvent ConvertCommandToEvent(TelldusDeviceMethods command)
