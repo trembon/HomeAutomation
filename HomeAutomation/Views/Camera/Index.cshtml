@@ -8,8 +8,8 @@
     @foreach (var camera in Model.Cameras)
     {
         <div class="col-md-6 camera-block">
-            <a href="@camera.URL">
-                <div class="img" style="background-image: url('@camera.ThumbnailURL')"></div>
+            <a href="/camera/capture/@(camera.ID)/full">
+                <div class="img" style="background-image: url('/camera/capture/@(camera.ID)/thumbnail')"></div>
                 <h2>@camera.Name</h2>
             </a>
         </div>
