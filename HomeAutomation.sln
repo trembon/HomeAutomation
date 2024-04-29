@@ -1,17 +1,13 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.30804.86
+# Visual Studio Version 17
+VisualStudioVersion = 17.9.34728.123
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HomeAutomation", "HomeAutomation\HomeAutomation.csproj", "{C413B65D-FEF5-4858-8DC1-837DFC7B8498}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HomeAutomation", "HomeAutomation\HomeAutomation.csproj", "{E8951FA3-9EB1-43E7-8934-5E009BFF6789}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{46D14F71-353E-4828-A750-345F7490F5C9}"
-	ProjectSection(SolutionItems) = preProject
-		.gitignore = .gitignore
-		README.md = README.md
-	EndProjectSection
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HomeAutomation.Client", "HomeAutomation.Client\HomeAutomation.Client.csproj", "{0B61D231-9ACD-44FB-9D1D-DAD74F30A640}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HomeAutomation.Tests", "HomeAutomation.Tests\HomeAutomation.Tests.csproj", "{C34EAC0D-400F-408A-B78B-5BAE80B69E52}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HomeAutomation.Core", "HomeAutomation.Core\HomeAutomation.Core.csproj", "{54E692DF-01AA-4471-8C6B-1CDDDE63C7F2}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -19,20 +15,23 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{C413B65D-FEF5-4858-8DC1-837DFC7B8498}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{C413B65D-FEF5-4858-8DC1-837DFC7B8498}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{C413B65D-FEF5-4858-8DC1-837DFC7B8498}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{C413B65D-FEF5-4858-8DC1-837DFC7B8498}.Release|Any CPU.Build.0 = Release|Any CPU
-		{C34EAC0D-400F-408A-B78B-5BAE80B69E52}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{C34EAC0D-400F-408A-B78B-5BAE80B69E52}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{C34EAC0D-400F-408A-B78B-5BAE80B69E52}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{C34EAC0D-400F-408A-B78B-5BAE80B69E52}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E8951FA3-9EB1-43E7-8934-5E009BFF6789}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E8951FA3-9EB1-43E7-8934-5E009BFF6789}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E8951FA3-9EB1-43E7-8934-5E009BFF6789}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E8951FA3-9EB1-43E7-8934-5E009BFF6789}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0B61D231-9ACD-44FB-9D1D-DAD74F30A640}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0B61D231-9ACD-44FB-9D1D-DAD74F30A640}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0B61D231-9ACD-44FB-9D1D-DAD74F30A640}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0B61D231-9ACD-44FB-9D1D-DAD74F30A640}.Release|Any CPU.Build.0 = Release|Any CPU
+		{54E692DF-01AA-4471-8C6B-1CDDDE63C7F2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{54E692DF-01AA-4471-8C6B-1CDDDE63C7F2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{54E692DF-01AA-4471-8C6B-1CDDDE63C7F2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{54E692DF-01AA-4471-8C6B-1CDDDE63C7F2}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {B2E624D1-40E3-4AE1-8E96-B7352A2887AF}
-		VisualSVNWorkingCopyRoot = .
+		SolutionGuid = {6F2B2F2E-6533-4BDC-8323-F756E562ADCB}
 	EndGlobalSection
 EndGlobal
