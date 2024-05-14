@@ -1,39 +1,19 @@
-﻿using HomeAutomation.Database;
+﻿using HomeAutomation.Core.ScheduledJobs.Base;
+using HomeAutomation.Core.Services;
+using HomeAutomation.Database;
 using HomeAutomation.Database.Enums;
-using HomeAutomation.Services;
 using HtmlAgilityPack;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using Quartz;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Net;
-using System.Net.Http;
 using System.Security.Cryptography;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace HomeAutomation.ScheduledJobs
 {
-    [DisallowConcurrentExecution]
-    public class PhoneCallLogScheduleJob : IJob
+    public class PhoneCallLogScheduleJob(IConfiguration configuration, DefaultContext defaultContext, INotificationService notificationService, ILogger<CleanupLogScheduleJob> logger) : IScheduledJob
     {
-        private readonly IConfiguration configuration;
-        private readonly DefaultContext defaultContext;
-        private readonly INotificationService notificationService;
-        private readonly ILogger<CleanupLogScheduleJob> logger;
-
-        public PhoneCallLogScheduleJob(IConfiguration configuration, DefaultContext defaultContext, INotificationService notificationService, ILogger<CleanupLogScheduleJob> logger)
-        {
-            this.configuration = configuration;
-            this.defaultContext = defaultContext;
-            this.notificationService = notificationService;
-            this.logger = logger;
-        }
-
-        public async Task Execute(IJobExecutionContext context)
+        public async Task Execute(DateTime currentExecution, DateTime? lastExecution, CancellationToken cancellationToken)
         {
             logger.LogInformation("Schedule.PhoneCalls :: starting");
 
@@ -46,10 +26,10 @@ namespace HomeAutomation.ScheduledJobs
                 var newCalls = calls.Where(x => x.Timestamp > latestCallTimestamp).ToList();
                 foreach (var call in newCalls)
                 {
-                    defaultContext.Add(call);
+                    defaultContext.PhoneCalls.Add(call);
 
                     if (call.Type == PhoneCallType.Missed && call.Timestamp > DateTime.Now.AddDays(-7))
-                        await notificationService.SendToSlack(configuration["PhoneLog:SlackChannel"], $"Missat samtal från {call.Number} ({call.Timestamp.ToString("R")})");
+                        _ = await notificationService.SendToSlack(configuration["PhoneLog:SlackChannel"] ?? "", $"Missat samtal från {call.Number} ({call.Timestamp.ToString("R")})");
                 }
 
                 if (newCalls.Any())

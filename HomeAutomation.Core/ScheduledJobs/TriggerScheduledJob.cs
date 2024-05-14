@@ -1,66 +1,48 @@
-﻿using HomeAutomation.Entities;
+﻿using HomeAutomation.Core.ScheduledJobs.Base;
+using HomeAutomation.Core.Services;
 using HomeAutomation.Entities.Enums;
 using HomeAutomation.Entities.Triggers;
-using HomeAutomation.Services;
-using Quartz;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
-namespace HomeAutomation.ScheduledJobs
+namespace HomeAutomation.ScheduledJobs;
+
+public class TriggerScheduledJob(IJsonDatabaseService jsonDatabaseService, ISunDataService sunDataService, ITriggerService triggerService) : IScheduledJob
 {
-    [DisallowConcurrentExecution]
-    public class TriggerScheduledJob : IJob
+    public Task Execute(DateTime currentExecution, DateTime? lastExecution, CancellationToken cancellationToken)
     {
-        private readonly IJsonDatabaseService jsonDatabaseService;
-        private readonly ISunDataService sunDataService;
-        private readonly ITriggerService triggerService;
+        // get the from and to dates
+        DateTime from = lastExecution.HasValue ? lastExecution.Value.ToLocalTime() : DateTime.Now.AddMinutes(-5);
+        DateTime to = currentExecution.ToLocalTime();
 
-        public TriggerScheduledJob(IJsonDatabaseService jsonDatabaseService, ISunDataService sunDataService, ITriggerService triggerService)
+        List<Trigger> triggers = [];
+
+        // calculate all the triggers
+        foreach (var trigger in jsonDatabaseService.ScheduledTriggers)
         {
-            this.jsonDatabaseService = jsonDatabaseService;
-            this.sunDataService = sunDataService;
-            this.triggerService = triggerService;
+            DateTime calculatedTime = CalculateTriggerTime(trigger.At, trigger.Mode);
+            if (calculatedTime > from && to >= calculatedTime)
+                triggers.Add(trigger);
         }
 
-        public Task Execute(IJobExecutionContext context)
-        {
-            // get the from and to dates
-            DateTime from = context.PreviousFireTimeUtc.HasValue ? context.PreviousFireTimeUtc.Value.LocalDateTime : DateTime.Now.AddMinutes(-5);
-            DateTime to = context.FireTimeUtc.LocalDateTime;
+        // fire all found triggers
+        if (triggers.Any())
+            return triggerService.FireTriggers(triggers);
 
-            List<Trigger> triggers = new();
+        return Task.CompletedTask;
+    }
 
-            // calculate all the triggers
-            foreach (var trigger in jsonDatabaseService.ScheduledTriggers)
-            {
-                DateTime calculatedTime = CalculateTriggerTime(trigger.At, trigger.Mode);
-                if (calculatedTime > from && to >= calculatedTime)
-                    triggers.Add(trigger);
-            }
+    private DateTime CalculateTriggerTime(TimeSpan at, ScheduleMode mode)
+    {
+        var sunData = sunDataService.GetLatest();
 
-            // fire all found triggers
-            if (triggers.Any())
-                return triggerService.FireTriggers(triggers);
+        DateTime calculatedAt = DateTime.Today;
+        
+        if(mode == ScheduleMode.Sunrise)
+            calculatedAt = calculatedAt.Add(sunData.Sunrise.TimeOfDay);
 
-            return Task.CompletedTask;
-        }
+        if (mode == ScheduleMode.Sunset)
+            calculatedAt = calculatedAt.Add(sunData.Sunset.TimeOfDay);
 
-        private DateTime CalculateTriggerTime(TimeSpan at, ScheduleMode mode)
-        {
-            var sunData = sunDataService.GetLatest();
-
-            DateTime calculatedAt = DateTime.Today;
-            
-            if(mode == ScheduleMode.Sunrise)
-                calculatedAt = calculatedAt.Add(sunData.Sunrise.TimeOfDay);
-
-            if (mode == ScheduleMode.Sunset)
-                calculatedAt = calculatedAt.Add(sunData.Sunset.TimeOfDay);
-
-            // set the event time, if together with sunrise/sunset add for example 5 minutes from that time
-            return calculatedAt.Add(at);
-        }
+        // set the event time, if together with sunrise/sunset add for example 5 minutes from that time
+        return calculatedAt.Add(at);
     }
 }

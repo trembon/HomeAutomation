@@ -1,67 +1,47 @@
-﻿using HomeAutomation.Core.Services;
+﻿using HomeAutomation.Core.ScheduledJobs.Base;
+using HomeAutomation.Core.Services;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using Quartz;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Net.Http;
-using System.Threading.Tasks;
+using System.Net.Http.Json;
 
-namespace HomeAutomation.ScheduledJobs
+namespace HomeAutomation.ScheduledJobs;
+
+public class ImportSunDataScheduleJob(ILogger<ImportSunDataScheduleJob> logger, IConfiguration configuration, ISunDataService sunDataService) : IScheduledJob
 {
-    [DisallowConcurrentExecution]
-    public class ImportSunDataScheduleJob : IJob
+    public async Task Execute(DateTime currentExecution, DateTime? lastExecution, CancellationToken cancellationToken)
     {
-        private readonly ILogger<ImportSunDataScheduleJob> logger;
-        private readonly IConfiguration configuration;
-        private readonly ISunDataService sunDataService;
+        logger.LogInformation("Schedule.SunData :: starting");
 
-        public ImportSunDataScheduleJob(ILogger<ImportSunDataScheduleJob> logger, IConfiguration configuration, ISunDataService sunDataService)
+        try
         {
-            this.logger = logger;
-            this.configuration = configuration;
-            this.sunDataService = sunDataService;
-        }
+            string sunDataUrl = string.Format(configuration["Forecasts:SunDataUrl"] ?? "", configuration["Forecasts:Lat"], configuration["Forecasts:Lng"]);
 
-        public async Task Execute(IJobExecutionContext context)
+            HttpClient client = new();
+            using var response = await client.GetAsync(sunDataUrl, cancellationToken);
+
+            var data = await response.Content.ReadFromJsonAsync<SunDataResponse>(cancellationToken);
+            if (data != null && data.Results != null)
+                _ = sunDataService.Add(data.Results.Sunrise.Date, data.Results.Sunrise.ToLocalTime(), data.Results.Sunset.ToLocalTime());
+
+            logger.LogInformation("Schedule.SunData :: done");
+        }
+        catch (Exception ex)
         {
-            logger.LogInformation("Schedule.SunData :: starting");
-
-            try
-            {
-                string sunDataUrl = string.Format(configuration["Forecasts:SunDataUrl"], configuration["Forecasts:Lat"], configuration["Forecasts:Lng"]);
-
-                using(var client = new HttpClient())
-                {
-                    using(var response = await client.GetAsync(sunDataUrl))
-                    {
-                        var data = await response.Content.ReadAsAsync<SunDataResponse>();
-                        sunDataService.Add(data.Results.Sunrise.Date, data.Results.Sunrise.ToLocalTime(), data.Results.Sunset.ToLocalTime());
-                    }
-                }
-
-                logger.LogInformation("Schedule.SunData :: done");
-            }
-            catch (Exception ex)
-            {
-                logger.LogError(ex, $"Schedule.SunData :: failed to fetch and update sundata :: Error:{ex.Message}");
-            }
+            logger.LogError(ex, "Schedule.SunData :: failed to fetch and update sundata :: Error: {Message}", ex.Message);
         }
+    }
 
-        public class SunDataResponse
-        {
-            public string Status { get; set; }
+    public class SunDataResponse
+    {
+        public required string Status { get; set; }
 
-            public SunDataResultResponse Results { get; set; }
-        }
+        public required SunDataResultResponse Results { get; set; }
+    }
 
-        public class SunDataResultResponse
-        {
-            public DateTime Sunrise { get; set; }
+    public class SunDataResultResponse
+    {
+        public DateTime Sunrise { get; set; }
 
-            public DateTime Sunset { get; set; }
-        }
+        public DateTime Sunset { get; set; }
     }
 }
