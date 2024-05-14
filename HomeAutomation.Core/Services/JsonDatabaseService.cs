@@ -43,8 +43,8 @@ namespace HomeAutomation.Core.Services
     {
         private const string DATABASE_FILE = "database.json";
 
-        private static object readMemoryEntitiesLock = new object();
-        private static object writeMemoryEntitiesLock = new object();
+        private static readonly object readMemoryEntitiesLock = new();
+        private static readonly object writeMemoryEntitiesLock = new();
 
         private FileSystemWatcher configurationWatcher;
 

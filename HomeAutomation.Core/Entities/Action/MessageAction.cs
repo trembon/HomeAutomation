@@ -1,7 +1,7 @@
 ﻿using HomeAutomation.Entities.Devices;
 using HomeAutomation.Entities.Triggers;
 using HomeAutomation.Models.Actions;
-using HomeAutomation.Services;
+using HomeAutomation.Core.Services;
 using System;
 using System.Collections.Generic;
 using System.Linq;

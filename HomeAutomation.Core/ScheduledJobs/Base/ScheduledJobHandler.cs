@@ -36,8 +36,5 @@ public class ScheduledJobHandler<TScheduledJob>(IServiceProvider serviceProvider
         return Task.CompletedTask;
     }
 
-    public void Dispose()
-    {
-        _timer?.Dispose();
-    }
+    public void Dispose() => _timer?.Dispose();
 }

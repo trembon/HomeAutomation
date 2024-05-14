@@ -2,10 +2,6 @@
 using HomeAutomation.Entities.Devices;
 using HomeAutomation.Entities.Triggers;
 using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace HomeAutomation.Entities
 {
@@ -22,9 +18,9 @@ namespace HomeAutomation.Entities
 
         public MemoryEntities()
         {
-            this.Devices = new List<Device>();
-            this.Triggers = new List<Trigger>();
-            this.Actions = new List<Action.Action>();
+            this.Devices = [];
+            this.Triggers = [];
+            this.Actions = [];
         }
     }
 }

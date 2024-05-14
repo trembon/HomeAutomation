@@ -1,6 +1,6 @@
 ﻿using HomeAutomation.Entities.Devices;
 using HomeAutomation.Models.Actions;
-using HomeAutomation.Services;
+using HomeAutomation.Core.Services;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Linq;

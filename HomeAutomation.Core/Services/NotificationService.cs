@@ -34,7 +34,7 @@ namespace HomeAutomation.Core.Services
         {
             try
             {
-                SlackTaskClient slackClient = new SlackTaskClient(configuration["Slack:Token"]);
+                SlackTaskClient slackClient = new(configuration["Slack:Token"]);
                 var response = await slackClient.PostMessageAsync(channel, message);
 
                 if (response.ok)
@@ -58,7 +58,7 @@ namespace HomeAutomation.Core.Services
         {
             try
             {
-                SlackTaskClient slackClient = new SlackTaskClient(configuration["Slack:Token"]);
+                SlackTaskClient slackClient = new(configuration["Slack:Token"]);
                 var response = await slackClient.UploadFileAsync(file, fileName, new string[] { channel }, initialComment: message, fileType: fileType);
 
                 if (response.ok)

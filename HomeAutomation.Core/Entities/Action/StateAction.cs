@@ -1,7 +1,7 @@
 ﻿using HomeAutomation.Base.Enums;
 using HomeAutomation.Entities.Enums;
 using HomeAutomation.Models.Actions;
-using HomeAutomation.Services;
+using HomeAutomation.Core.Services;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
