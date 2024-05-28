@@ -1,13 +1,8 @@
-﻿using HomeAutomation.Models.Actions;
-using HomeAutomation.Services;
+﻿using HomeAutomation.Core.Entities;
+using HomeAutomation.Core.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace HomeAutomation.Entities.Action
 {

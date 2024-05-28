@@ -1,8 +1,4 @@
-﻿using HomeAutomation.Models.Conditions;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using HomeAutomation.Core.Entities;
 
 namespace HomeAutomation.Entities.Conditions
 {

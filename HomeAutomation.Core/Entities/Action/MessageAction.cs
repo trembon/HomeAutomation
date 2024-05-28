@@ -1,11 +1,5 @@
-﻿using HomeAutomation.Entities.Devices;
-using HomeAutomation.Entities.Triggers;
-using HomeAutomation.Models.Actions;
+﻿using HomeAutomation.Core.Entities;
 using HomeAutomation.Core.Services;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace HomeAutomation.Entities.Action
 {

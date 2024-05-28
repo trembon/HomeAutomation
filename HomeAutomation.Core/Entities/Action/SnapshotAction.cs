@@ -1,11 +1,8 @@
-﻿using HomeAutomation.Entities.Devices;
-using HomeAutomation.Models.Actions;
+﻿using HomeAutomation.Core.Entities;
 using HomeAutomation.Core.Services;
+using HomeAutomation.Entities.Devices;
 using Microsoft.Extensions.Logging;
-using System;
-using System.Linq;
 using System.Net;
-using System.Threading.Tasks;
 
 namespace HomeAutomation.Entities.Action
 {

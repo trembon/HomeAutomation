@@ -1,20 +1,16 @@
 ﻿using HomeAutomation.Base.Enums;
+using HomeAutomation.Core.Models;
 using HomeAutomation.Entities.Devices;
 using HomeAutomation.Entities.Enums;
-using HomeAutomation.Models.ZWave;
 using Microsoft.Extensions.Configuration;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Http;
+using System.Net.Http.Json;
 using System.Text.Json;
-using System.Threading.Tasks;
 
 namespace HomeAutomation.Core.Services
 {
     public interface IZWaveAPIService
     {
-        Task<IEnumerable<NodeModel>> GetNodes();
+        Task<IEnumerable<ZWaveDeviceModel>> GetNodes();
 
         Task<bool> SendCommand(byte id, ZWaveCommandClass command, object value);
 
@@ -34,7 +30,7 @@ namespace HomeAutomation.Core.Services
             this.configuration = configuration;
         }
 
-        public async Task<IEnumerable<NodeModel>> GetNodes()
+        public async Task<IEnumerable<ZWaveDeviceModel>> GetNodes()
         {
             string baseUrl = configuration.GetSection("ZWave:APIUrl").Get<string>();
             HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, $"{baseUrl}nodes/");
@@ -42,13 +38,13 @@ namespace HomeAutomation.Core.Services
             var response = await httpClient.SendAsync(request);
             response.EnsureSuccessStatusCode();
 
-            return await response.Content.ReadAsAsync<IEnumerable<NodeModel>>();
+            return await response.Content.ReadFromJsonAsync<IEnumerable<ZWaveDeviceModel>>();
         }
 
         public async Task<bool> SendCommand(byte id, ZWaveCommandClass command, object parameter)
         {
             string baseUrl = configuration.GetSection("ZWave:APIUrl").Get<string>();
-            HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Post, $"{baseUrl}nodes/{id}/send/{command}?parameter={parameter}");
+            HttpRequestMessage request = new(HttpMethod.Post, $"{baseUrl}nodes/{id}/send/{command}?parameter={parameter}");
 
             var sendResult = await httpClient.SendAsync(request);
             sendResult.EnsureSuccessStatusCode();

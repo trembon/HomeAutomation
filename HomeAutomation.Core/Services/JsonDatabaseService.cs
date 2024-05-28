@@ -1,14 +1,8 @@
 ﻿using HomeAutomation.Entities;
-using HomeAutomation.Entities.Action;
 using HomeAutomation.Entities.Devices;
 using HomeAutomation.Entities.Triggers;
 using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace HomeAutomation.Core.Services
 {
@@ -20,7 +14,7 @@ namespace HomeAutomation.Core.Services
 
         List<Trigger> Triggers { get; }
 
-        List<Entities.Action.Action> Actions { get; }
+        List<HomeAutomation.Entities.Action.Action> Actions { get; }
 
         IEnumerable<CameraDevice> Cameras { get; }
 
@@ -64,7 +58,7 @@ namespace HomeAutomation.Core.Services
 
         public List<Trigger> Triggers => MemoryEntities.Triggers;
 
-        public List<Entities.Action.Action> Actions => MemoryEntities.Actions;
+        public List<HomeAutomation.Entities.Action.Action> Actions => MemoryEntities.Actions;
 
         public IEnumerable<CameraDevice> Cameras => MemoryEntities.Devices.OfType<CameraDevice>();
 

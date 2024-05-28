@@ -1,20 +1,16 @@
 ﻿using HomeAutomation.Base.Extensions;
+using HomeAutomation.Core.Models;
 using HomeAutomation.Entities.Devices;
 using HomeAutomation.Entities.Enums;
-using HomeAutomation.Models.Tuya;
 using Microsoft.Extensions.Configuration;
-using System;
-using System.Collections.Generic;
 using System.Drawing;
-using System.Net.Http;
 using System.Net.Http.Json;
-using System.Threading.Tasks;
 
 namespace HomeAutomation.Core.Services
 {
     public interface ITuyaAPIService
     {
-        Task<IEnumerable<DeviceModel>> GetDevices();
+        Task<IEnumerable<TuyaDeviceModel>> GetDevices();
 
         Task<bool> SendCommand(string deviceId, Dictionary<int, object> dps);
 
@@ -126,7 +122,7 @@ namespace HomeAutomation.Core.Services
             return result;
         }
 
-        public async Task<IEnumerable<DeviceModel>> GetDevices()
+        public async Task<IEnumerable<TuyaDeviceModel>> GetDevices()
         {
             string baseUrl = configuration.GetSection("Tuya:APIUrl").Get<string>();
             HttpRequestMessage request = new(HttpMethod.Get, $"{baseUrl}devices/");
@@ -134,7 +130,7 @@ namespace HomeAutomation.Core.Services
             var response = await httpClient.SendAsync(request);
             response.EnsureSuccessStatusCode();
 
-            return await response.Content.ReadAsAsync<IEnumerable<DeviceModel>>();
+            return await response.Content.ReadFromJsonAsync<IEnumerable<TuyaDeviceModel>>();
         }
 
         public async Task<bool> SendCommand(string deviceId, Dictionary<int, object> dps)

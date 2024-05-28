@@ -1,11 +1,7 @@
-﻿using HomeAutomation.Entities;
+﻿using HomeAutomation.Core.Entities;
+using HomeAutomation.Entities;
 using HomeAutomation.Entities.Devices;
-using HomeAutomation.Models.Actions;
 using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace HomeAutomation.Core.Services
 {
@@ -14,21 +10,8 @@ namespace HomeAutomation.Core.Services
         Task Execute(int actionId, IEntity source);
     }
 
-    public class ActionExecutionService : IActionExecutionService
+    public class ActionExecutionService(IJsonDatabaseService memoryEntitiesService, IEvaluateConditionService evaluateConditionService, IServiceProvider serviceProvider, ILogger<ActionExecutionService> logger) : IActionExecutionService
     {
-        private readonly IJsonDatabaseService memoryEntitiesService;
-        private readonly IEvaluateConditionService evaluateConditionService;
-        private readonly IServiceProvider serviceProvider;
-        private readonly ILogger<ActionExecutionService> logger;
-
-        public ActionExecutionService(IJsonDatabaseService memoryEntitiesService, IEvaluateConditionService evaluateConditionService, IServiceProvider serviceProvider, ILogger<ActionExecutionService> logger)
-        {
-            this.memoryEntitiesService = memoryEntitiesService;
-            this.evaluateConditionService = evaluateConditionService;
-            this.serviceProvider = serviceProvider;
-            this.logger = logger;
-        }
-
         public async Task Execute(int actionId, IEntity source)
         {
             var action = memoryEntitiesService.Actions.FirstOrDefault(a => a.ID == actionId);

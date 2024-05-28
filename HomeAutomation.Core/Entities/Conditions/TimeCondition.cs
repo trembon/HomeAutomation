@@ -1,10 +1,6 @@
-﻿using HomeAutomation.Entities.Enums;
-using HomeAutomation.Models.Conditions;
-using HomeAutomation.Services;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using HomeAutomation.Core.Entities;
+using HomeAutomation.Core.Services;
+using HomeAutomation.Entities.Enums;
 
 namespace HomeAutomation.Entities.Conditions
 {

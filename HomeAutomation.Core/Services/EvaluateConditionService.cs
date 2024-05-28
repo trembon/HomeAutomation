@@ -1,10 +1,6 @@
-﻿using HomeAutomation.Entities;
+﻿using HomeAutomation.Core.Entities;
+using HomeAutomation.Entities;
 using HomeAutomation.Entities.Conditions;
-using HomeAutomation.Models.Conditions;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace HomeAutomation.Core.Services
 {

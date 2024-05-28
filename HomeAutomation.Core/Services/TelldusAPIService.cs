@@ -1,11 +1,8 @@
 ﻿using HomeAutomation.Base.Enums;
+using HomeAutomation.Core.Models;
 using HomeAutomation.Entities.Enums;
-using HomeAutomation.Models.Telldus;
 using Microsoft.Extensions.Configuration;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Http;
-using System.Threading.Tasks;
+using System.Net.Http.Json;
 
 namespace HomeAutomation.Core.Services
 {
@@ -13,7 +10,7 @@ namespace HomeAutomation.Core.Services
     {
         Task<bool> SendCommand(int id, TelldusDeviceMethods command);
 
-        Task<IEnumerable<DeviceModel>> GetDevices();
+        Task<IEnumerable<TelldusDeviceModel>> GetDevices();
 
         Task<TelldusDeviceMethods> GetLastCommand(int id);
 
@@ -33,11 +30,11 @@ namespace HomeAutomation.Core.Services
             this.httpClient = new HttpClient();
         }
 
-        public Task<IEnumerable<DeviceModel>> GetDevices()
+        public Task<IEnumerable<TelldusDeviceModel>> GetDevices()
         {
             string[] telldusDevices = configuration.GetSection("Telldus:APIURL").Get<string[]>();
 
-            List<DeviceModel> results = new();
+            List<TelldusDeviceModel> results = new();
             Parallel.ForEach(telldusDevices, baseUrl =>
             {
                 HttpRequestMessage request = new(HttpMethod.Get, $"{baseUrl}devices/");
@@ -48,7 +45,7 @@ namespace HomeAutomation.Core.Services
                 HttpResponseMessage response = sendTask.Result;
                 response.EnsureSuccessStatusCode();
 
-                var readTask = response.Content.ReadAsAsync<IEnumerable<DeviceModel>>();
+                var readTask = response.Content.ReadFromJsonAsync<IEnumerable<TelldusDeviceModel>>();
                 readTask.Wait();
                 results.AddRange(readTask.Result);
             });
@@ -90,7 +87,7 @@ namespace HomeAutomation.Core.Services
                 HttpResponseMessage response = sendTask.Result;
                 response.EnsureSuccessStatusCode();
 
-                var readTask = response.Content.ReadAsAsync<TelldusDeviceMethods>();
+                var readTask = response.Content.ReadFromJsonAsync<TelldusDeviceMethods>();
                 readTask.Wait();
                 results.Add(readTask.Result);
             });

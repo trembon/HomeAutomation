@@ -5,6 +5,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 
 namespace HomeAutomation.Base.Logging
@@ -19,7 +20,7 @@ namespace HomeAutomation.Base.Logging
         public DatabaseLoggerProvider()
         {
             this.loggers = new ConcurrentDictionary<string, DatabaseLogger>();
-            this.baseNamespace = typeof(Startup).Namespace;
+            this.baseNamespace = "HomeAutiomation";
         }
 
         public DatabaseLoggerProvider Configure(Action<DbContextOptionsBuilder<LogContext>> options)
