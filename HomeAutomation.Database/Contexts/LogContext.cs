@@ -1,10 +1,11 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using HomeAutomation.Database.Entities;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace HomeAutomation.Database;
+namespace HomeAutomation.Database.Contexts;
 
 public class LogContext(DbContextOptions<LogContext> options) : DbContext(options)
 {

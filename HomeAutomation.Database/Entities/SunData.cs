@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace HomeAutomation.Database;
+namespace HomeAutomation.Database.Entities;
 
 public class SunData
 {

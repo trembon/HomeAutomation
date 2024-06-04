@@ -1,6 +1,7 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using HomeAutomation.Database.Entities;
+using Microsoft.EntityFrameworkCore;
 
-namespace HomeAutomation.Database;
+namespace HomeAutomation.Database.Contexts;
 
 public class DefaultContext(DbContextOptions<DefaultContext> options) : DbContext(options)
 {

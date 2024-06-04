@@ -1,5 +1,6 @@
 using HomeAutomation.Client.Pages;
 using HomeAutomation.Components;
+using HomeAutomation.Database.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -7,6 +8,9 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents()
     .AddInteractiveWebAssemblyComponents();
+
+builder.Services.AddDefaultDatabaseContext(builder.Configuration.GetConnectionString("Default")!);
+builder.Services.AddLoggingDatabaseContext(builder.Configuration.GetConnectionString("Logging")!);
 
 var app = builder.Build();
 
