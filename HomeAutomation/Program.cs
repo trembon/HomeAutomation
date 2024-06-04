@@ -27,6 +27,8 @@ else
 app.UseStaticFiles();
 app.UseAntiforgery();
 
+app.ApplyDatabaseMigrations();
+
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode()
     .AddInteractiveWebAssemblyRenderMode()
