@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\HomeAutomation.Client\HomeAutomation.Client.csproj" />
+    <ProjectReference Include="..\HomeAutomation.Core\HomeAutomation.Core.csproj" />
     <ProjectReference Include="..\HomeAutomation.Database\HomeAutomation.Database.csproj" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="8.0.4" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.6">

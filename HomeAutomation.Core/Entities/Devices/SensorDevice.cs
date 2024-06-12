@@ -1,4 +1,4 @@
-﻿using HomeAutomation.Database;
+﻿using HomeAutomation.Database.Entities;
 using HomeAutomation.Database.Enums;
 
 namespace HomeAutomation.Entities.Devices

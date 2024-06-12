@@ -1,6 +1,7 @@
 ﻿using HomeAutomation.Core.ScheduledJobs.Base;
 using HomeAutomation.Core.Services;
-using HomeAutomation.Database;
+using HomeAutomation.Database.Contexts;
+using HomeAutomation.Database.Entities;
 using HomeAutomation.Database.Enums;
 using HtmlAgilityPack;
 using Microsoft.Extensions.Configuration;

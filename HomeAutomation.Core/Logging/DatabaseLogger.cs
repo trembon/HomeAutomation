@@ -1,4 +1,6 @@
 ﻿using HomeAutomation.Database;
+using HomeAutomation.Database.Contexts;
+using HomeAutomation.Database.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.Logging;

@@ -1,5 +1,5 @@
 ﻿using HomeAutomation.Core.ScheduledJobs.Base;
-using HomeAutomation.Database;
+using HomeAutomation.Database.Contexts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 

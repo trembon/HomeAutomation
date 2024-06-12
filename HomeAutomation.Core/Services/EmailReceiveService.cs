@@ -1,4 +1,6 @@
 ﻿using HomeAutomation.Database;
+using HomeAutomation.Database.Contexts;
+using HomeAutomation.Database.Entities;
 using HomeAutomation.Entities.Enums;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
