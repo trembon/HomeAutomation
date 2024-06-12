@@ -1,6 +1,9 @@
 using HomeAutomation.Client.Pages;
 using HomeAutomation.Components;
 using HomeAutomation.Database.Extensions;
+using HomeAutomation.ScheduledJobs;
+using HomeAutomation.Core.Extensions;
+using HomeAutomation.Core.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -11,6 +14,10 @@ builder.Services.AddRazorComponents()
 
 builder.Services.AddDefaultDatabaseContext(builder.Configuration.GetConnectionString("Default")!);
 builder.Services.AddLoggingDatabaseContext(builder.Configuration.GetConnectionString("Logging")!);
+
+builder.Services.AddTransient<ISunDataService, SunDataService>();
+
+builder.Services.AddScheduleJob<ImportSunDataScheduleJob>();
 
 var app = builder.Build();
 

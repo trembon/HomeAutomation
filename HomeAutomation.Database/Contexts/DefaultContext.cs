@@ -18,5 +18,17 @@ public class DefaultContext(DbContextOptions<DefaultContext> options) : DbContex
         base.OnModelCreating(modelBuilder);
 
         modelBuilder.Entity<SunData>().HasIndex(sd => sd.Date).IsUnique();
+
+        //modelBuilder.Entity<SunData>().Property(sd => sd.Date).HasConversion(x => x.ToUniversalTime(), v => DateTime.SpecifyKind(v, DateTimeKind.Utc));
+
+        foreach (var entityType in modelBuilder.Model.GetEntityTypes())
+        {
+            var dateTimeProperties = entityType.GetProperties().Where(p => p.ClrType == typeof(DateTime) || p.ClrType == typeof(DateTime?));
+
+            foreach (var property in dateTimeProperties)
+            {
+                modelBuilder.Entity(entityType.Name).Property<DateTime>(property.Name).HasConversion(v => v.ToUniversalTime(), v => DateTime.SpecifyKind(v, DateTimeKind.Utc));
+            }
+        }
     }
 }

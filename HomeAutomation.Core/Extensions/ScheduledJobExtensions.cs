@@ -6,9 +6,9 @@ namespace HomeAutomation.Core.Extensions;
 
 public static class ScheduledJobExtensions
 {
-    public static void AddScheduleJob<TScheduledJob>(this IServiceCollection serviceCollection) where TScheduledJob : IScheduledJob
+    public static void AddScheduleJob<TScheduledJob>(this IServiceCollection serviceCollection) where TScheduledJob : class, IScheduledJob
     {
+        serviceCollection.AddTransient<TScheduledJob>();
         serviceCollection.AddHostedService<ScheduledJobHandler<TScheduledJob>>();
-        serviceCollection.AddTransient<CleanupLogScheduleJob>();
     }
 }
