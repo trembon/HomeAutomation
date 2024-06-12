@@ -27,11 +27,11 @@ namespace HomeAutomation.Entities.Conditions
 
                 if(Mode == ScheduleMode.Sunrise)
                 {
-                    compareDateTime = compareDateTime.Add(sunData.Sunrise.TimeOfDay);
+                    compareDateTime = compareDateTime.Add(sunData.Sunrise.ToTimeSpan());
                 }
                 else
                 {
-                    compareDateTime = compareDateTime.Add(sunData.Sunset.TimeOfDay);
+                    compareDateTime = compareDateTime.Add(sunData.Sunset.ToTimeSpan());
                 }
 
                 if (Time.HasValue)

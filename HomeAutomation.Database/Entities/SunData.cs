@@ -8,9 +8,9 @@ public class SunData
     [Required]
     public int ID { get; set; }
     
-    public DateTime Date { get; set; }
+    public DateOnly Date { get; set; }
     
-    public DateTime Sunset { get; set; }
+    public TimeOnly Sunset { get; set; }
 
-    public DateTime Sunrise { get; set; }
+    public TimeOnly Sunrise { get; set; }
 }

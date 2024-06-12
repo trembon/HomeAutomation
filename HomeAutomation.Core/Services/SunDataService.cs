@@ -13,7 +13,7 @@ namespace HomeAutomation.Core.Services
     {
         SunData GetLatest();
 
-        bool Add(DateTime date, DateTime sunrise, DateTime sunset);
+        bool Add(DateOnly date, TimeOnly sunrise, TimeOnly sunset);
     }
 
     public class SunDataService : ISunDataService
@@ -32,7 +32,7 @@ namespace HomeAutomation.Core.Services
             this.context = context;
         }
 
-        public bool Add(DateTime date, DateTime sunrise, DateTime sunset)
+        public bool Add(DateOnly date, TimeOnly sunrise, TimeOnly sunset)
         {
             lock (latestCacheLock)
             {
@@ -83,7 +83,7 @@ namespace HomeAutomation.Core.Services
                 }
 
                 if(latestCache == null)
-                    return new SunData { ID = 0, Date = DateTime.Today.AddDays(-1), Sunrise = DateTime.Today.AddDays(-1).AddHours(8), Sunset = DateTime.Today.AddDays(-1).AddHours(20) };
+                    return new SunData { ID = 0, Date = DateOnly.FromDateTime(DateTime.Today.AddDays(-1)), Sunrise = new TimeOnly(8, 0), Sunset = new TimeOnly(20, 0) };
 
                 return latestCache;
             }

@@ -37,10 +37,10 @@ public class TriggerScheduledJob(IJsonDatabaseService jsonDatabaseService, ISunD
         DateTime calculatedAt = DateTime.Today;
         
         if(mode == ScheduleMode.Sunrise)
-            calculatedAt = calculatedAt.Add(sunData.Sunrise.TimeOfDay);
+            calculatedAt = calculatedAt.Add(sunData.Sunrise.ToTimeSpan());
 
         if (mode == ScheduleMode.Sunset)
-            calculatedAt = calculatedAt.Add(sunData.Sunset.TimeOfDay);
+            calculatedAt = calculatedAt.Add(sunData.Sunset.ToTimeSpan());
 
         // set the event time, if together with sunrise/sunset add for example 5 minutes from that time
         return calculatedAt.Add(at);
