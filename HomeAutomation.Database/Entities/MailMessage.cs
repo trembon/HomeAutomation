@@ -16,5 +16,5 @@ public class MailMessage
 
     public byte[] EmlData { get; set; } = null!;
 
-    public DateTime Timestamp { get; set; } = DateTime.UtcNow;
+    public DateTime Timestamp { get; set; } = DateTime.Now;
 }

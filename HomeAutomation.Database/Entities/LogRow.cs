@@ -16,7 +16,7 @@ public class LogRow
 
     public int EventID { get; set; }
 
-    public DateTime Timestamp { get; set; } = DateTime.UtcNow;
+    public DateTime Timestamp { get; set; } = DateTime.Now;
 
     public string Message { get; set; } = null!;
 

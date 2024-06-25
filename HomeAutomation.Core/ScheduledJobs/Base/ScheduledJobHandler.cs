@@ -21,7 +21,7 @@ public class ScheduledJobHandler<TScheduledJob>(IServiceProvider serviceProvider
     private void ProcessTimer(object? state)
     {
         CancellationToken cancellationToken = state is not null ? (CancellationToken)state : CancellationToken.None;
-        DateTime currentExecution = DateTime.UtcNow;
+        DateTime currentExecution = DateTime.Now;
 
         using var scope = serviceProvider.CreateScope();
         var scheduledJob = scope.ServiceProvider.GetRequiredService<TScheduledJob>();

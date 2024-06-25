@@ -21,7 +21,7 @@ public class ImportSunDataScheduleJob(ILogger<ImportSunDataScheduleJob> logger, 
 
             var data = await response.Content.ReadFromJsonAsync<SunDataResponse>(cancellationToken);
             if (data != null && data.Results != null)
-                _ = sunDataService.Add(DateOnly.FromDateTime(data.Results.Sunrise), TimeOnly.FromDateTime(data.Results.Sunrise.ToLocalTime().ToUniversalTime()), TimeOnly.FromDateTime(data.Results.Sunset.ToLocalTime().ToUniversalTime()));
+                _ = sunDataService.Add(DateOnly.FromDateTime(data.Results.Sunrise), TimeOnly.FromDateTime(data.Results.Sunrise.ToLocalTime()), TimeOnly.FromDateTime(data.Results.Sunset.ToLocalTime()));
 
             logger.LogInformation("Schedule.SunData :: done");
         }
