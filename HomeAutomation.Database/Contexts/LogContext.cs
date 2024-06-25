@@ -17,7 +17,7 @@ public class LogContext(DbContextOptions<LogContext> options) : DbContext(option
     {
         base.OnModelCreating(modelBuilder);
 
-        modelBuilder.Entity<LogRow>().Property(sp => sp.Timestamp).HasConversion(v => v.ToLocalTime(), v => DateTime.SpecifyKind(v, DateTimeKind.Local));
-        modelBuilder.Entity<MailMessage>().Property(sp => sp.Timestamp).HasConversion(v => v.ToLocalTime(), v => DateTime.SpecifyKind(v, DateTimeKind.Local));
+        modelBuilder.Entity<LogRow>().Property(sp => sp.Timestamp).HasConversion(v => v.ToUniversalTime(), v => DateTime.SpecifyKind(v, DateTimeKind.Local));
+        modelBuilder.Entity<MailMessage>().Property(sp => sp.Timestamp).HasConversion(v => v.ToUniversalTime(), v => DateTime.SpecifyKind(v, DateTimeKind.Local));
     }
 }

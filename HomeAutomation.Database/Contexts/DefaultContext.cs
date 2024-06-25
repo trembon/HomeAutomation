@@ -25,7 +25,7 @@ public class DefaultContext(DbContextOptions<DefaultContext> options) : DbContex
 
             foreach (var property in dateTimeProperties)
             {
-                modelBuilder.Entity(entityType.Name).Property<DateTime>(property.Name).HasConversion(v => v.ToLocalTime(), v => DateTime.SpecifyKind(v, DateTimeKind.Local));
+                modelBuilder.Entity(entityType.Name).Property<DateTime>(property.Name).HasConversion(v => v.ToUniversalTime(), v => DateTime.SpecifyKind(v, DateTimeKind.Local));
             }
         }
     }
