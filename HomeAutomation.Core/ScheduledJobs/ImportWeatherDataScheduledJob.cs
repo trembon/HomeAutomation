@@ -22,7 +22,7 @@ public class ImportWeatherDataScheduledJob(DefaultContext context, ISunDataServi
         {
             using(var client = new WebClient())
             {
-                using (Stream data = await client.OpenReadTaskAsync(configuration["Weather:DataUrl"]))
+                using (Stream data = await client.OpenReadTaskAsync(configuration["Forecasts:WeatherUrl"]))
                 {
                     XmlSerializer serializer = new XmlSerializer(typeof(WeatherData));
                     weatherData = (WeatherData)serializer.Deserialize(data);
@@ -36,18 +36,6 @@ public class ImportWeatherDataScheduledJob(DefaultContext context, ISunDataServi
 
         if (weatherData == null)
             return;
-
-        // this can probably be removed, as the data is fetched elsewhere currently
-        // insert sun rise and set event data
-        //try
-        //{
-        //    sunDataService.Add(weatherData.Sun.Rise.Date, weatherData.Sun.Rise, weatherData.Sun.Set);
-        //}
-        //catch (Exception ex)
-        //{
-        //    logger.LogError(ex, $"Failed to store sun information in database.");
-        //}
-
 
         // import weather forecast
         try

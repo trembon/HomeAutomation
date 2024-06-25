@@ -15,9 +15,17 @@ builder.Services.AddRazorComponents()
 builder.Services.AddDefaultDatabaseContext(builder.Configuration.GetConnectionString("Default")!);
 builder.Services.AddLoggingDatabaseContext(builder.Configuration.GetConnectionString("Logging")!);
 
-builder.Services.AddTransient<ISunDataService, SunDataService>();
+builder.Services.AddSingleton<IJsonDatabaseService, JsonDatabaseService>();
 
+builder.Services.AddTransient<ISunDataService, SunDataService>();
+builder.Services.AddTransient<ITriggerService, TriggerService>();
+builder.Services.AddTransient<INotificationService, NotificationService>();
+
+builder.Services.AddScheduleJob<CleanupLogScheduleJob>();
 builder.Services.AddScheduleJob<ImportSunDataScheduleJob>();
+builder.Services.AddScheduleJob<ImportWeatherDataScheduledJob>();
+builder.Services.AddScheduleJob<PhoneCallLogScheduleJob>();
+builder.Services.AddScheduleJob<TriggerScheduledJob>();
 
 var app = builder.Build();
 
@@ -35,6 +43,7 @@ app.UseStaticFiles();
 app.UseAntiforgery();
 
 app.ApplyDatabaseMigrations();
+app.Services.GetRequiredService<IJsonDatabaseService>().Initialize();
 
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode()

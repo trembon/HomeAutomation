@@ -23,9 +23,16 @@ public class ScheduledJobHandler<TScheduledJob>(IServiceProvider serviceProvider
         CancellationToken cancellationToken = state is not null ? (CancellationToken)state : CancellationToken.None;
         DateTime currentExecution = DateTime.Now;
 
-        using var scope = serviceProvider.CreateScope();
-        var scheduledJob = scope.ServiceProvider.GetRequiredService<TScheduledJob>();
-        scheduledJob.Execute(currentExecution, _lastExecution, cancellationToken).Wait();
+        try
+        {
+            using var scope = serviceProvider.CreateScope();
+            var scheduledJob = scope.ServiceProvider.GetRequiredService<TScheduledJob>();
+            scheduledJob.Execute(currentExecution, _lastExecution, cancellationToken).Wait();
+        }
+        catch
+        {
+            // ignore for now
+        }
 
         _lastExecution = currentExecution;
     }

@@ -18,6 +18,9 @@ namespace HomeAutomation.ScheduledJobs
         {
             logger.LogInformation("Schedule.PhoneCalls :: starting");
 
+            if (configuration["PhoneLog:Enabled"] != "true")
+                return;
+
             var calls = await ParsePhoneCalls();
             if (calls is not null)
             {
