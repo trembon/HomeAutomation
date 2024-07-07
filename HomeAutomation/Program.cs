@@ -18,6 +18,8 @@ builder.Services.AddMudServices();
 builder.Services.AddDefaultDatabaseContext(builder.Configuration.GetConnectionString("Default")!);
 builder.Services.AddLoggingDatabaseContext(builder.Configuration.GetConnectionString("Logging")!);
 
+builder.Services.AddSingleton<ITuyaAPIService, TuyaAPIService>();
+builder.Services.AddSingleton<IZWaveAPIService, ZWaveAPIService>();
 builder.Services.AddSingleton<ITelldusAPIService, TelldusAPIService>();
 builder.Services.AddSingleton<IJsonDatabaseService, JsonDatabaseService>();
 builder.Services.AddSingleton<IEvaluateConditionService, EvaluateConditionService>();

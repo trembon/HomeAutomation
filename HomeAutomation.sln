@@ -9,7 +9,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HomeAutomation.Client", "Ho
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HomeAutomation.Core", "HomeAutomation.Core\HomeAutomation.Core.csproj", "{54E692DF-01AA-4471-8C6B-1CDDDE63C7F2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HomeAutomation.Database", "HomeAutomation.Database\HomeAutomation.Database.csproj", "{7F36A2AF-C2DD-4B9D-81BE-CAC0FB62A1C9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HomeAutomation.Database", "HomeAutomation.Database\HomeAutomation.Database.csproj", "{7F36A2AF-C2DD-4B9D-81BE-CAC0FB62A1C9}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

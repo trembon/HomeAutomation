@@ -1,9 +1,22 @@
 ﻿<MudNavMenu>
     <MudNavLink Href="/" Match="NavLinkMatch.All">Dashboard</MudNavLink>
     <MudNavLink Href="/servers" Match="NavLinkMatch.Prefix">Servers</MudNavLink>
-    <MudNavGroup Title="Settings" Expanded="true">
-        <MudNavLink Href="/users" Match="NavLinkMatch.Prefix">Users</MudNavLink>
-        <MudNavLink Href="/security" Match="NavLinkMatch.Prefix">Security</MudNavLink>
+    <MudNavGroup Title="Integrations" Expanded="false">
+        <MudNavGroup Title="Telldus" Expanded="false">
+            <MudNavLink Href="/telldus" Match="NavLinkMatch.Prefix">Devices</MudNavLink>
+            <MudNavLink Href="/telldus/event-stream" Match="NavLinkMatch.Prefix">Event Stream</MudNavLink>
+            <MudNavLink Href="/telldus/raw-stream" Match="NavLinkMatch.Prefix">Raw Stream</MudNavLink>
+        </MudNavGroup>
+        <MudNavGroup Title="Z-Wave" Expanded="false">
+            <MudNavLink Href="/z-wave" Match="NavLinkMatch.Prefix">Devices</MudNavLink>
+            <MudNavLink Href="/z-wave/event-stream" Match="NavLinkMatch.Prefix">Event Stream</MudNavLink>
+        </MudNavGroup>
+        <MudNavGroup Title="Tuya" Expanded="false">
+            <MudNavLink Href="/tuya" Match="NavLinkMatch.Prefix">Devices</MudNavLink>
+        </MudNavGroup>
     </MudNavGroup>
-    <MudNavLink Href="/about" Match="NavLinkMatch.Prefix">About</MudNavLink>
+    <MudNavGroup Title="Logs" Expanded="true">
+        <MudNavLink Href="/logs" Match="NavLinkMatch.Prefix">Standard</MudNavLink>
+        <MudNavLink Href="/logs/smtp" Match="NavLinkMatch.Prefix">SMTP</MudNavLink>
+    </MudNavGroup>
 </MudNavMenu>

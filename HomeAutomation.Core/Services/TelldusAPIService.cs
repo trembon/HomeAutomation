@@ -1,8 +1,11 @@
 ﻿using HomeAutomation.Base.Enums;
 using HomeAutomation.Core.Models;
+using HomeAutomation.Database.Entities;
 using HomeAutomation.Entities.Enums;
 using Microsoft.Extensions.Configuration;
 using System.Net.Http.Json;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace HomeAutomation.Core.Services
 {
@@ -45,7 +48,7 @@ namespace HomeAutomation.Core.Services
                 HttpResponseMessage response = sendTask.Result;
                 response.EnsureSuccessStatusCode();
 
-                var readTask = response.Content.ReadFromJsonAsync<IEnumerable<TelldusDeviceModel>>();
+                var readTask = response.Content.ReadFromJsonAsync<TelldusDeviceModel[]>();
                 readTask.Wait();
                 results.AddRange(readTask.Result);
             });

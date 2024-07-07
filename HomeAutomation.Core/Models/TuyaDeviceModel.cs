@@ -9,5 +9,18 @@
         public string ProductKey { get; set; }
 
         public bool IsConnected { get; set; }
+
+        public override int GetHashCode()
+        {
+            return this.ID.GetHashCode();
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (obj != null && obj is TuyaDeviceModel model)
+                return model.ID == this.ID;
+
+            return false;
+        }
     }
 }

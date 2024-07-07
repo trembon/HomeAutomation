@@ -1,5 +1,4 @@
 ﻿using HomeAutomation.Base.Enums;
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,23 +9,17 @@ namespace HomeAutomation.Core.Models
 {
     public class TelldusDeviceModel
     {
-        [JsonProperty("id")]
-        public int ID { get; internal set; }
+        public int ID { get; set; }
 
-        [JsonProperty("name")]
-        public string Name { get; internal set; }
+        public string Name { get; set; }
 
-        [JsonProperty("model")]
-        public string Model { get; internal set; }
+        public string Model { get; set; }
 
-        [JsonProperty("protocol")]
-        public string Protocol { get; internal set; }
+        public string Protocol { get; set; }
 
-        [JsonProperty("parameters")]
-        public Dictionary<string, string> Parameters { get; internal set; }
+        public Dictionary<string, string> Parameters { get; set; }
 
-        [JsonProperty("supportedmethods")]
-        public TelldusDeviceMethods SupportedMethods { get; internal set; }
+        public TelldusDeviceMethods SupportedMethods { get; set; }
 
         public override int GetHashCode()
         {
@@ -35,8 +28,8 @@ namespace HomeAutomation.Core.Models
 
         public override bool Equals(object obj)
         {
-            if (obj != null && obj is TelldusDeviceModel)
-                return ((TelldusDeviceModel)obj).ID == this.ID;
+            if (obj != null && obj is TelldusDeviceModel model)
+                return model.ID == this.ID;
 
             return false;
         }

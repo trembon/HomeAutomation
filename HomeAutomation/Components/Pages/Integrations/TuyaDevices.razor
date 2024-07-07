@@ -1,0 +1,29 @@
+﻿@page "/tuya"
+@inject ITuyaAPIService tuyaAPIService
+
+<MudText Typo="Typo.h2" Class="mb-5">Tuya - Devices</MudText>
+
+<MudTable Items="@devices" Hover="true" Loading="@(devices == null)" LoadingProgressColor="Color.Info">
+    <HeaderContent>
+        <MudTh>ID</MudTh>
+        <MudTh>IP</MudTh>
+        <MudTh>ProductKey</MudTh>
+        <MudTh>IsConnected</MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd DataLabel="ID">@context.ID</MudTd>
+        <MudTd DataLabel="IP">@context.IP</MudTd>
+        <MudTd DataLabel="ProductKey">@context.ProductKey</MudTd>
+        <MudTd DataLabel="IsConnected">@context.IsConnected</MudTd>
+    </RowTemplate>
+</MudTable>
+
+@code {
+    private Core.Models.TuyaDeviceModel[]? devices;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var result = await tuyaAPIService.GetDevices();
+        devices = result.ToArray();
+    }
+}
