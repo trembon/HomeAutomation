@@ -10,9 +10,15 @@ namespace HomeAutomation.Core.Services
 {
     public interface IZWaveAPIService
     {
+        event Action<ZWaveEventModel> ZWaveEventReceived;
+
         Task<IEnumerable<ZWaveDeviceModel>> GetNodes();
 
         Task<bool> SendCommand(byte id, ZWaveCommandClass command, object value);
+
+        void SendEventMessage(string message);
+
+        void SendEventMessage(string message, DateTime timestamp);
 
         ZWaveCommandClass? ConvertStateToCommand(DeviceState state, out object value);
 
@@ -23,6 +29,8 @@ namespace HomeAutomation.Core.Services
     {
         private readonly HttpClient httpClient;
         private readonly IConfiguration configuration;
+
+        public event Action<ZWaveEventModel> ZWaveEventReceived;
 
         public ZWaveAPIService(IConfiguration configuration)
         {
@@ -50,6 +58,16 @@ namespace HomeAutomation.Core.Services
             sendResult.EnsureSuccessStatusCode();
 
             return true; // TODO: check for real response
+        }
+
+        public void SendEventMessage(string message)
+        {
+            SendEventMessage(message, DateTime.Now);
+        }
+
+        public void SendEventMessage(string message, DateTime timestamp)
+        {
+            ZWaveEventReceived?.Invoke(new ZWaveEventModel { Message = message, Timestamp = timestamp });
         }
 
         public ZWaveCommandClass? ConvertStateToCommand(DeviceState state, out object value)
