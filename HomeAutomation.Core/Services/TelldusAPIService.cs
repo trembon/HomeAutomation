@@ -11,27 +11,27 @@ namespace HomeAutomation.Core.Services
 {
     public interface ITelldusAPIService
     {
+        event Action<TelldusEventModel> TelldusEventReceived;
+
         Task<bool> SendCommand(int id, TelldusDeviceMethods command);
 
         Task<IEnumerable<TelldusDeviceModel>> GetDevices();
 
         Task<TelldusDeviceMethods> GetLastCommand(int id);
 
+        void SendLogMessage(string message);
+
         DeviceEvent ConvertCommandToEvent(TelldusDeviceMethods command);
 
         TelldusDeviceMethods? ConvertStateToCommand(DeviceState state);
     }
 
-    public class TelldusAPIService : ITelldusAPIService
+    public class TelldusAPIService(IConfiguration configuration) : ITelldusAPIService
     {
-        private readonly HttpClient httpClient;
-        private readonly IConfiguration configuration;
+        private readonly HttpClient httpClient = new();
+        private readonly IConfiguration configuration = configuration;
 
-        public TelldusAPIService(IConfiguration configuration)
-        {
-            this.configuration = configuration;
-            this.httpClient = new HttpClient();
-        }
+        public event Action<TelldusEventModel> TelldusEventReceived;
 
         public Task<IEnumerable<TelldusDeviceModel>> GetDevices()
         {
@@ -96,6 +96,11 @@ namespace HomeAutomation.Core.Services
             });
 
             return Task.FromResult(results.FirstOrDefault());
+        }
+
+        public void SendLogMessage(string message)
+        {
+            TelldusEventReceived?.Invoke(new TelldusEventModel { Message = message, Timestamp = DateTime.Now });
         }
 
         public DeviceEvent ConvertCommandToEvent(TelldusDeviceMethods command)

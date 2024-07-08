@@ -13,6 +13,7 @@ builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents()
     .AddInteractiveWebAssemblyComponents();
 
+builder.Services.AddControllers();
 builder.Services.AddMudServices();
 
 builder.Services.AddDefaultDatabaseContext(builder.Configuration.GetConnectionString("Default")!);
@@ -57,5 +58,7 @@ app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode()
     .AddInteractiveWebAssemblyRenderMode()
     .AddAdditionalAssemblies(typeof(HomeAutomation.Client._Imports).Assembly);
+
+app.MapControllers();
 
 app.Run();
