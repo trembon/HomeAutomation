@@ -29,3 +29,16 @@ Content-Type: application/json
 }
 
 ###
+
+POST {{HomeAutomation_HostAddress}}/webhooks/tuya/deviceupdate
+Content-Type: application/json
+
+{
+  "deviceId": "{{$randomInt 1000 9999}}",
+  "data": {
+      "1": true,
+      "2": "hello world"
+  }
+}
+
+###
