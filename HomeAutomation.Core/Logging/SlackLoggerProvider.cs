@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -12,9 +13,9 @@ namespace HomeAutomation.Base.Logging
         private string slackToken;
         private readonly ConcurrentDictionary<string, SlackLogger> loggers = new ConcurrentDictionary<string, SlackLogger>();
 
-        public SlackLoggerProvider(string slackToken)
+        public SlackLoggerProvider(IConfiguration configuration)
         {
-            this.slackToken = slackToken;
+            this.slackToken = configuration["Slack:Token"] ?? throw new InvalidOperationException("Configuration Slack:Token does not exist");
         }
 
         public ILogger CreateLogger(string categoryName)

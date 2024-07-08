@@ -3,6 +3,7 @@ using HomeAutomation.Database.Contexts;
 using HomeAutomation.Database.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -13,19 +14,8 @@ using System.Threading.Tasks;
 
 namespace HomeAutomation.Base.Logging
 {
-    public class DatabaseLogger : ILogger
+    public class DatabaseLogger(string categoryName, IServiceScope serviceScope, bool enabled) : ILogger
     {
-        private readonly string categoryName;
-        private readonly DbContextOptions<LogContext> dbContextOptions;
-        private readonly bool enabled;
-
-        public DatabaseLogger(string categoryName, DbContextOptions<LogContext> dbContextOptions, bool enabled)
-        {
-            this.categoryName = categoryName;
-            this.dbContextOptions = dbContextOptions;
-            this.enabled = enabled;
-        }
-
         public IDisposable BeginScope<TState>(TState state)
         {
             return null;
@@ -43,34 +33,31 @@ namespace HomeAutomation.Base.Logging
 
             try
             {
-                using (LogContext db = new LogContext(dbContextOptions))
+                using LogContext db = serviceScope.ServiceProvider.GetRequiredService<LogContext>();
+                using IDbContextTransaction transaction = db.Database.BeginTransaction();
+
+                LogRow row = new LogRow
                 {
-                    using (IDbContextTransaction transaction = db.Database.BeginTransaction())
-                    {
-                        LogRow row = new LogRow
-                        {
-                            Level = logLevel,
-                            Category = categoryName,
-                            EventID = eventId.Id,
-                            Message = formatter(state, exception)
-                        };
+                    Level = logLevel,
+                    Category = categoryName,
+                    EventID = eventId.Id,
+                    Message = formatter(state, exception)
+                };
 
-                        StringBuilder exceptionMessage = new();
-                        while (exception != null)
-                        {
-                            exceptionMessage.AppendLine(exception.Message);
-                            exceptionMessage.AppendLine(exception.StackTrace);
+                StringBuilder exceptionMessage = new();
+                while (exception != null)
+                {
+                    exceptionMessage.AppendLine(exception.Message);
+                    exceptionMessage.AppendLine(exception.StackTrace);
 
-                            exception = exception.InnerException;
-                        }
-                        row.Exception = exceptionMessage.ToString();
-
-                        db.Add(row);
-                        db.SaveChanges();
-
-                        transaction.Commit();
-                    }
+                    exception = exception.InnerException;
                 }
+                row.Exception = exceptionMessage.ToString();
+
+                db.Add(row);
+                db.SaveChanges();
+
+                transaction.Commit();
             }
             catch (Exception ex)
             {

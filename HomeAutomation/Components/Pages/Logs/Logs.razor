@@ -1,0 +1,32 @@
+﻿@page "/logs"
+@using HomeAutomation.Database.Contexts
+@using Microsoft.EntityFrameworkCore
+@inject LogContext context
+
+<MudText Typo="Typo.h2" Class="mb-5">Logs - Default</MudText>
+
+<MudTable Items="@rows" Hover="true" Loading="@(rows == null)" LoadingProgressColor="Color.Info">
+    <HeaderContent>
+        <MudTh>Timestamp</MudTh>
+        <MudTh>Level</MudTh>
+        <MudTh>Message</MudTh>
+        <MudTh>Category</MudTh>
+        <MudTh>Exception</MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd DataLabel="Timestamp">@context.Timestamp</MudTd>
+        <MudTd DataLabel="Level">@context.Level</MudTd>
+        <MudTd DataLabel="Message">@context.Message</MudTd>
+        <MudTd DataLabel="Category">@context.Category</MudTd>
+        <MudTd DataLabel="Exception">@context.Exception</MudTd>
+    </RowTemplate>
+</MudTable>
+
+@code {
+    private Database.Entities.LogRow[]? rows;
+
+    protected override async Task OnInitializedAsync()
+    {
+        rows = await context.Rows.OrderByDescending(x => x.Timestamp).Take(100).ToArrayAsync();
+    }
+}

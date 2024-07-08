@@ -1,6 +1,7 @@
 ﻿using HomeAutomation.Database;
 using HomeAutomation.Database.Contexts;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Concurrent;
@@ -15,28 +16,19 @@ namespace HomeAutomation.Base.Logging
     {
         private readonly ConcurrentDictionary<string, DatabaseLogger> loggers;
         private readonly string baseNamespace;
+        private readonly IServiceProvider serviceProvider;
 
-        private DbContextOptions<LogContext> dbContextOptions;
-
-        public DatabaseLoggerProvider()
+        public DatabaseLoggerProvider(IServiceProvider serviceProvider)
         {
             this.loggers = new ConcurrentDictionary<string, DatabaseLogger>();
-            this.baseNamespace = "HomeAutiomation";
-        }
-
-        public DatabaseLoggerProvider Configure(Action<DbContextOptionsBuilder<LogContext>> options)
-        {
-            var dbContextOptionsBuilder = new DbContextOptionsBuilder<LogContext>();
-            options(dbContextOptionsBuilder);
-
-            dbContextOptions = dbContextOptionsBuilder.Options;
-            return this;
+            this.baseNamespace = "HomeAutomation";
+            this.serviceProvider = serviceProvider;
         }
 
         public ILogger CreateLogger(string categoryName)
         {
             bool enabled = categoryName.StartsWith(baseNamespace); // only enable database logging for this dll
-            return loggers.GetOrAdd(categoryName, name => new DatabaseLogger(name, dbContextOptions, enabled));
+            return loggers.GetOrAdd(categoryName, name => new DatabaseLogger(name, serviceProvider.CreateScope(), enabled));
         }
 
         public void Dispose()

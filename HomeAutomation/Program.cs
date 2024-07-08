@@ -5,10 +5,13 @@ using HomeAutomation.ScheduledJobs;
 using HomeAutomation.Core.Extensions;
 using HomeAutomation.Core.Services;
 using MudBlazor.Services;
+using HomeAutomation.Base.Logging;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting.Internal;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents()
     .AddInteractiveWebAssemblyComponents();
@@ -18,6 +21,10 @@ builder.Services.AddMudServices();
 
 builder.Services.AddDefaultDatabaseContext(builder.Configuration.GetConnectionString("Default")!);
 builder.Services.AddLoggingDatabaseContext(builder.Configuration.GetConnectionString("Logging")!);
+
+builder.Logging.Services.TryAddEnumerable(ServiceDescriptor.Singleton<ILoggerProvider, DatabaseLoggerProvider>());
+if (!builder.Environment.IsDevelopment())
+    builder.Logging.Services.TryAddEnumerable(ServiceDescriptor.Singleton<ILoggerProvider, SlackLoggerProvider>());
 
 builder.Services.AddSingleton<ITuyaAPIService, TuyaAPIService>();
 builder.Services.AddSingleton<IZWaveAPIService, ZWaveAPIService>();
