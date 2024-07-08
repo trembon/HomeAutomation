@@ -15,17 +15,17 @@
 </MudTable>
 
 @code {
-    private List<Core.Models.TelldusEventModel> events = [];
+    private List<Core.Models.ZWaveEventModel> events = [];
 
     protected override Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
-            telldusAPIService.TelldusEventReceived += OnEventReceived;
+            zwaveAPIService.ZWaveEventReceived += OnEventReceived;
 
         return base.OnAfterRenderAsync(firstRender);
     }
 
-    private async void OnEventReceived(Core.Models.TelldusEventModel eventModel)
+    private async void OnEventReceived(Core.Models.ZWaveEventModel eventModel)
     {
         events.Add(eventModel);
         await InvokeAsync(StateHasChanged);
