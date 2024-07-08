@@ -12,6 +12,7 @@ namespace HomeAutomation.Core.Services
     public interface ITelldusAPIService
     {
         event Action<TelldusEventModel> TelldusEventReceived;
+        event Action<TelldusEventModel> TelldusRawEventReceived;
 
         Task<bool> SendCommand(int id, TelldusDeviceMethods command);
 
@@ -20,6 +21,8 @@ namespace HomeAutomation.Core.Services
         Task<TelldusDeviceMethods> GetLastCommand(int id);
 
         void SendLogMessage(string message);
+        void SendLogMessage(string message, DateTime timestamp);
+        void SendRawLogMessage(string message);
 
         DeviceEvent ConvertCommandToEvent(TelldusDeviceMethods command);
 
@@ -32,6 +35,7 @@ namespace HomeAutomation.Core.Services
         private readonly IConfiguration configuration = configuration;
 
         public event Action<TelldusEventModel> TelldusEventReceived;
+        public event Action<TelldusEventModel> TelldusRawEventReceived;
 
         public Task<IEnumerable<TelldusDeviceModel>> GetDevices()
         {
@@ -100,7 +104,17 @@ namespace HomeAutomation.Core.Services
 
         public void SendLogMessage(string message)
         {
-            TelldusEventReceived?.Invoke(new TelldusEventModel { Message = message, Timestamp = DateTime.Now });
+            SendLogMessage(message, DateTime.Now);
+        }
+
+        public void SendLogMessage(string message, DateTime timestamp)
+        {
+            TelldusEventReceived?.Invoke(new TelldusEventModel { Message = message, Timestamp = timestamp });
+        }
+
+        public void SendRawLogMessage(string message)
+        {
+            TelldusRawEventReceived?.Invoke(new TelldusEventModel { Message = message, Timestamp = DateTime.Now });
         }
 
         public DeviceEvent ConvertCommandToEvent(TelldusDeviceMethods command)

@@ -8,14 +8,19 @@ public class SensorValue
     [Key]
     [Required]
     public int ID { get; set; }
-    
+
     [Required]
-    public int TellstickID { get; set; }
+    public DeviceSource Source { get; set; }
+
+    [Required]
+    public string SourceID { get; set; } = null!;
 
     [Required]
     public SensorValueType Type { get; set; }
 
+    [Required]
     public string Value { get; set; } = null!;
 
+    [Required]
     public DateTime Timestamp { get; set; }
 }

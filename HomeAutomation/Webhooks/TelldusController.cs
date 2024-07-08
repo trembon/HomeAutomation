@@ -2,6 +2,7 @@
 using HomeAutomation.Core.Services;
 using HomeAutomation.Database.Contexts;
 using HomeAutomation.Database.Entities;
+using HomeAutomation.Database.Enums;
 using HomeAutomation.Entities.Enums;
 using HomeAutomation.Webhooks.Models.Telldus;
 using Microsoft.AspNetCore.Http;
@@ -19,19 +20,19 @@ namespace HomeAutomation.Webhooks
         private static readonly object duplicationRequestLock = new();
         private static readonly List<DuplicateRecord> duplicationRequestLog = [];
 
-        private ILogger<TelldusController> logger;
+        private readonly ILogger<TelldusController> logger;
 
-        private DefaultContext context;
+        private readonly ISensorValueService sensorValueService;
         private readonly IJsonDatabaseService jsonDatabaseService;
         private readonly ITelldusAPIService telldusAPIService;
         private readonly ITriggerService triggerService;
         private readonly IConfiguration configuration;
 
-        public TelldusController(DefaultContext context, IJsonDatabaseService jsonDatabaseService, ITelldusAPIService telldusAPIService, ITriggerService triggerService, IConfiguration configuration, ILogger<TelldusController> logger)
+        public TelldusController(ISensorValueService sensorValueService, IJsonDatabaseService jsonDatabaseService, ITelldusAPIService telldusAPIService, ITriggerService triggerService, IConfiguration configuration, ILogger<TelldusController> logger)
         {
             this.logger = logger;
 
-            this.context = context;
+            this.sensorValueService = sensorValueService;
             this.jsonDatabaseService = jsonDatabaseService;
             this.telldusAPIService = telldusAPIService;
             this.triggerService = triggerService;
@@ -46,7 +47,8 @@ namespace HomeAutomation.Webhooks
                 if (IsDuplicateRequest($"{model.SensorID}|{model.Type}|{model.Value}"))
                     return Ok(false);
             }
-            //await TelldusLogStream(new { Timestamp = model?.Timestamp, Message = $"DEVICE {model?.SensorID}: {model?.Type.ToString()} - {model?.Value}" });
+
+            telldusAPIService.SendLogMessage($"DEVICE {model?.SensorID}: {model?.Type.ToString()} - {model?.Value}", model?.Timestamp ?? DateTime.Now);
 
             var sensor = jsonDatabaseService.Sensors.FirstOrDefault(s => s.Source == DeviceSource.Telldus && s.SourceID == model?.SensorID.ToString());
             if (sensor != null)
@@ -60,17 +62,7 @@ namespace HomeAutomation.Webhooks
 
             try
             {
-                //SensorValue sensorValue = new SensorValue();
-                //sensorValue.TellstickID = model.SensorID;
-                //sensorValue.Type = model.Type;
-                //sensorValue.Value = model.Value;
-                //sensorValue.Timestamp = model.Timestamp;
-
-                //await context.SensorValues.AddAsync(sensorValue);
-                //await context.SaveChangesAsync();
-
-                //if (sensor != null)
-                //    sensor.LatestValues[model.Type] = sensorValue;
+                await sensorValueService.AddValue(DeviceSource.Telldus, model.SensorID.ToString(), model.Type, model.Value, model.Timestamp);
 
                 return Ok(true);
             }
@@ -89,6 +81,7 @@ namespace HomeAutomation.Webhooks
                 if (IsDuplicateRequest(model.DeviceID, model.Command, model.Parameter))
                     return Ok(false);
             }
+
             telldusAPIService.SendLogMessage($"DEVICEID {model?.DeviceID}: {model?.Command.ToString()} ({model?.Parameter})");
 
             var device = jsonDatabaseService.Devices.FirstOrDefault(s => s.Source == DeviceSource.Telldus && s.SourceID == model?.DeviceID.ToString());
@@ -112,7 +105,7 @@ namespace HomeAutomation.Webhooks
                     return Ok(false);
             }
 
-            telldusAPIService.SendLogMessage($"RAW: {model?.RawData} (Controller {model?.ControllerID})");
+            telldusAPIService.SendRawLogMessage($"RAW: {model?.RawData} (Controller {model?.ControllerID})");
             return Ok(true);
         }
 

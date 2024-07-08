@@ -1,4 +1,5 @@
 ﻿using HomeAutomation.Base.Converters;
+using HomeAutomation.Database.Enums;
 using HomeAutomation.Entities.Enums;
 using Newtonsoft.Json;
 using System;

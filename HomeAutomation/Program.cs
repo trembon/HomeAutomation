@@ -22,11 +22,13 @@ builder.Services.AddLoggingDatabaseContext(builder.Configuration.GetConnectionSt
 builder.Services.AddSingleton<ITuyaAPIService, TuyaAPIService>();
 builder.Services.AddSingleton<IZWaveAPIService, ZWaveAPIService>();
 builder.Services.AddSingleton<ITelldusAPIService, TelldusAPIService>();
+
 builder.Services.AddSingleton<IJsonDatabaseService, JsonDatabaseService>();
 builder.Services.AddSingleton<IEvaluateConditionService, EvaluateConditionService>();
 
 builder.Services.AddTransient<ISunDataService, SunDataService>();
 builder.Services.AddTransient<ITriggerService, TriggerService>();
+builder.Services.AddTransient<ISensorValueService, SensorValueService>();
 builder.Services.AddTransient<INotificationService, NotificationService>();
 builder.Services.AddTransient<IActionExecutionService, ActionExecutionService>();
 

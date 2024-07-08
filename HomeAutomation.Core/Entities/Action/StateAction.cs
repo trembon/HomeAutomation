@@ -1,6 +1,7 @@
 ﻿using HomeAutomation.Base.Enums;
 using HomeAutomation.Core.Entities;
 using HomeAutomation.Core.Services;
+using HomeAutomation.Database.Enums;
 using HomeAutomation.Entities.Enums;
 
 namespace HomeAutomation.Entities.Action
