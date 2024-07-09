@@ -6,12 +6,14 @@
 <MudTable Items="@devices" Hover="true" Loading="@(devices == null)" LoadingProgressColor="Color.Info">
     <HeaderContent>
         <MudTh>ID</MudTh>
+        <MudTh>Name</MudTh>
         <MudTh>IP</MudTh>
         <MudTh>ProductKey</MudTh>
         <MudTh>IsConnected</MudTh>
     </HeaderContent>
     <RowTemplate>
         <MudTd DataLabel="ID">@context.ID</MudTd>
+        <MudTd DataLabel="Name">@context.Name</MudTd>
         <MudTd DataLabel="IP">@context.IP</MudTd>
         <MudTd DataLabel="ProductKey">@context.ProductKey</MudTd>
         <MudTd DataLabel="IsConnected">@context.IsConnected</MudTd>
