@@ -16,10 +16,10 @@ namespace HomeAutomation.ScheduledJobs
     {
         public async Task Execute(DateTime currentExecution, DateTime? lastExecution, CancellationToken cancellationToken)
         {
-            logger.LogInformation("Schedule.PhoneCalls :: starting");
-
             if (configuration["PhoneLog:Enabled"] != "true")
                 return;
+
+            logger.LogInformation("Schedule.PhoneCalls :: starting");
 
             var calls = await ParsePhoneCalls();
             if (calls is not null)
