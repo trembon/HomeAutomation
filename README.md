@@ -27,10 +27,3 @@ Currently integrates the following:
 * [SmtpServer](http://cainosullivan.com/smtpserver) for translating mails to events from not-so-smart devices, like my IP cameras.
 * [YR.no](https://api.met.no/) for fetching sunrise and sunset data (and also storing weather data for future use).
 * [Slack](https://slack.com/) for free "sms" to my phone with whats happening.
-
-
-## Notes
-
-Yes, the web UI is crap, but everything its mostly notifications in Slack on my phone based on the JSON configuration.
-
-But, you have SignalR set up? Yes, though its currently only used for debugging and showing live messages from connected devices.
