@@ -50,7 +50,10 @@
     private void OnTimerCallback()
     {
         if (!visible)
+        {
             overlayImageUrl = string.Empty;
+            timer.Stop();
+        }
 
         _ = InvokeAsync(() =>
        {
