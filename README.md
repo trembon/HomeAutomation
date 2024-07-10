@@ -11,11 +11,16 @@ Also, this way I can keep all of the device data and logic offline and have full
 
 ## Roadmap
 
-I have some Tuya devices that I want to bring offline and try to integrate with this solution, but if a solution for that comes up its probably will be under the integrations part.
+Currently these are things that are in plan:
 
-There is also an older Android tablet that was bought with the purpose to sit on the wall and control everything.
-
-Otherwise, try to make the solution more stable without bugs (like that will happen).
+* Integrate my Ikea hub
+* Integrate my home alarm (verisure)
+* enable the system to sit on the wall with a tabelet
+* support to set up filters on triggers
+* show sensors in a good way
+* fetch information about when trash is due for pickup
+* move database.json to the postgres database
+* have a memory state for the devices to setup more advanced flows
 
 ## Integrations
 
