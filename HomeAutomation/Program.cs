@@ -18,6 +18,7 @@ builder.Services.AddRazorComponents()
 
 builder.Services.AddControllers();
 builder.Services.AddMudServices();
+builder.Services.AddHttpClient();
 
 builder.Services.AddDefaultDatabaseContext(builder.Configuration.GetConnectionString("Default")!);
 builder.Services.AddLoggingDatabaseContext(builder.Configuration.GetConnectionString("Logging")!);

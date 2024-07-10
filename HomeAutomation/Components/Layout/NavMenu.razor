@@ -1,5 +1,9 @@
 ﻿<MudNavMenu>
     <MudNavLink Href="/" Match="NavLinkMatch.All">Dashboard</MudNavLink>
+    <MudNavGroup Title="Devices" Expanded="true">
+        <MudNavLink Href="/devices/cameras" Match="NavLinkMatch.Prefix">Cameras</MudNavLink>
+        <MudNavLink Href="/devices/powerswitches" Match="NavLinkMatch.Prefix">Power Switches</MudNavLink>
+    </MudNavGroup>
     <MudNavGroup Title="Integrations" Expanded="false">
         <MudNavGroup Title="Telldus" Expanded="false">
             <MudNavLink Href="/telldus" Match="NavLinkMatch.Prefix">Devices</MudNavLink>
