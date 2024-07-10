@@ -1,0 +1,44 @@
+﻿@HomeAutomation_HostAddress = http://localhost:5226
+
+POST {{HomeAutomation_HostAddress}}/webhooks/zwave/healprogress
+Content-Type: application/json
+
+{
+  "timestamp": "{{$datetime iso8601}}",
+  "status": 513
+}
+
+###
+
+POST {{HomeAutomation_HostAddress}}/webhooks/zwave/discoveryprogress
+Content-Type: application/json
+
+{
+  "timestamp": "{{$datetime iso8601}}",
+  "status": 513
+}
+
+###
+
+POST {{HomeAutomation_HostAddress}}/webhooks/telldus/rawevents
+Content-Type: application/json
+
+{
+    "controllerID": {{$randomInt 1 9}},
+    "rawData": "this is just a raw message"
+}
+
+###
+
+POST {{HomeAutomation_HostAddress}}/webhooks/tuya/deviceupdate
+Content-Type: application/json
+
+{
+  "deviceId": "{{$randomInt 1000 9999}}",
+  "data": {
+      "1": true,
+      "2": "hello world"
+  }
+}
+
+###

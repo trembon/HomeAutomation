@@ -1,0 +1,27 @@
+﻿@page "/telldus"
+@inject ITelldusAPIService telldusAPIService
+
+<MudText Typo="Typo.h2" Class="mb-5">Telldus - Devices</MudText>
+
+<MudTable Items="@devices" Hover="true" Loading="@(devices == null)" LoadingProgressColor="Color.Info">
+    <HeaderContent>
+        <MudTh>ID</MudTh>
+        <MudTh>Model</MudTh>
+        <MudTh>Name</MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd DataLabel="ID">@context.ID</MudTd>
+        <MudTd DataLabel="Name">@context.Name</MudTd>
+        <MudTd DataLabel="Model">@context.Model</MudTd>
+    </RowTemplate>
+</MudTable>
+
+@code {
+    private Core.Models.TelldusDeviceModel[]? devices;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var result = await telldusAPIService.GetDevices();
+        devices = result.ToArray();
+    }
+}

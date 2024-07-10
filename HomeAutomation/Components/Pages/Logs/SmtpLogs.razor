@@ -1,0 +1,30 @@
+﻿@page "/logs/smtp"
+@using HomeAutomation.Database.Contexts
+@using Microsoft.EntityFrameworkCore
+@inject LogContext context
+
+<MudText Typo="Typo.h2" Class="mb-5">Logs - SMTP</MudText>
+
+<MudTable Items="@rows" Hover="true" Loading="@(rows == null)" LoadingProgressColor="Color.Info">
+    <HeaderContent>
+        <MudTh>Timestamp</MudTh>
+        <MudTh>Device Source</MudTh>
+        <MudTh>Device Source ID</MudTh>
+        <MudTh>Message ID</MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd DataLabel="Timestamp">@context.Timestamp</MudTd>
+        <MudTd DataLabel="DeviceSource">@context.DeviceSource</MudTd>
+        <MudTd DataLabel="DeviceSourceID">@context.DeviceSourceID</MudTd>
+        <MudTd DataLabel="MessageID">@context.MessageID</MudTd>
+    </RowTemplate>
+</MudTable>
+
+@code {
+    private Database.Entities.MailMessage[]? rows;
+
+    protected override async Task OnInitializedAsync()
+    {
+        rows = await context.MailMessages.OrderByDescending(x => x.Timestamp).Take(100).ToArrayAsync();
+    }
+}

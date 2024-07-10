@@ -1,0 +1,33 @@
+﻿@page "/telldus/event-stream"
+@inject ITelldusAPIService telldusAPIService
+
+<MudText Typo="Typo.h2" Class="mb-5">Telldus - Event Stream</MudText>
+
+<MudTable Items="@events" Hover="true" LoadingProgressColor="Color.Info">
+    <HeaderContent>
+        <MudTh>Timestamp</MudTh>
+        <MudTh>Message</MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd DataLabel="Timestamp">@context.Timestamp</MudTd>
+        <MudTd DataLabel="Message">@context.Message</MudTd>
+    </RowTemplate>
+</MudTable>
+
+@code {
+    private List<Core.Models.TelldusEventModel> events = [];
+
+    protected override Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+            telldusAPIService.TelldusEventReceived += OnEventReceived;
+
+        return base.OnAfterRenderAsync(firstRender);
+    }
+
+    private async void OnEventReceived(Core.Models.TelldusEventModel eventModel)
+    {
+        events.Add(eventModel);
+        await InvokeAsync(StateHasChanged);
+    }
+}

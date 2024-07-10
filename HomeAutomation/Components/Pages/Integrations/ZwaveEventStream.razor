@@ -1,0 +1,33 @@
+﻿@page "/z-wave/event-stream"
+@inject IZWaveAPIService zwaveAPIService
+
+<MudText Typo="Typo.h2" Class="mb-5">Z-Wave - Event Stream</MudText>
+
+<MudTable Items="@events" Hover="true" LoadingProgressColor="Color.Info">
+    <HeaderContent>
+        <MudTh>Timestamp</MudTh>
+        <MudTh>Message</MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd DataLabel="Timestamp">@context.Timestamp</MudTd>
+        <MudTd DataLabel="Message">@context.Message</MudTd>
+    </RowTemplate>
+</MudTable>
+
+@code {
+    private List<Core.Models.ZWaveEventModel> events = [];
+
+    protected override Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+            zwaveAPIService.ZWaveEventReceived += OnEventReceived;
+
+        return base.OnAfterRenderAsync(firstRender);
+    }
+
+    private async void OnEventReceived(Core.Models.ZWaveEventModel eventModel)
+    {
+        events.Add(eventModel);
+        await InvokeAsync(StateHasChanged);
+    }
+}

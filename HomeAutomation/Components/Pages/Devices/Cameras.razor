@@ -1,0 +1,63 @@
+﻿@page "/devices/cameras"
+@inject IJsonDatabaseService jsonDatabaseService
+
+<MudText Typo="Typo.h2" Class="mb-5">Devices - Cameras</MudText>
+
+<MudGrid>
+    @foreach(var camera in jsonDatabaseService.Cameras)
+    {
+        string cameraThumbnailUrl = $"/api/camera/capture/{camera.ID}/thumbnail";
+        <MudItem xs="6">
+            <MudCard>
+                <MudCardHeader>
+                    <CardHeaderContent>
+                        <MudText Typo="Typo.body1">@camera.Name</MudText>
+                    </CardHeaderContent>
+                    <CardHeaderActions>
+                        <MudIconButton Icon="@Icons.Material.Filled.PlayArrow" Color="Color.Default" OnClick="() => OpenOverlay(camera)" />
+                    </CardHeaderActions>
+                </MudCardHeader>
+                <MudCardMedia Image="@cameraThumbnailUrl" Style="background-size: contain;" />
+                <MudCardContent>
+                    <MudText Typo="Typo.body2">@camera.Source - @camera.SourceID</MudText>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+    }
+</MudGrid>
+
+<MudOverlay @bind-Visible="visible" DarkBackground="true" AutoClose="true">
+    <MudImage Src="@(overlayImageUrl + "?_cache=" + DateTime.Now.Ticks)" />
+</MudOverlay>
+
+@code {
+    private bool visible = false;
+    private string overlayImageUrl = string.Empty;
+    private System.Timers.Timer timer = new(1000);
+
+    public void OpenOverlay(Entities.Devices.CameraDevice camera)
+    {
+        visible = true;
+        overlayImageUrl = $"/api/camera/capture/{camera.ID}/overlay";
+
+        timer.Elapsed += (sender, eventArgs) => OnTimerCallback();
+        timer.AutoReset = true;
+        timer.Start();
+
+        StateHasChanged();
+    }
+
+    private void OnTimerCallback()
+    {
+        if (!visible)
+        {
+            overlayImageUrl = string.Empty;
+            timer.Stop();
+        }
+
+        _ = InvokeAsync(() =>
+       {
+           StateHasChanged();
+       });
+    }
+}
