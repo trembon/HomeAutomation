@@ -356,8 +356,6 @@ MigrationBackup/
 /HomeAutomation/wwwroot/webfonts
 /HomeAutomation/wwwroot/js/all.min.js
 /HomeAutomation/wwwroot/css/all.min.css
-/HomeAutomation/appsettings.json
-/HomeAutomation/database.json
 
 
 ## CUSTOM RULES ##
@@ -368,3 +366,9 @@ MigrationBackup/
 /_publish/
 /HomeAutomation/database.sqlite-wal
 /HomeAutomation/database.sqlite-shm
+
+
+
+/HomeAutomation/appsettings.Development.json
+/HomeAutomation/database.json
+/HomeAutomation/appsettings.Development.json
