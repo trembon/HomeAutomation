@@ -23,7 +23,6 @@ builder.Services.AddMudServices();
 builder.Services.AddHttpClient();
 
 builder.Services.AddDefaultDatabaseContext(builder.Configuration.GetConnectionString("Default")!);
-builder.Services.AddLoggingDatabaseContext(builder.Configuration.GetConnectionString("Logging")!);
 
 builder.Logging.Services.TryAddEnumerable(ServiceDescriptor.Singleton<ILoggerProvider, DatabaseLoggerProvider>());
 if (!builder.Environment.IsDevelopment())

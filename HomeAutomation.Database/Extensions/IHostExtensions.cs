@@ -10,7 +10,6 @@ public static class IHostExtensions
     public static void ApplyDatabaseMigrations(this IHost host)
     {
         host.ApplyDatabaseMigration<DefaultContext>();
-        host.ApplyDatabaseMigration<LogContext>();
     }
 
     private static void ApplyDatabaseMigration<TContext>(this IHost host) where TContext : DbContext

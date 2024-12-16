@@ -33,7 +33,7 @@ namespace HomeAutomation.Base.Logging
 
             try
             {
-                using LogContext db = serviceScope.ServiceProvider.GetRequiredService<LogContext>();
+                using DefaultContext db = serviceScope.ServiceProvider.GetRequiredService<DefaultContext>();
                 using IDbContextTransaction transaction = db.Database.BeginTransaction();
 
                 LogRow row = new LogRow

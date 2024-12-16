@@ -17,11 +17,6 @@ public static class IServiceCollectionExtensions
         services.AddDatabaseContext<DefaultContext>(postgressConnectionString);
     }
 
-    public static void AddLoggingDatabaseContext(this IServiceCollection services, string postgressConnectionString)
-    {
-        services.AddDatabaseContext<LogContext>(postgressConnectionString);
-    }
-
     private static void AddDatabaseContext<TContext>(this IServiceCollection services, string postgressConnectionString) where TContext : DbContext
     {
         string assemblyName = Assembly.GetExecutingAssembly().GetName().Name!;

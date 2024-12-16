@@ -5,7 +5,7 @@ using Microsoft.Extensions.Logging;
 
 namespace HomeAutomation.ScheduledJobs;
 
-public class CleanupLogScheduleJob(LogContext logContext, ILogger<CleanupLogScheduleJob> logger) : IScheduledJob
+public class CleanupLogScheduleJob(DefaultContext logContext, ILogger<CleanupLogScheduleJob> logger) : IScheduledJob
 {
     public async Task Execute(DateTime currentExecution, DateTime? lastExecution, CancellationToken cancellationToken)
     {
@@ -13,7 +13,6 @@ public class CleanupLogScheduleJob(LogContext logContext, ILogger<CleanupLogSche
 
         DateTime loglimit = DateTime.UtcNow.AddDays(-7); // TODO: place in configuration?
         _ = await logContext.Rows.Where(x => loglimit > x.Timestamp).ExecuteDeleteAsync();
-
 
         DateTime maillimit = DateTime.UtcNow.AddDays(-3); // TODO: place in configuration?
         _ = await logContext.MailMessages.Where(x => maillimit > x.Timestamp).ExecuteDeleteAsync();

@@ -4,14 +4,17 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
-namespace HomeAutomation.Database.Migrations.LogMigrations
+namespace HomeAutomation.Database.Migrations.DefaultMigrations
 {
     /// <inheritdoc />
-    public partial class postgres_init : Migration
+    public partial class mergeWithLog : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropTable(
+                name: "PhoneCalls");
+
             migrationBuilder.CreateTable(
                 name: "MailMessages",
                 columns: table => new
@@ -56,6 +59,22 @@ namespace HomeAutomation.Database.Migrations.LogMigrations
 
             migrationBuilder.DropTable(
                 name: "Rows");
+
+            migrationBuilder.CreateTable(
+                name: "PhoneCalls",
+                columns: table => new
+                {
+                    ID = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Length = table.Column<TimeSpan>(type: "interval", nullable: false),
+                    Number = table.Column<string>(type: "text", nullable: false),
+                    Timestamp = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    Type = table.Column<int>(type: "integer", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_PhoneCalls", x => x.ID);
+                });
         }
     }
 }

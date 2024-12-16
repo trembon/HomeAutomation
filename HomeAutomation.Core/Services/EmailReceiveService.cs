@@ -86,7 +86,7 @@ namespace HomeAutomation.Core.Services
                 EmlData = emlData
             };
 
-            var context = scope.ServiceProvider.GetService<LogContext>();
+            var context = scope.ServiceProvider.GetService<DefaultContext>();
 
             context.Add(mailMessage);
             await context.SaveChangesAsync();
