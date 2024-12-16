@@ -12,6 +12,7 @@ namespace HomeAutomation.Core.Services
     public interface ITelldusAPIService
     {
         event Action<TelldusEventModel> TelldusEventReceived;
+
         event Action<TelldusEventModel> TelldusRawEventReceived;
 
         Task<bool> SendCommand(int id, TelldusDeviceMethods command);
@@ -21,7 +22,9 @@ namespace HomeAutomation.Core.Services
         Task<TelldusDeviceMethods> GetLastCommand(int id);
 
         void SendLogMessage(string message);
+
         void SendLogMessage(string message, DateTime timestamp);
+
         void SendRawLogMessage(string message);
 
         DeviceEvent ConvertCommandToEvent(TelldusDeviceMethods command);
@@ -35,71 +38,44 @@ namespace HomeAutomation.Core.Services
         private readonly IConfiguration configuration = configuration;
 
         public event Action<TelldusEventModel> TelldusEventReceived;
+
         public event Action<TelldusEventModel> TelldusRawEventReceived;
 
-        public Task<IEnumerable<TelldusDeviceModel>> GetDevices()
+        public async Task<IEnumerable<TelldusDeviceModel>> GetDevices()
         {
-            string[] telldusDevices = configuration.GetSection("Telldus:APIURL").Get<string[]>();
+            string baseUrl = configuration.GetSection("Telldus:APIUrl").Get<string>();
 
-            List<TelldusDeviceModel> results = new();
-            Parallel.ForEach(telldusDevices, baseUrl =>
-            {
-                HttpRequestMessage request = new(HttpMethod.Get, $"{baseUrl}devices/");
+            HttpRequestMessage request = new(HttpMethod.Get, $"{baseUrl}devices/");
 
-                var sendTask = httpClient.SendAsync(request);
-                sendTask.Wait();
+            var response = await httpClient.SendAsync(request);
+            response.EnsureSuccessStatusCode();
 
-                HttpResponseMessage response = sendTask.Result;
-                response.EnsureSuccessStatusCode();
-
-                var readTask = response.Content.ReadFromJsonAsync<TelldusDeviceModel[]>();
-                readTask.Wait();
-                results.AddRange(readTask.Result);
-            });
-
-            return Task.FromResult(results.Distinct());
+            return await response.Content.ReadFromJsonAsync<TelldusDeviceModel[]>();
         }
 
         public async Task<bool> SendCommand(int id, TelldusDeviceMethods command)
         {
-            List<Task<HttpResponseMessage>> tasks = new();
+            string baseUrl = configuration.GetSection("Telldus:APIUrl").Get<string>();
 
-            string[] telldusControllers = configuration.GetSection("Telldus:APIURL").Get<string[]>();
-            for (int i = 0; i < telldusControllers.Length; i++)
-            {
-                // send the request to the controller
-                HttpRequestMessage request = new(HttpMethod.Post, $"{telldusControllers[i]}devices/{id}/send/{command}");
+            // send the request to the controller
+            HttpRequestMessage request = new(HttpMethod.Post, $"{baseUrl}devices/{id}/send/{command}");
 
-                // wait for an OK
-                var task = httpClient.SendAsync(request);
-                tasks.Add(task);
-            }
+            // wait for an OK
+            var result = await httpClient.SendAsync(request);
 
-            var results = await Task.WhenAll(tasks);
-            return results.All(x => x.IsSuccessStatusCode);
+            return result.IsSuccessStatusCode;
         }
 
-        public Task<TelldusDeviceMethods> GetLastCommand(int id)
+        public async Task<TelldusDeviceMethods> GetLastCommand(int id)
         {
-            string[] telldusDevices = configuration.GetSection("Telldus:APIURL").Get<string[]>();
+            string baseUrl = configuration.GetSection("Telldus:APIUrl").Get<string>();
 
-            List<TelldusDeviceMethods> results = new();
-            Parallel.ForEach(telldusDevices, baseUrl =>
-            {
-                HttpRequestMessage request = new(HttpMethod.Get, $"{baseUrl}devices/{id}/lastcommand");
+            HttpRequestMessage request = new(HttpMethod.Get, $"{baseUrl}devices/{id}/lastcommand");
 
-                var sendTask = httpClient.SendAsync(request);
-                sendTask.Wait();
+            var response = await httpClient.SendAsync(request);
+            response.EnsureSuccessStatusCode();
 
-                HttpResponseMessage response = sendTask.Result;
-                response.EnsureSuccessStatusCode();
-
-                var readTask = response.Content.ReadFromJsonAsync<TelldusDeviceMethods>();
-                readTask.Wait();
-                results.Add(readTask.Result);
-            });
-
-            return Task.FromResult(results.FirstOrDefault());
+            return await response.Content.ReadFromJsonAsync<TelldusDeviceMethods>();
         }
 
         public void SendLogMessage(string message)
