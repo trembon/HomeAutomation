@@ -45,7 +45,6 @@ builder.Services.AddTransient<IActionExecutionService, ActionExecutionService>()
 builder.Services.AddScheduleJob<CleanupLogScheduleJob>();
 builder.Services.AddScheduleJob<ImportSunDataScheduleJob>();
 builder.Services.AddScheduleJob<ImportWeatherDataScheduledJob>();
-builder.Services.AddScheduleJob<PhoneCallLogScheduleJob>();
 builder.Services.AddScheduleJob<TriggerScheduledJob>();
 
 var app = builder.Build();

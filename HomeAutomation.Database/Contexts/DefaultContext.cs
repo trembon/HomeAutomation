@@ -11,8 +11,6 @@ public class DefaultContext(DbContextOptions<DefaultContext> options) : DbContex
 
     public DbSet<WeatherForecast> WeatherForecast { get; set; }
 
-    public DbSet<PhoneCall> PhoneCalls { get; set; }
-
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
