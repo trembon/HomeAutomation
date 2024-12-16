@@ -1,6 +1,7 @@
 ﻿using HomeAutomation.Entities;
 using HomeAutomation.Entities.Devices;
 using HomeAutomation.Entities.Triggers;
+using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 using System.Text;
 
@@ -35,7 +36,7 @@ namespace HomeAutomation.Core.Services
 
     public class JsonDatabaseService : IJsonDatabaseService
     {
-        private const string DATABASE_FILE = "database.json";
+        private string DATABASE_FILE = "database.json";
 
         private static readonly object readMemoryEntitiesLock = new();
         private static readonly object writeMemoryEntitiesLock = new();
@@ -43,6 +44,7 @@ namespace HomeAutomation.Core.Services
         private FileSystemWatcher configurationWatcher;
 
         private MemoryEntities memoryEntities;
+
         public MemoryEntities MemoryEntities
         {
             get
@@ -70,8 +72,9 @@ namespace HomeAutomation.Core.Services
 
         public IEnumerable<DeviceTrigger> StateTriggers => MemoryEntities.Triggers.OfType<DeviceTrigger>();
 
-        public JsonDatabaseService()
+        public JsonDatabaseService(IConfiguration configuration)
         {
+            DATABASE_FILE = configuration.GetConnectionString("Json") ?? DATABASE_FILE;
         }
 
         public void Initialize()
