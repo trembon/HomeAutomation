@@ -20,6 +20,17 @@ Content-Type: application/json
 
 ###
 
+POST {{HomeAutomation_HostAddress}}/webhooks/telldus/deviceevents
+Content-Type: application/json
+
+{
+    "deviceID": 13,
+    "command": 1,
+    "parameter": ""
+}
+
+###
+
 POST {{HomeAutomation_HostAddress}}/webhooks/telldus/rawevents
 Content-Type: application/json
 

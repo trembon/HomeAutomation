@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using SlackNet;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -8,19 +9,13 @@ using System.Threading.Tasks;
 
 namespace HomeAutomation.Base.Logging
 {
-    public class SlackLoggerProvider : ILoggerProvider
+    public class SlackLoggerProvider(ISlackApiClient slackApiClient) : ILoggerProvider
     {
-        private string slackToken;
-        private readonly ConcurrentDictionary<string, SlackLogger> loggers = new ConcurrentDictionary<string, SlackLogger>();
+        private readonly ConcurrentDictionary<string, SlackLogger> loggers = new();
 
-        public SlackLoggerProvider(IConfiguration configuration)
+        public Microsoft.Extensions.Logging.ILogger CreateLogger(string categoryName)
         {
-            this.slackToken = configuration["Slack:Token"] ?? throw new InvalidOperationException("Configuration Slack:Token does not exist");
-        }
-
-        public ILogger CreateLogger(string categoryName)
-        {
-            return loggers.GetOrAdd(categoryName, name => new SlackLogger(categoryName, slackToken));
+            return loggers.GetOrAdd(categoryName, name => new SlackLogger(categoryName, slackApiClient));
         }
 
         public void Dispose()

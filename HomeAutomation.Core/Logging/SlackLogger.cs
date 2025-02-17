@@ -1,25 +1,18 @@
 ﻿using Microsoft.Extensions.Logging;
-using SlackAPI;
+using SlackNet;
+using SlackNet.WebApi;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
+using ILogger = Microsoft.Extensions.Logging.ILogger;
 
 namespace HomeAutomation.Base.Logging
 {
-    public class SlackLogger : ILogger
+    public class SlackLogger(string categoryName, ISlackApiClient slackApiClient) : ILogger
     {
-        private readonly string categoryName;
-        private readonly string slackToken;
-
-        public SlackLogger(string categoryName, string slackToken)
-        {
-            this.categoryName = categoryName;
-            this.slackToken = slackToken;
-        }
-
         public IDisposable BeginScope<TState>(TState state)
         {
             return null;
@@ -39,25 +32,21 @@ namespace HomeAutomation.Base.Logging
             {
                 string message = $"{categoryName}: {formatter(state, exception)}";
                 if (exception != null)
-                    message =  $"{categoryName}: {formatter(state, exception)}\n{exception.GetType().Name}: {exception.Message}\n{exception.StackTrace}";
+                    message = $"{categoryName}: {formatter(state, exception)}\n{exception.GetType().Name}: {exception.Message}\n{exception.StackTrace}";
 
-                SlackTaskClient slackClient = new SlackTaskClient(slackToken);
-                var response = await slackClient.PostMessageAsync("errors", message);
+                var response = await slackApiClient.Chat.PostMessage(new Message
+                {
+                    Channel = "errors",
+                    Text = message,
+                });
 
-                if (!response.ok)
+                if (response is not null)
                     throw new Exception("Slack communication error.");
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"{DateTime.Now} - ERROR: Failed to send log to slack. ({ex.GetType().FullName}: {ex.Message})");
             }
-        }
-
-        public class SendMessageModel
-        {
-            public bool Result { get; set; }
-
-            public string ErrorMessage { get; set; }
         }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using SlackAPI;
+using SlackNet;
+using SlackNet.WebApi;
 
 namespace HomeAutomation.Core.Services
 {
@@ -11,27 +12,19 @@ namespace HomeAutomation.Core.Services
         Task<bool> SendToSlack(string channel, string message, byte[] file, string fileName, string fileType);
     }
 
-    public class NotificationService : INotificationService
+    public class NotificationService(ISlackApiClient slackApiClient, IHttpClientFactory httpClientFactory, ILogger<NotificationService> logger) : INotificationService
     {
-        private readonly ILogger<NotificationService> logger;
-
-        private readonly IConfiguration configuration;
-
-        public NotificationService(IConfiguration configuration, ILogger<NotificationService> logger)
-        {
-            this.logger = logger;
-
-            this.configuration = configuration;
-        }
-
         public async Task<bool> SendToSlack(string channel, string message)
         {
             try
             {
-                SlackTaskClient slackClient = new(configuration["Slack:Token"]);
-                var response = await slackClient.PostMessageAsync(channel, message);
+                var response = await slackApiClient.Chat.PostMessage(new Message
+                {
+                    Channel = channel,
+                    Text = message,
+                });
 
-                if (response.ok)
+                if (response is not null)
                 {
                     return true;
                 }
@@ -47,23 +40,29 @@ namespace HomeAutomation.Core.Services
                 return false;
             }
         }
-        
+
         public async Task<bool> SendToSlack(string channel, string message, byte[] file, string fileName, string fileType)
         {
             try
             {
-                SlackTaskClient slackClient = new(configuration["Slack:Token"]);
-                var response = await slackClient.UploadFileAsync(file, fileName, new string[] { channel }, initialComment: message, fileType: fileType);
+                var channels = await slackApiClient.Conversations.List(true);
 
-                if (response.ok)
+                var response = await slackApiClient.Files.GetUploadUrlExternal(fileName, file.Length);
+                if (response is not null)
                 {
-                    return true;
+                    var client = httpClientFactory.CreateClient(nameof(NotificationService));
+                    var uploadResult = await client.PostAsync(response.UploadUrl, new ByteArrayContent(file));
+
+                    uploadResult.EnsureSuccessStatusCode();
+
+                    string? channelId = channels?.Channels?.FirstOrDefault(x => x.Name == channel)?.Id;
+                    var completeResponse = await slackApiClient.Files.CompleteUploadExternal([new ExternalFileReference { Id = response.FileId, Title = fileName }], channelId, message);
+                    if (completeResponse.Any())
+                        return true;
                 }
-                else
-                {
-                    logger.LogError($"Failed to send file notification to slack.");
-                    return false;
-                }
+
+                logger.LogError($"Failed to send file notification to slack.");
+                return false;
             }
             catch (Exception ex)
             {

@@ -2,6 +2,7 @@ using HomeAutomation.Client.Pages;
 using HomeAutomation.Components;
 using HomeAutomation.Database.Extensions;
 using HomeAutomation.ScheduledJobs;
+using HomeAutomation.Core;
 using HomeAutomation.Core.Extensions;
 using HomeAutomation.Core.Services;
 using MudBlazor.Services;
@@ -45,6 +46,8 @@ builder.Services.AddScheduleJob<CleanupLogScheduleJob>();
 builder.Services.AddScheduleJob<ImportSunDataScheduleJob>();
 builder.Services.AddScheduleJob<ImportWeatherDataScheduledJob>();
 builder.Services.AddScheduleJob<TriggerScheduledJob>();
+
+builder.Services.AddSlackClient(builder.Configuration);
 
 var app = builder.Build();
 
