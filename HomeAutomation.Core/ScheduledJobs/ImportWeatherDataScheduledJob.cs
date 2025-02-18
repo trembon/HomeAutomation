@@ -20,7 +20,7 @@ public class ImportWeatherDataScheduledJob(DefaultContext context, ISunDataServi
         WeatherData weatherData = null;
         try
         {
-            using(var client = new WebClient())
+            using (var client = new WebClient())
             {
                 using (Stream data = await client.OpenReadTaskAsync(configuration["Forecasts:WeatherUrl"]))
                 {
@@ -29,7 +29,7 @@ public class ImportWeatherDataScheduledJob(DefaultContext context, ISunDataServi
                 }
             }
         }
-        catch(Exception ex)
+        catch (Exception ex)
         {
             logger.LogError(ex, $"Failed to fetch weather and sun information.");
         }
@@ -45,10 +45,10 @@ public class ImportWeatherDataScheduledJob(DefaultContext context, ISunDataServi
             DateTime date = weatherData.Forecast.Tabular.Time.OrderBy(t => t.From).Select(t => t.From.Date).FirstOrDefault();
             var previousForecast = context.WeatherForecast.OrderBy(wf => wf.Date).ThenBy(wf => wf.Period).Where(wf => wf.Date >= date).ToList();
 
-            foreach(var item in weatherData.Forecast.Tabular.Time)
+            foreach (var item in weatherData.Forecast.Tabular.Time)
             {
                 WeatherForecast forecast = previousForecast.FirstOrDefault(f => f.Date == item.From.Date && (int)f.Period == item.Period);
-                if(forecast == null)
+                if (forecast == null)
                 {
                     forecast = new WeatherForecast();
                     context.WeatherForecast.Add(forecast);

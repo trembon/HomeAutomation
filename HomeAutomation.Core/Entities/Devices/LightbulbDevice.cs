@@ -1,6 +1,5 @@
-﻿namespace HomeAutomation.Entities.Devices
+﻿namespace HomeAutomation.Entities.Devices;
+
+public class LightbulbDevice : Device
 {
-    public class LightbulbDevice : Device
-    {
-    }
 }

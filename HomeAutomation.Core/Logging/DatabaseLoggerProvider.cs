@@ -10,30 +10,29 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 
-namespace HomeAutomation.Base.Logging
+namespace HomeAutomation.Base.Logging;
+
+public class DatabaseLoggerProvider : ILoggerProvider
 {
-    public class DatabaseLoggerProvider : ILoggerProvider
+    private readonly ConcurrentDictionary<string, DatabaseLogger> loggers;
+    private readonly string baseNamespace;
+    private readonly IServiceProvider serviceProvider;
+
+    public DatabaseLoggerProvider(IServiceProvider serviceProvider)
     {
-        private readonly ConcurrentDictionary<string, DatabaseLogger> loggers;
-        private readonly string baseNamespace;
-        private readonly IServiceProvider serviceProvider;
+        this.loggers = new ConcurrentDictionary<string, DatabaseLogger>();
+        this.baseNamespace = "HomeAutomation";
+        this.serviceProvider = serviceProvider;
+    }
 
-        public DatabaseLoggerProvider(IServiceProvider serviceProvider)
-        {
-            this.loggers = new ConcurrentDictionary<string, DatabaseLogger>();
-            this.baseNamespace = "HomeAutomation";
-            this.serviceProvider = serviceProvider;
-        }
+    public ILogger CreateLogger(string categoryName)
+    {
+        bool enabled = categoryName.StartsWith(baseNamespace); // only enable database logging for this dll
+        return loggers.GetOrAdd(categoryName, name => new DatabaseLogger(name, serviceProvider.CreateScope(), enabled));
+    }
 
-        public ILogger CreateLogger(string categoryName)
-        {
-            bool enabled = categoryName.StartsWith(baseNamespace); // only enable database logging for this dll
-            return loggers.GetOrAdd(categoryName, name => new DatabaseLogger(name, serviceProvider.CreateScope(), enabled));
-        }
-
-        public void Dispose()
-        {
-            loggers.Clear();
-        }
+    public void Dispose()
+    {
+        loggers.Clear();
     }
 }

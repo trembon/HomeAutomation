@@ -35,8 +35,8 @@ public class TriggerScheduledJob(IJsonDatabaseService jsonDatabaseService, ISunD
         var sunData = sunDataService.GetLatest();
 
         DateTime calculatedAt = DateTime.Today;
-        
-        if(mode == ScheduleMode.Sunrise)
+
+        if (mode == ScheduleMode.Sunrise)
             calculatedAt = calculatedAt.Add(sunData.Sunrise.ToTimeSpan());
 
         if (mode == ScheduleMode.Sunset)

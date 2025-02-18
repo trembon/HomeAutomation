@@ -2,37 +2,36 @@
 using HomeAutomation.Entities;
 using HomeAutomation.Entities.Conditions;
 
-namespace HomeAutomation.Core.Services
+namespace HomeAutomation.Core.Services;
+
+public interface IEvaluateConditionService
 {
-    public interface IEvaluateConditionService
+    Task<bool> MeetConditions(IEntity source, IEnumerable<Condition> conditions);
+}
+
+public class EvaluateConditionService : IEvaluateConditionService
+{
+    private readonly IServiceProvider serviceProvider;
+
+    public EvaluateConditionService(IServiceProvider serviceProvider)
     {
-        Task<bool> MeetConditions(IEntity source, IEnumerable<Condition> conditions);
+        this.serviceProvider = serviceProvider;
     }
 
-    public class EvaluateConditionService : IEvaluateConditionService
+    public async Task<bool> MeetConditions(IEntity source, IEnumerable<Condition> conditions)
     {
-        private readonly IServiceProvider serviceProvider;
+        // if there are no conditions to match, conditions are "meet"
+        if (conditions == null || conditions.Count() == 0)
+            return true;
 
-        public EvaluateConditionService(IServiceProvider serviceProvider)
+        List<bool> results = new(conditions.Count());
+        foreach (var condition in conditions)
         {
-            this.serviceProvider = serviceProvider;
+            var arguments = new ConditionExecutionArguments(source, serviceProvider);
+            bool result = await condition.Check(arguments);
+            results.Add(result);
         }
 
-        public async Task<bool> MeetConditions(IEntity source, IEnumerable<Condition> conditions)
-        {
-            // if there are no conditions to match, conditions are "meet"
-            if (conditions == null || conditions.Count() == 0)
-                return true;
-
-            List<bool> results = new(conditions.Count());
-            foreach(var condition in conditions)
-            {
-                var arguments = new ConditionExecutionArguments(source, serviceProvider);
-                bool result = await condition.Check(arguments);
-                results.Add(result);
-            }
-
-            return results.All(x => x);
-        }
+        return results.All(x => x);
     }
 }

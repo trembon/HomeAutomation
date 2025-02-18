@@ -2,53 +2,52 @@
 using HomeAutomation.Core.Services;
 using HomeAutomation.Entities.Enums;
 
-namespace HomeAutomation.Entities.Conditions
+namespace HomeAutomation.Entities.Conditions;
+
+public class TimeCondition : Condition
 {
-    public class TimeCondition : Condition
+    public ScheduleMode Mode { get; set; }
+
+    public TimeSpan? Time { get; set; }
+
+    public CompareType Compare { get; set; }
+
+    public override Task<bool> Check(ConditionExecutionArguments arguments)
     {
-        public ScheduleMode Mode { get; set; }
+        DateTime compareDateTime = DateTime.Today;
 
-        public TimeSpan? Time { get; set; }
-
-        public CompareType Compare { get; set; }
-
-        public override Task<bool> Check(ConditionExecutionArguments arguments)
+        if (Mode == ScheduleMode.Time)
         {
-            DateTime compareDateTime = DateTime.Today;
+            compareDateTime = compareDateTime.Add(Time ?? new TimeSpan(0));
+        }
+        else
+        {
+            var service = arguments.GetService<ISunDataService>();
+            var sunData = service.GetLatest();
 
-            if(Mode == ScheduleMode.Time)
+            if (Mode == ScheduleMode.Sunrise)
             {
-                compareDateTime = compareDateTime.Add(Time ?? new TimeSpan(0));
+                compareDateTime = compareDateTime.Add(sunData.Sunrise.ToTimeSpan());
             }
             else
             {
-                var service = arguments.GetService<ISunDataService>();
-                var sunData = service.GetLatest();
-
-                if(Mode == ScheduleMode.Sunrise)
-                {
-                    compareDateTime = compareDateTime.Add(sunData.Sunrise.ToTimeSpan());
-                }
-                else
-                {
-                    compareDateTime = compareDateTime.Add(sunData.Sunset.ToTimeSpan());
-                }
-
-                if (Time.HasValue)
-                    compareDateTime = compareDateTime.Add(Time.Value);
+                compareDateTime = compareDateTime.Add(sunData.Sunset.ToTimeSpan());
             }
 
-            bool result = false;
-            if(Compare == CompareType.GreaterThan)
-            {
-                result = DateTime.Now > compareDateTime;
-            }
-            else if (Compare == CompareType.LesserThan)
-            {
-                result = compareDateTime > DateTime.Now;
-            }
-
-            return Task.FromResult(result);
+            if (Time.HasValue)
+                compareDateTime = compareDateTime.Add(Time.Value);
         }
+
+        bool result = false;
+        if (Compare == CompareType.GreaterThan)
+        {
+            result = DateTime.Now > compareDateTime;
+        }
+        else if (Compare == CompareType.LesserThan)
+        {
+            result = compareDateTime > DateTime.Now;
+        }
+
+        return Task.FromResult(result);
     }
 }

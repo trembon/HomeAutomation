@@ -1,6 +1,5 @@
-﻿namespace HomeAutomation.Entities.Devices
+﻿namespace HomeAutomation.Entities.Devices;
+
+public class MotionSensorDevice : Device
 {
-    public class MotionSensorDevice : Device
-    {
-    }
 }

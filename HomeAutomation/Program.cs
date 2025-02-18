@@ -1,15 +1,15 @@
+using HomeAutomation.Base.Logging;
 using HomeAutomation.Client.Pages;
 using HomeAutomation.Components;
-using HomeAutomation.Database.Extensions;
-using HomeAutomation.ScheduledJobs;
 using HomeAutomation.Core;
 using HomeAutomation.Core.Extensions;
 using HomeAutomation.Core.Services;
-using MudBlazor.Services;
-using HomeAutomation.Base.Logging;
+using HomeAutomation.Database.Extensions;
+using HomeAutomation.ScheduledJobs;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Hosting.Internal;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Hosting.Internal;
+using MudBlazor.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 

@@ -2,24 +2,23 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace HomeAutomation.Base.Extensions
-{
-    internal static class EventExtensions
-    {
-        internal static void Trigger(this EventHandler eventHandler, object sender, EventArgs eventArgs)
-        {
-            if (eventHandler != null)
-            {
-                eventHandler.Invoke(sender, eventArgs);
-            }
-        }
+namespace HomeAutomation.Base.Extensions;
 
-        internal static void Trigger<TEventArgs>(this EventHandler<TEventArgs> eventHandler, object sender, TEventArgs eventArgs) where TEventArgs : EventArgs
+internal static class EventExtensions
+{
+    internal static void Trigger(this EventHandler eventHandler, object sender, EventArgs eventArgs)
+    {
+        if (eventHandler != null)
         {
-            if (eventHandler != null)
-            {
-                eventHandler.Invoke(sender, eventArgs);
-            }
+            eventHandler.Invoke(sender, eventArgs);
+        }
+    }
+
+    internal static void Trigger<TEventArgs>(this EventHandler<TEventArgs> eventHandler, object sender, TEventArgs eventArgs) where TEventArgs : EventArgs
+    {
+        if (eventHandler != null)
+        {
+            eventHandler.Invoke(sender, eventArgs);
         }
     }
 }

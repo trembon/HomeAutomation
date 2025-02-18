@@ -3,9 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace HomeAutomation.Entities.Devices
+namespace HomeAutomation.Entities.Devices;
+
+public class PowerSwitchDevice : Device
 {
-    public class PowerSwitchDevice : Device
-    {
-    }
 }

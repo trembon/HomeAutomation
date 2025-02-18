@@ -7,86 +7,85 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace HomeAutomation.Core.Services
-{
-    public interface ISunDataService
-    {
-        SunData GetLatest();
+namespace HomeAutomation.Core.Services;
 
-        bool Add(DateOnly date, TimeOnly sunrise, TimeOnly sunset);
+public interface ISunDataService
+{
+    SunData GetLatest();
+
+    bool Add(DateOnly date, TimeOnly sunrise, TimeOnly sunset);
+}
+
+public class SunDataService : ISunDataService
+{
+    private readonly ILogger<SunDataService> logger;
+
+    private readonly DefaultContext context;
+
+    private static SunData latestCache;
+    private static object latestCacheLock = new object();
+
+    public SunDataService(DefaultContext context, ILogger<SunDataService> logger)
+    {
+        this.logger = logger;
+
+        this.context = context;
     }
 
-    public class SunDataService : ISunDataService
+    public bool Add(DateOnly date, TimeOnly sunrise, TimeOnly sunset)
     {
-        private readonly ILogger<SunDataService> logger;
-
-        private readonly DefaultContext context;
-
-        private static SunData latestCache;
-        private static object latestCacheLock = new object();
-
-        public SunDataService(DefaultContext context, ILogger<SunDataService> logger)
+        lock (latestCacheLock)
         {
-            this.logger = logger;
+            if (context.SunData.Any(sd => sd.Date == date))
+                return false;
 
-            this.context = context;
-        }
+            logger.LogInformation("Updating sun information.");
 
-        public bool Add(DateOnly date, TimeOnly sunrise, TimeOnly sunset)
-        {
-            lock (latestCacheLock)
+            try
             {
-                if (context.SunData.Any(sd => sd.Date == date))
-                    return false;
+                SunData sunData = new()
+                {
+                    Date = date,
+                    Sunrise = sunrise,
+                    Sunset = sunset
+                };
 
-                logger.LogInformation("Updating sun information.");
+                context.Add(sunData);
+                bool result = context.SaveChanges() > 0;
 
+                if (latestCache == null || (result && sunData.Date > latestCache.Date))
+                    latestCache = sunData;
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, $"Failed to store sun information in database ({date.ToShortDateString()}).");
+                return false;
+            }
+        }
+    }
+
+    public SunData GetLatest()
+    {
+        lock (latestCacheLock)
+        {
+            if (latestCache == null)
+            {
                 try
                 {
-                    SunData sunData = new()
-                    {
-                        Date = date,
-                        Sunrise = sunrise,
-                        Sunset = sunset
-                    };
-
-                    context.Add(sunData);
-                    bool result = context.SaveChanges() > 0;
-
-                    if (latestCache == null || (result && sunData.Date > latestCache.Date))
-                        latestCache = sunData;
-
-                    return result;
+                    latestCache = context.SunData.OrderByDescending(sd => sd.Date).FirstOrDefault();
                 }
                 catch (Exception ex)
                 {
-                    logger.LogError(ex, $"Failed to store sun information in database ({date.ToShortDateString()}).");
-                    return false;
+                    logger.LogError(ex, $"Failed to fetch sun information from database.");
                 }
             }
-        }
 
-        public SunData GetLatest()
-        {
-            lock (latestCacheLock)
-            {
-                if (latestCache == null)
-                {
-                    try
-                    {
-                        latestCache = context.SunData.OrderByDescending(sd => sd.Date).FirstOrDefault();
-                    }
-                    catch (Exception ex)
-                    {
-                        logger.LogError(ex, $"Failed to fetch sun information from database.");
-                    }
-                }
+            if (latestCache == null)
+                return new SunData { ID = 0, Date = DateOnly.FromDateTime(DateTime.Today.AddDays(-1)), Sunrise = new TimeOnly(8, 0), Sunset = new TimeOnly(20, 0) };
 
-                if(latestCache == null)
-                    return new SunData { ID = 0, Date = DateOnly.FromDateTime(DateTime.Today.AddDays(-1)), Sunrise = new TimeOnly(8, 0), Sunset = new TimeOnly(20, 0) };
-
-                return latestCache;
-            }
+            return latestCache;
         }
     }
 }

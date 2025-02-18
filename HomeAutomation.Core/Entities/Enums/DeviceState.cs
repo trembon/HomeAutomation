@@ -3,11 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace HomeAutomation.Entities.Enums
+namespace HomeAutomation.Entities.Enums;
+
+public enum DeviceState
 {
-    public enum DeviceState
-    {
-        On,
-        Off
-    }
+    On,
+    Off
 }

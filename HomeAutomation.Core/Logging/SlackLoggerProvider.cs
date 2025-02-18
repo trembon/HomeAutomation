@@ -7,20 +7,19 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace HomeAutomation.Base.Logging
+namespace HomeAutomation.Base.Logging;
+
+public class SlackLoggerProvider(ISlackApiClient slackApiClient) : ILoggerProvider
 {
-    public class SlackLoggerProvider(ISlackApiClient slackApiClient) : ILoggerProvider
+    private readonly ConcurrentDictionary<string, SlackLogger> loggers = new();
+
+    public Microsoft.Extensions.Logging.ILogger CreateLogger(string categoryName)
     {
-        private readonly ConcurrentDictionary<string, SlackLogger> loggers = new();
+        return loggers.GetOrAdd(categoryName, name => new SlackLogger(categoryName, slackApiClient));
+    }
 
-        public Microsoft.Extensions.Logging.ILogger CreateLogger(string categoryName)
-        {
-            return loggers.GetOrAdd(categoryName, name => new SlackLogger(categoryName, slackApiClient));
-        }
-
-        public void Dispose()
-        {
-            loggers.Clear();
-        }
+    public void Dispose()
+    {
+        loggers.Clear();
     }
 }

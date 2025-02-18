@@ -3,72 +3,71 @@ using Microsoft.Extensions.Logging;
 using SlackNet;
 using SlackNet.WebApi;
 
-namespace HomeAutomation.Core.Services
+namespace HomeAutomation.Core.Services;
+
+public interface INotificationService
 {
-    public interface INotificationService
-    {
-        Task<bool> SendToSlack(string channel, string message);
+    Task<bool> SendToSlack(string channel, string message);
 
-        Task<bool> SendToSlack(string channel, string message, byte[] file, string fileName, string fileType);
-    }
+    Task<bool> SendToSlack(string channel, string message, byte[] file, string fileName, string fileType);
+}
 
-    public class NotificationService(ISlackApiClient slackApiClient, IHttpClientFactory httpClientFactory, ILogger<NotificationService> logger) : INotificationService
+public class NotificationService(ISlackApiClient slackApiClient, IHttpClientFactory httpClientFactory, ILogger<NotificationService> logger) : INotificationService
+{
+    public async Task<bool> SendToSlack(string channel, string message)
     {
-        public async Task<bool> SendToSlack(string channel, string message)
+        try
         {
-            try
+            var response = await slackApiClient.Chat.PostMessage(new Message
             {
-                var response = await slackApiClient.Chat.PostMessage(new Message
-                {
-                    Channel = channel,
-                    Text = message,
-                });
+                Channel = channel,
+                Text = message,
+            });
 
-                if (response is not null)
-                {
-                    return true;
-                }
-                else
-                {
-                    logger.LogError($"Failed to send notification to slack.");
-                    return false;
-                }
-            }
-            catch (Exception ex)
+            if (response is not null)
             {
-                logger.LogError(ex, $"Failed to send notification to slack. ({ex.GetType().Name}: {ex.Message})");
+                return true;
+            }
+            else
+            {
+                logger.LogError($"Failed to send notification to slack.");
                 return false;
             }
         }
-
-        public async Task<bool> SendToSlack(string channel, string message, byte[] file, string fileName, string fileType)
+        catch (Exception ex)
         {
-            try
+            logger.LogError(ex, $"Failed to send notification to slack. ({ex.GetType().Name}: {ex.Message})");
+            return false;
+        }
+    }
+
+    public async Task<bool> SendToSlack(string channel, string message, byte[] file, string fileName, string fileType)
+    {
+        try
+        {
+            var channels = await slackApiClient.Conversations.List(true);
+
+            var response = await slackApiClient.Files.GetUploadUrlExternal(fileName, file.Length);
+            if (response is not null)
             {
-                var channels = await slackApiClient.Conversations.List(true);
+                var client = httpClientFactory.CreateClient(nameof(NotificationService));
+                var uploadResult = await client.PostAsync(response.UploadUrl, new ByteArrayContent(file));
 
-                var response = await slackApiClient.Files.GetUploadUrlExternal(fileName, file.Length);
-                if (response is not null)
-                {
-                    var client = httpClientFactory.CreateClient(nameof(NotificationService));
-                    var uploadResult = await client.PostAsync(response.UploadUrl, new ByteArrayContent(file));
+                uploadResult.EnsureSuccessStatusCode();
 
-                    uploadResult.EnsureSuccessStatusCode();
-
-                    string? channelId = channels?.Channels?.FirstOrDefault(x => x.Name == channel)?.Id;
-                    var completeResponse = await slackApiClient.Files.CompleteUploadExternal([new ExternalFileReference { Id = response.FileId, Title = fileName }], channelId, message);
-                    if (completeResponse.Any())
-                        return true;
-                }
-
-                logger.LogError($"Failed to send file notification to slack.");
-                return false;
+                string? channelId = channels?.Channels?.FirstOrDefault(x => x.Name == channel)?.Id;
+                var completeResponse = await slackApiClient.Files.CompleteUploadExternal([new ExternalFileReference { Id = response.FileId, Title = fileName }], channelId, message);
+                if (completeResponse.Any())
+                    return true;
             }
-            catch (Exception ex)
-            {
-                logger.LogError(ex, $"Failed to send file notification to slack. ({ex.GetType().Name}: {ex.Message})");
-                return false;
-            }
+
+            logger.LogError($"Failed to send file notification to slack.");
+            return false;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, $"Failed to send file notification to slack. ({ex.GetType().Name}: {ex.Message})");
+            return false;
         }
     }
 }
