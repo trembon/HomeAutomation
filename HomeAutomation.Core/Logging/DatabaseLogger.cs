@@ -1,16 +1,10 @@
 ﻿using HomeAutomation.Database;
-using HomeAutomation.Database.Contexts;
 using HomeAutomation.Database.Entities;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace HomeAutomation.Base.Logging;
 

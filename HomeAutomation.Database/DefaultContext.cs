@@ -1,7 +1,7 @@
 ﻿using HomeAutomation.Database.Entities;
 using Microsoft.EntityFrameworkCore;
 
-namespace HomeAutomation.Database.Contexts;
+namespace HomeAutomation.Database;
 
 public class DefaultContext(DbContextOptions<DefaultContext> options) : DbContext(options)
 {
@@ -11,7 +11,7 @@ public class DefaultContext(DbContextOptions<DefaultContext> options) : DbContex
 
     public DbSet<WeatherForecast> WeatherForecast { get; set; }
 
-    public DbSet<LogRow> Rows { get; set; }
+    public DbSet<LogRow> Logs { get; set; }
 
     public DbSet<MailMessage> MailMessages { get; set; }
 
@@ -23,12 +23,9 @@ public class DefaultContext(DbContextOptions<DefaultContext> options) : DbContex
 
         foreach (var entityType in modelBuilder.Model.GetEntityTypes())
         {
-            var dateTimeProperties = entityType.GetProperties().Where(p => p.ClrType == typeof(DateTime) || p.ClrType == typeof(DateTime?));
-
+            var dateTimeProperties = entityType.GetProperties().Where(p => p.ClrType == typeof(DateTime));
             foreach (var property in dateTimeProperties)
-            {
-                modelBuilder.Entity(entityType.Name).Property<DateTime>(property.Name).HasConversion(v => v.ToUniversalTime(), v => DateTime.SpecifyKind(v, DateTimeKind.Local));
-            }
+                modelBuilder.Entity(entityType.Name).Property<DateTime>(property.Name).HasConversion(v => v.ToUniversalTime(), v => DateTime.SpecifyKind(v, DateTimeKind.Utc));
         }
     }
 }

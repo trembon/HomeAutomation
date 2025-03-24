@@ -1,7 +1,7 @@
 ﻿@page "/logs/smtp"
-@using HomeAutomation.Database.Contexts
+@using HomeAutomation.Database
 @using Microsoft.EntityFrameworkCore
-@inject DefaultContext context
+@inject DefaultContext defaultContext
 
 <MudText Typo="Typo.h2" Class="mb-5">Logs - SMTP</MudText>
 
@@ -25,6 +25,6 @@
 
     protected override async Task OnInitializedAsync()
     {
-        rows = await context.MailMessages.OrderByDescending(x => x.Timestamp).Take(100).ToArrayAsync();
+        rows = await defaultContext.MailMessages.OrderByDescending(x => x.Timestamp).Take(100).ToArrayAsync();
     }
 }

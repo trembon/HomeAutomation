@@ -1,15 +1,8 @@
 ﻿using HomeAutomation.Base.Enums;
 using HomeAutomation.Core.Services;
-using HomeAutomation.Database.Contexts;
-using HomeAutomation.Database.Entities;
 using HomeAutomation.Database.Enums;
-using HomeAutomation.Entities.Enums;
 using HomeAutomation.Webhooks.Models.Telldus;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.SignalR;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
 
 namespace HomeAutomation.Webhooks;
 

@@ -1,11 +1,6 @@
 ﻿using HomeAutomation.Database;
-using HomeAutomation.Database.Contexts;
 using HomeAutomation.Database.Entities;
 using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace HomeAutomation.Core.Services;
 

@@ -1,5 +1,5 @@
 ﻿using HomeAutomation.Core.ScheduledJobs.Base;
-using HomeAutomation.Database.Contexts;
+using HomeAutomation.Database;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
@@ -12,7 +12,7 @@ public class CleanupLogScheduleJob(DefaultContext logContext, ILogger<CleanupLog
         logger.LogInformation("Schedule.Cleanup :: starting");
 
         DateTime loglimit = DateTime.UtcNow.AddDays(-7); // TODO: place in configuration?
-        _ = await logContext.Rows.Where(x => loglimit > x.Timestamp).ExecuteDeleteAsync();
+        _ = await logContext.Logs.Where(x => loglimit > x.Timestamp).ExecuteDeleteAsync();
 
         DateTime maillimit = DateTime.UtcNow.AddDays(-3); // TODO: place in configuration?
         _ = await logContext.MailMessages.Where(x => maillimit > x.Timestamp).ExecuteDeleteAsync();

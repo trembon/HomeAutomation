@@ -1,21 +1,13 @@
 ﻿using HomeAutomation.Database;
-using HomeAutomation.Database.Contexts;
 using HomeAutomation.Database.Entities;
 using HomeAutomation.Entities.Enums;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using MimeKit;
 using SmtpServer;
 using SmtpServer.Protocol;
 using SmtpServer.Storage;
-using System;
 using System.Buffers;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace HomeAutomation.Core.Services;
 

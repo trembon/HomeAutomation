@@ -1,7 +1,7 @@
 ﻿using HomeAutomation.Core.Models.Weather;
 using HomeAutomation.Core.ScheduledJobs.Base;
 using HomeAutomation.Core.Services;
-using HomeAutomation.Database.Contexts;
+using HomeAutomation.Database;
 using HomeAutomation.Database.Entities;
 using HomeAutomation.Database.Enums;
 using Microsoft.Extensions.Configuration;

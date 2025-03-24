@@ -1,5 +1,5 @@
 ﻿@page "/logs"
-@using HomeAutomation.Database.Contexts
+@using HomeAutomation.Database
 @using Microsoft.EntityFrameworkCore
 @inject DefaultContext context
 
@@ -27,6 +27,6 @@
 
     protected override async Task OnInitializedAsync()
     {
-        rows = await context.Rows.OrderByDescending(x => x.Timestamp).Take(100).ToArrayAsync();
+        rows = await context.Logs.OrderByDescending(x => x.Timestamp).Take(100).ToArrayAsync();
     }
 }

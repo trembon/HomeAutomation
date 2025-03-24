@@ -1,11 +1,6 @@
-﻿using HomeAutomation.Database.Contexts;
+﻿using HomeAutomation.Database;
 using HomeAutomation.Database.Entities;
 using HomeAutomation.Database.Enums;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace HomeAutomation.Core.Services;
 
