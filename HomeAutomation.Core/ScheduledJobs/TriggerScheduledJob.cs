@@ -1,7 +1,7 @@
 ﻿using HomeAutomation.Core.ScheduledJobs.Base;
 using HomeAutomation.Core.Services;
+using HomeAutomation.Database.Entities;
 using HomeAutomation.Entities.Enums;
-using HomeAutomation.Entities.Triggers;
 
 namespace HomeAutomation.Core.ScheduledJobs;
 
@@ -13,7 +13,7 @@ public class TriggerScheduledJob(IJsonDatabaseService jsonDatabaseService, ISunD
         DateTime from = lastExecution.HasValue ? lastExecution.Value.ToLocalTime() : DateTime.Now.AddMinutes(-5);
         DateTime to = currentExecution.ToLocalTime();
 
-        List<Trigger> triggers = [];
+        List<TriggerEntity> triggers = [];
 
         // calculate all the triggers
         foreach (var trigger in jsonDatabaseService.ScheduledTriggers)

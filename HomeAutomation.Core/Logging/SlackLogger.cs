@@ -1,19 +1,13 @@
 ﻿using Microsoft.Extensions.Logging;
 using SlackNet;
 using SlackNet.WebApi;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Net.Http;
-using System.Threading.Tasks;
 using ILogger = Microsoft.Extensions.Logging.ILogger;
 
-namespace HomeAutomation.Base.Logging;
+namespace HomeAutomation.Core.Logging;
 
 public class SlackLogger(string categoryName, ISlackApiClient slackApiClient) : ILogger
 {
-    public IDisposable BeginScope<TState>(TState state)
+    public IDisposable? BeginScope<TState>(TState state) where TState : notnull
     {
         return null;
     }
@@ -23,7 +17,7 @@ public class SlackLogger(string categoryName, ISlackApiClient slackApiClient) : 
         return logLevel == LogLevel.Error;
     }
 
-    public async void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
+    public async void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
     {
         if (!IsEnabled(logLevel))
             return;

@@ -7,7 +7,7 @@ namespace HomeAutomation.Core.Services;
 
 public interface ITriggerService
 {
-    Task FireTriggersFromDevice(Device device, DeviceEvent deviceEvent);
+    Task FireTriggersFromDevice(DeviceEntity device, DeviceEvent deviceEvent);
 
     Task FireTriggers(IEnumerable<Trigger> triggers);
 
@@ -29,7 +29,7 @@ public class TriggerService : ITriggerService
         this.logger = logger;
     }
 
-    public Task FireTriggersFromDevice(Device device, DeviceEvent deviceEvent)
+    public Task FireTriggersFromDevice(DeviceEntity device, DeviceEvent deviceEvent)
     {
         // ignore events that are not known
         if (deviceEvent == DeviceEvent.Unknown)

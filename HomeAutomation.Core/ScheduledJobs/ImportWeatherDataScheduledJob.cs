@@ -47,10 +47,10 @@ public class ImportWeatherDataScheduledJob(DefaultContext context, ISunDataServi
 
             foreach (var item in weatherData.Forecast.Tabular.Time)
             {
-                WeatherForecast forecast = previousForecast.FirstOrDefault(f => f.Date == item.From.Date && (int)f.Period == item.Period);
+                WeatherForecastEntity forecast = previousForecast.FirstOrDefault(f => f.Date == item.From.Date && (int)f.Period == item.Period);
                 if (forecast == null)
                 {
-                    forecast = new WeatherForecast();
+                    forecast = new WeatherForecastEntity();
                     context.WeatherForecast.Add(forecast);
                 }
 

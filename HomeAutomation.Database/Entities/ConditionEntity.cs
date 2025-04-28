@@ -2,7 +2,7 @@
 
 namespace HomeAutomation.Database.Entities;
 
-public class Condition
+public class ConditionEntity
 {
     public int Id { get; set; }
 

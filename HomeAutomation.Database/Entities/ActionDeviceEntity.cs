@@ -1,14 +1,14 @@
 ﻿namespace HomeAutomation.Database.Entities;
 
-public class ActionDevice
+public class ActionDeviceEntity
 {
     public int Id { get; set; }
 
     public int ActionId { get; set; }
 
-    public Action Action { get; set; } = null!;
+    public ActionEntity Action { get; set; } = null!;
 
     public int DeviceId { get; set; }
 
-    public Device Device { get; set; } = null!;
+    public DeviceEntity Device { get; set; } = null!;
 }

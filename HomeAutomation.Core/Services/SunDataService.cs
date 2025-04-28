@@ -6,26 +6,15 @@ namespace HomeAutomation.Core.Services;
 
 public interface ISunDataService
 {
-    SunData GetLatest();
+    SunDataEntity GetLatest();
 
     bool Add(DateOnly date, TimeOnly sunrise, TimeOnly sunset);
 }
 
-public class SunDataService : ISunDataService
+public class SunDataService(DefaultContext context, ILogger<SunDataService> logger) : ISunDataService
 {
-    private readonly ILogger<SunDataService> logger;
-
-    private readonly DefaultContext context;
-
-    private static SunData latestCache;
-    private static object latestCacheLock = new object();
-
-    public SunDataService(DefaultContext context, ILogger<SunDataService> logger)
-    {
-        this.logger = logger;
-
-        this.context = context;
-    }
+    private static SunDataEntity? latestCache;
+    private static readonly Lock latestCacheLock = new();
 
     public bool Add(DateOnly date, TimeOnly sunrise, TimeOnly sunset)
     {
@@ -38,7 +27,7 @@ public class SunDataService : ISunDataService
 
             try
             {
-                SunData sunData = new()
+                SunDataEntity sunData = new()
                 {
                     Date = date,
                     Sunrise = sunrise,
@@ -61,7 +50,7 @@ public class SunDataService : ISunDataService
         }
     }
 
-    public SunData GetLatest()
+    public SunDataEntity GetLatest()
     {
         lock (latestCacheLock)
         {
@@ -78,7 +67,7 @@ public class SunDataService : ISunDataService
             }
 
             if (latestCache == null)
-                return new SunData { Id = 0, Date = DateOnly.FromDateTime(DateTime.Today.AddDays(-1)), Sunrise = new TimeOnly(8, 0), Sunset = new TimeOnly(20, 0) };
+                return new SunDataEntity { Id = 0, Date = DateOnly.FromDateTime(DateTime.Today.AddDays(-1)), Sunrise = new TimeOnly(8, 0), Sunset = new TimeOnly(20, 0) };
 
             return latestCache;
         }

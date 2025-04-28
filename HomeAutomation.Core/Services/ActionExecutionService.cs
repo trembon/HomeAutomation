@@ -33,7 +33,7 @@ public class ActionExecutionService(IDeviceService deviceService, IEvaluateCondi
             return;
         }
 
-        List<Device> devices = new(action.Devices?.Length ?? 0);
+        List<DeviceEntity> devices = new(action.Devices?.Length ?? 0);
         if (action.Devices != null)
         {
             foreach (int deviceId in action.Devices)

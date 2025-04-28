@@ -6,11 +6,11 @@ using Microsoft.Extensions.Logging;
 using System.Diagnostics;
 using System.Text;
 
-namespace HomeAutomation.Base.Logging;
+namespace HomeAutomation.Core.Logging;
 
 public class DatabaseLogger(string categoryName, IServiceScope serviceScope, bool enabled) : ILogger
 {
-    public IDisposable BeginScope<TState>(TState state)
+    public IDisposable? BeginScope<TState>(TState state) where TState : notnull
     {
         return null;
     }
@@ -20,7 +20,7 @@ public class DatabaseLogger(string categoryName, IServiceScope serviceScope, boo
         return enabled;
     }
 
-    public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
+    public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
     {
         if (!IsEnabled(logLevel))
             return;
@@ -30,7 +30,7 @@ public class DatabaseLogger(string categoryName, IServiceScope serviceScope, boo
             using DefaultContext db = serviceScope.ServiceProvider.GetRequiredService<DefaultContext>();
             using IDbContextTransaction transaction = db.Database.BeginTransaction();
 
-            LogRow row = new LogRow
+            LogEntity row = new()
             {
                 Level = logLevel,
                 Category = categoryName,

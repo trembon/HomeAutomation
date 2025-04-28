@@ -74,7 +74,7 @@ public class EmailReceiveService : MessageStore
     private async Task SaveToEml(IServiceScope scope, string messageId, byte[] emlData, int? deviceId, CancellationToken cancellationToken)
     {
         // TODO: fix to read real device here
-        MailMessage mailMessage = new()
+        MailMessageEntity mailMessage = new()
         {
             DeviceId = null,
             MessageId = messageId,

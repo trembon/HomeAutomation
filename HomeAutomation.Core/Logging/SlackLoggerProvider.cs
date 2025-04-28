@@ -1,13 +1,8 @@
-﻿using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using SlackNet;
-using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
-namespace HomeAutomation.Base.Logging;
+namespace HomeAutomation.Core.Logging;
 
 public class SlackLoggerProvider(ISlackApiClient slackApiClient) : ILoggerProvider
 {
@@ -21,5 +16,6 @@ public class SlackLoggerProvider(ISlackApiClient slackApiClient) : ILoggerProvid
     public void Dispose()
     {
         loggers.Clear();
+        GC.SuppressFinalize(this);
     }
 }

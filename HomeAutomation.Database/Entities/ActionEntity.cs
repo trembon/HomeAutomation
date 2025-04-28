@@ -2,7 +2,7 @@
 
 namespace HomeAutomation.Database.Entities;
 
-public class Action
+public class ActionEntity
 {
     public int Id { get; set; }
 
@@ -18,7 +18,7 @@ public class Action
 
     public string? MessageToSend { get; set; }
 
-    public List<ActionDevice> Devices { get; set; } = [];
+    public List<ActionDeviceEntity> Devices { get; set; } = [];
 
-    public List<TriggerAction> Triggers { get; set; } = [];
+    public List<TriggerActionEntity> Triggers { get; set; } = [];
 }

@@ -7,14 +7,14 @@ namespace HomeAutomation.Core.Services;
 
 public interface IDeviceService
 {
-    Task<Device?> GetDevice(int id, CancellationToken cancellationToken);
+    Task<DeviceEntity?> GetDevice(int id, CancellationToken cancellationToken);
 
-    Task<Device?> GetDevice(DeviceSource source, string sourceId, CancellationToken cancellationToken);
+    Task<DeviceEntity?> GetDevice(DeviceSource source, string sourceId, CancellationToken cancellationToken);
 }
 
 public class DeviceService(DefaultContext context) : IDeviceService
 {
-    public async Task<Device?> GetDevice(int id, CancellationToken cancellationToken)
+    public async Task<DeviceEntity?> GetDevice(int id, CancellationToken cancellationToken)
     {
         return await context
             .Devices
@@ -23,7 +23,7 @@ public class DeviceService(DefaultContext context) : IDeviceService
             .FirstOrDefaultAsync(cancellationToken);
     }
 
-    public async Task<Device?> GetDevice(DeviceSource source, string sourceId, CancellationToken cancellationToken)
+    public async Task<DeviceEntity?> GetDevice(DeviceSource source, string sourceId, CancellationToken cancellationToken)
     {
         return await context
             .Devices

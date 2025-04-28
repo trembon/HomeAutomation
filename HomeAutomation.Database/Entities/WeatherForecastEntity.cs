@@ -2,7 +2,7 @@
 
 namespace HomeAutomation.Database.Entities;
 
-public class WeatherForecast
+public class WeatherForecastEntity
 {
     public int Id { get; set; }
 

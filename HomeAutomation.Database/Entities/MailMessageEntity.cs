@@ -1,6 +1,6 @@
 ﻿namespace HomeAutomation.Database.Entities;
 
-public class MailMessage
+public class MailMessageEntity
 {
     public int Id { get; set; }
 
@@ -12,5 +12,5 @@ public class MailMessage
 
     public DateTime Timestamp { get; set; } = DateTime.UtcNow;
 
-    public Device? Device { get; set; }
+    public DeviceEntity? Device { get; set; }
 }

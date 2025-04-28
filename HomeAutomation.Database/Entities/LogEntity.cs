@@ -2,7 +2,7 @@
 
 namespace HomeAutomation.Database.Entities;
 
-public class LogRow
+public class LogEntity
 {
     public int Id { get; set; }
 

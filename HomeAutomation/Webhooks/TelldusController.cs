@@ -10,7 +10,7 @@ namespace HomeAutomation.Webhooks;
 [Route("webhooks/telldus")]
 public class TelldusController : ControllerBase
 {
-    private static readonly object duplicationRequestLock = new();
+    private static readonly Lock duplicationRequestLock = new();
     private static readonly List<DuplicateRecord> duplicationRequestLog = [];
 
     private readonly ILogger<TelldusController> logger;

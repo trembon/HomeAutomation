@@ -5,29 +5,29 @@ namespace HomeAutomation.Database;
 
 public class DefaultContext(DbContextOptions<DefaultContext> options) : DbContext(options)
 {
-    public DbSet<Entities.Action> Actions { get; set; }
+    public DbSet<Entities.ActionEntity> Actions { get; set; }
 
-    public DbSet<Condition> Conditions { get; set; }
+    public DbSet<ConditionEntity> Conditions { get; set; }
 
-    public DbSet<Device> Devices { get; set; }
+    public DbSet<DeviceEntity> Devices { get; set; }
 
-    public DbSet<Trigger> Triggers { get; set; }
+    public DbSet<TriggerEntity> Triggers { get; set; }
 
-    public DbSet<SensorValue> SensorValues { get; set; }
+    public DbSet<SensorValueEntity> SensorValues { get; set; }
 
-    public DbSet<SunData> SunData { get; set; }
+    public DbSet<SunDataEntity> SunData { get; set; }
 
-    public DbSet<WeatherForecast> WeatherForecast { get; set; }
+    public DbSet<WeatherForecastEntity> WeatherForecast { get; set; }
 
-    public DbSet<LogRow> Logs { get; set; }
+    public DbSet<LogEntity> Logs { get; set; }
 
-    public DbSet<MailMessage> MailMessages { get; set; }
+    public DbSet<MailMessageEntity> MailMessages { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
 
-        modelBuilder.Entity<SunData>().HasIndex(sd => sd.Date).IsUnique();
+        modelBuilder.Entity<SunDataEntity>().HasIndex(sd => sd.Date).IsUnique();
 
         foreach (var entityType in modelBuilder.Model.GetEntityTypes())
         {

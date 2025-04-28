@@ -2,7 +2,7 @@
 
 namespace HomeAutomation.Database.Entities;
 
-public class Device
+public class DeviceEntity
 {
     public int Id { get; set; }
 
@@ -18,11 +18,11 @@ public class Device
 
     public string? ThumbnailUrl { get; set; }
 
-    public List<Trigger> StateTriggers { get; set; } = [];
+    public List<TriggerEntity> StateTriggers { get; set; } = [];
 
-    public List<SensorValue> SensorValues { get; set; } = [];
+    public List<SensorValueEntity> SensorValues { get; set; } = [];
 
-    public List<ActionDevice> Actions { get; set; } = [];
+    public List<ActionDeviceEntity> Actions { get; set; } = [];
 
     public override string ToString()
     {

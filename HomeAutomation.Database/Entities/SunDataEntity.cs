@@ -1,6 +1,6 @@
 ﻿namespace HomeAutomation.Database.Entities;
 
-public class SunData
+public class SunDataEntity
 {
     public int Id { get; set; }
 

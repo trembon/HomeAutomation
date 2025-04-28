@@ -1,7 +1,7 @@
-using HomeAutomation.Base.Logging;
 using HomeAutomation.Components;
 using HomeAutomation.Core;
 using HomeAutomation.Core.Extensions;
+using HomeAutomation.Core.Logging;
 using HomeAutomation.Core.ScheduledJobs;
 using HomeAutomation.Core.Services;
 using HomeAutomation.Database.Extensions;

@@ -13,7 +13,7 @@ public class SensorValueService(DefaultContext context) : ISensorValueService
 {
     public async Task AddValue(int deviceId, SensorValueKind type, string value, DateTime timestamp, CancellationToken cancellationToken)
     {
-        SensorValue sensorValue = new()
+        SensorValueEntity sensorValue = new()
         {
             DeviceId = deviceId,
             Type = type,
