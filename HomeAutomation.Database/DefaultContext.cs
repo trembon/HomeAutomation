@@ -5,6 +5,14 @@ namespace HomeAutomation.Database;
 
 public class DefaultContext(DbContextOptions<DefaultContext> options) : DbContext(options)
 {
+    public DbSet<Entities.Action> Actions { get; set; }
+
+    public DbSet<Condition> Conditions { get; set; }
+
+    public DbSet<Device> Devices { get; set; }
+
+    public DbSet<Trigger> Triggers { get; set; }
+
     public DbSet<SensorValue> SensorValues { get; set; }
 
     public DbSet<SunData> SunData { get; set; }

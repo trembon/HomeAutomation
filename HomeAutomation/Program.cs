@@ -1,14 +1,11 @@
 using HomeAutomation.Base.Logging;
-using HomeAutomation.Client.Pages;
 using HomeAutomation.Components;
 using HomeAutomation.Core;
 using HomeAutomation.Core.Extensions;
+using HomeAutomation.Core.ScheduledJobs;
 using HomeAutomation.Core.Services;
 using HomeAutomation.Database.Extensions;
-using HomeAutomation.ScheduledJobs;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.Extensions.Hosting.Internal;
 using MudBlazor.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -36,6 +33,7 @@ builder.Services.AddSingleton<ITelldusAPIService, TelldusAPIService>();
 builder.Services.AddSingleton<IJsonDatabaseService, JsonDatabaseService>();
 builder.Services.AddSingleton<IEvaluateConditionService, EvaluateConditionService>();
 
+builder.Services.AddTransient<IDeviceService, DeviceService>();
 builder.Services.AddTransient<ISunDataService, SunDataService>();
 builder.Services.AddTransient<ITriggerService, TriggerService>();
 builder.Services.AddTransient<ISensorValueService, SensorValueService>();

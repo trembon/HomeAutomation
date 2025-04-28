@@ -1,26 +1,18 @@
 ﻿using HomeAutomation.Database.Enums;
-using System.ComponentModel.DataAnnotations;
 
 namespace HomeAutomation.Database.Entities;
 
 public class SensorValue
 {
-    [Key]
-    [Required]
-    public int ID { get; set; }
+    public int Id { get; set; }
 
-    [Required]
-    public DeviceSource Source { get; set; }
+    public int DeviceId { get; set; }
 
-    [Required]
-    public string SourceID { get; set; } = null!;
+    public Device Device { get; set; } = null!;
 
-    [Required]
-    public SensorValueType Type { get; set; }
+    public SensorValueKind Type { get; set; }
 
-    [Required]
     public string Value { get; set; } = null!;
 
-    [Required]
     public DateTime Timestamp { get; set; }
 }

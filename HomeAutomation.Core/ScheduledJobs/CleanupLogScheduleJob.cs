@@ -3,7 +3,7 @@ using HomeAutomation.Database;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
-namespace HomeAutomation.ScheduledJobs;
+namespace HomeAutomation.Core.ScheduledJobs;
 
 public class CleanupLogScheduleJob(DefaultContext logContext, ILogger<CleanupLogScheduleJob> logger) : IScheduledJob
 {

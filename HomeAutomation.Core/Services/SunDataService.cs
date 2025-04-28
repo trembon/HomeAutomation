@@ -78,7 +78,7 @@ public class SunDataService : ISunDataService
             }
 
             if (latestCache == null)
-                return new SunData { ID = 0, Date = DateOnly.FromDateTime(DateTime.Today.AddDays(-1)), Sunrise = new TimeOnly(8, 0), Sunset = new TimeOnly(20, 0) };
+                return new SunData { Id = 0, Date = DateOnly.FromDateTime(DateTime.Today.AddDays(-1)), Sunrise = new TimeOnly(8, 0), Sunset = new TimeOnly(20, 0) };
 
             return latestCache;
         }

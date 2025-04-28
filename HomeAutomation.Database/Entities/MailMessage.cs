@@ -1,20 +1,16 @@
-﻿using System.ComponentModel.DataAnnotations;
-
-namespace HomeAutomation.Database.Entities;
+﻿namespace HomeAutomation.Database.Entities;
 
 public class MailMessage
 {
-    [Key]
-    [Required]
-    public int ID { get; set; }
+    public int Id { get; set; }
 
-    public string MessageID { get; set; } = null!;
+    public int? DeviceId { get; set; }
 
-    public string? DeviceSource { get; set; }
-
-    public string? DeviceSourceID { get; set; }
+    public string MessageId { get; set; } = null!;
 
     public byte[] EmlData { get; set; } = null!;
 
-    public DateTime Timestamp { get; set; } = DateTime.Now;
+    public DateTime Timestamp { get; set; } = DateTime.UtcNow;
+
+    public Device? Device { get; set; }
 }

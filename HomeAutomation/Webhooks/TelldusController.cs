@@ -16,24 +16,24 @@ public class TelldusController : ControllerBase
     private readonly ILogger<TelldusController> logger;
 
     private readonly ISensorValueService sensorValueService;
-    private readonly IJsonDatabaseService jsonDatabaseService;
+    private readonly IDeviceService deviceService;
     private readonly ITelldusAPIService telldusAPIService;
     private readonly ITriggerService triggerService;
     private readonly IConfiguration configuration;
 
-    public TelldusController(ISensorValueService sensorValueService, IJsonDatabaseService jsonDatabaseService, ITelldusAPIService telldusAPIService, ITriggerService triggerService, IConfiguration configuration, ILogger<TelldusController> logger)
+    public TelldusController(ISensorValueService sensorValueService, IDeviceService deviceService, ITelldusAPIService telldusAPIService, ITriggerService triggerService, IConfiguration configuration, ILogger<TelldusController> logger)
     {
         this.logger = logger;
 
         this.sensorValueService = sensorValueService;
-        this.jsonDatabaseService = jsonDatabaseService;
+        this.deviceService = deviceService;
         this.telldusAPIService = telldusAPIService;
         this.triggerService = triggerService;
         this.configuration = configuration;
     }
 
     [HttpPost("sensorupdates")]
-    public async Task<ActionResult<bool>> TelldusSensorUpdate(SensorUpdatesModel model)
+    public async Task<ActionResult<bool>> TelldusSensorUpdate(SensorUpdatesModel model, CancellationToken cancellationToken)
     {
         lock (duplicationRequestLock)
         {
@@ -43,31 +43,22 @@ public class TelldusController : ControllerBase
 
         telldusAPIService.SendLogMessage($"DEVICE {model?.SensorID}: {model?.Type.ToString()} - {model?.Value}", model?.Timestamp ?? DateTime.Now);
 
-        var sensor = jsonDatabaseService.Sensors.FirstOrDefault(s => s.Source == DeviceSource.Telldus && s.SourceID == model?.SensorID.ToString());
-        if (sensor != null)
+        var sensor = await deviceService.GetDevice(DeviceSource.Telldus, model?.SensorID.ToString() ?? string.Empty, cancellationToken);
+        if (model is not null && sensor is not null)
         {
-            logger.LogInformation($"Received sensor update from sensor '{sensor}'.");
+            logger.LogInformation("Received sensor update from device '{sensor}'.", sensor);
+            await sensorValueService.AddValue(sensor.Id, model.Type, model.Value, model.Timestamp, cancellationToken);
         }
         else
         {
-            logger.LogInformation($"Received sensor update from telldus sensor with ID '{model?.SensorID}'.");
+            logger.LogInformation("Received sensor update from telldus sensor with ID '{sensorId}'.", model?.SensorID);
         }
 
-        try
-        {
-            await sensorValueService.AddValue(DeviceSource.Telldus, model.SensorID.ToString(), model.Type, model.Value, model.Timestamp);
-
-            return Ok(true);
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, $"Failed to insert sensor value for sensor '{model?.SensorID}' into database.");
-            return StatusCode(500);
-        }
+        return Ok(true);
     }
 
     [HttpPost("deviceevents")]
-    public async Task<ActionResult<bool>> TelldusDeviceEvents(DeviceEventsModel model)
+    public async Task<ActionResult<bool>> TelldusDeviceEvents(DeviceEventsModel model, CancellationToken cancellationToken)
     {
         lock (duplicationRequestLock)
         {
@@ -77,12 +68,12 @@ public class TelldusController : ControllerBase
 
         telldusAPIService.SendLogMessage($"DEVICEID {model?.DeviceID}: {model?.Command.ToString()} ({model?.Parameter})");
 
-        var device = jsonDatabaseService.Devices.FirstOrDefault(s => s.Source == DeviceSource.Telldus && s.SourceID == model?.DeviceID.ToString());
-        if (device != null)
+        var device = await deviceService.GetDevice(DeviceSource.Telldus, model?.DeviceID.ToString() ?? string.Empty, cancellationToken);
+        if (model is not null && device is not null)
         {
             var state = telldusAPIService.ConvertCommandToEvent(model.Command);
 
-            logger.LogInformation($"Telldus.DeviceEvent :: {device.ID} :: DeviceId:{model?.DeviceID}, Command:{model?.Command.ToString()}, Parameter:{model?.Parameter}, MappedState:{state}");
+            logger.LogInformation($"Telldus.DeviceEvent :: {device.Id} :: DeviceId:{model?.DeviceID}, Command:{model?.Command.ToString()}, Parameter:{model?.Parameter}, MappedState:{state}");
             await triggerService.FireTriggersFromDevice(device, state);
         }
 

@@ -8,15 +8,13 @@
 <MudTable Items="@rows" Hover="true" Loading="@(rows == null)" LoadingProgressColor="Color.Info">
     <HeaderContent>
         <MudTh>Timestamp</MudTh>
-        <MudTh>Device Source</MudTh>
         <MudTh>Device Source ID</MudTh>
         <MudTh>Message ID</MudTh>
     </HeaderContent>
     <RowTemplate>
         <MudTd DataLabel="Timestamp">@context.Timestamp</MudTd>
-        <MudTd DataLabel="DeviceSource">@context.DeviceSource</MudTd>
-        <MudTd DataLabel="DeviceSourceID">@context.DeviceSourceID</MudTd>
-        <MudTd DataLabel="MessageID">@context.MessageID</MudTd>
+        <MudTd DataLabel="DeviceSourceID">@context.DeviceId</MudTd>
+        <MudTd DataLabel="MessageID">@context.MessageId</MudTd>
     </RowTemplate>
 </MudTable>
 

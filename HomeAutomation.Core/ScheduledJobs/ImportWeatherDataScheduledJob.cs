@@ -9,7 +9,7 @@ using Microsoft.Extensions.Logging;
 using System.Net;
 using System.Xml.Serialization;
 
-namespace HomeAutomation.ScheduledJobs;
+namespace HomeAutomation.Core.ScheduledJobs;
 
 public class ImportWeatherDataScheduledJob(DefaultContext context, ISunDataService sunDataService, IConfiguration configuration, ILogger<ImportWeatherDataScheduledJob> logger) : IScheduledJob
 {

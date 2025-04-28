@@ -3,7 +3,7 @@ using HomeAutomation.Core.Services;
 using HomeAutomation.Entities.Enums;
 using HomeAutomation.Entities.Triggers;
 
-namespace HomeAutomation.ScheduledJobs;
+namespace HomeAutomation.Core.ScheduledJobs;
 
 public class TriggerScheduledJob(IJsonDatabaseService jsonDatabaseService, ISunDataService sunDataService, ITriggerService triggerService) : IScheduledJob
 {

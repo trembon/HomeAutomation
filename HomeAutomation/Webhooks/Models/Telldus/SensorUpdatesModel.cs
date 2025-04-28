@@ -6,7 +6,7 @@ public class SensorUpdatesModel
 {
     public int SensorID { get; set; }
 
-    public SensorValueType Type { get; set; }
+    public SensorValueKind Type { get; set; }
 
     public DateTime Timestamp { get; set; }
 

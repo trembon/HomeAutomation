@@ -13,13 +13,11 @@ namespace HomeAutomation.Core.Services;
 
 public class EmailReceiveService : MessageStore
 {
-    private readonly IJsonDatabaseService jsonDatabaseService;
     private readonly IServiceScopeFactory serviceScopeFactory;
     private readonly ILogger<EmailReceiveService> logger;
 
-    public EmailReceiveService(IJsonDatabaseService jsonDatabaseService, IServiceScopeFactory serviceScopeFactory, ILogger<EmailReceiveService> logger)
+    public EmailReceiveService(IServiceScopeFactory serviceScopeFactory, ILogger<EmailReceiveService> logger)
     {
-        this.jsonDatabaseService = jsonDatabaseService;
         this.serviceScopeFactory = serviceScopeFactory;
         this.logger = logger;
     }
@@ -44,20 +42,25 @@ public class EmailReceiveService : MessageStore
             bool saved = false;
             if (message.Subject.Equals("motion", StringComparison.OrdinalIgnoreCase))
             {
-                string sourceId = message.From.FirstOrDefault().ToString();
-                sourceId = sourceId.Substring(0, sourceId.IndexOf("@"));
-
-                var device = jsonDatabaseService.Cameras.FirstOrDefault(c => c.SourceID == sourceId);
-                if (device != null)
+                string? sourceId = message.From.FirstOrDefault()?.ToString();
+                if (sourceId is not null)
                 {
-                    await scope.ServiceProvider.GetService<ITriggerService>().FireTriggersFromDevice(device, DeviceEvent.Motion);
-                    await SaveToEml(scope, message.MessageId, stream.ToArray(), device.Source.ToString(), device.SourceID);
-                    saved = true;
+                    sourceId = sourceId[..sourceId.IndexOf('@')];
+
+                    var deviceService = scope.ServiceProvider.GetRequiredService<IDeviceService>();
+
+                    var device = await deviceService.GetDevice(Database.Enums.DeviceSource.ONVIF, sourceId, cancellationToken);
+                    if (device != null)
+                    {
+                        await scope.ServiceProvider.GetRequiredService<ITriggerService>().FireTriggersFromDevice(device, DeviceEvent.Motion);
+                        await SaveToEml(scope, message.MessageId, stream.ToArray(), device.Id, cancellationToken);
+                        saved = true;
+                    }
                 }
             }
 
             if (!saved)
-                await SaveToEml(scope, message.MessageId, stream.ToArray(), "raw", "unknown");
+                await SaveToEml(scope, message.MessageId, stream.ToArray(), null, cancellationToken);
         }
         catch (Exception ex)
         {
@@ -68,19 +71,19 @@ public class EmailReceiveService : MessageStore
         return SmtpResponse.Ok;
     }
 
-    private async Task SaveToEml(IServiceScope scope, string messageId, byte[] emlData, string deviceSource, string deviceSourceId)
+    private async Task SaveToEml(IServiceScope scope, string messageId, byte[] emlData, int? deviceId, CancellationToken cancellationToken)
     {
+        // TODO: fix to read real device here
         MailMessage mailMessage = new()
         {
-            DeviceSource = deviceSource,
-            DeviceSourceID = deviceSourceId,
-            MessageID = messageId,
+            DeviceId = null,
+            MessageId = messageId,
             EmlData = emlData
         };
 
-        var context = scope.ServiceProvider.GetService<DefaultContext>();
+        var context = scope.ServiceProvider.GetRequiredService<DefaultContext>();
 
-        context.Add(mailMessage);
-        await context.SaveChangesAsync();
+        await context.MailMessages.AddAsync(mailMessage, cancellationToken);
+        await context.SaveChangesAsync(cancellationToken);
     }
 }

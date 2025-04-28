@@ -1,13 +1,10 @@
 ﻿using HomeAutomation.Database.Enums;
-using System.ComponentModel.DataAnnotations;
 
 namespace HomeAutomation.Database.Entities;
 
 public class WeatherForecast
 {
-    [Key]
-    [Required]
-    public int ID { get; set; }
+    public int Id { get; set; }
 
     public DateTime Date { get; set; }
 

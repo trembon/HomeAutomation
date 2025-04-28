@@ -11,17 +11,9 @@ public interface IJsonDatabaseService
 {
     MemoryEntities MemoryEntities { get; }
 
-    List<Device> Devices { get; }
-
     List<Trigger> Triggers { get; }
 
     List<HomeAutomation.Entities.Action.Action> Actions { get; }
-
-    IEnumerable<CameraDevice> Cameras { get; }
-
-    IEnumerable<SensorDevice> Sensors { get; }
-
-    IEnumerable<PowerSwitchDevice> PowerSwitches { get; }
 
     IEnumerable<ScheduleTrigger> ScheduledTriggers { get; }
 

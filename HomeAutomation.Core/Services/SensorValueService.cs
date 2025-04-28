@@ -6,23 +6,22 @@ namespace HomeAutomation.Core.Services;
 
 public interface ISensorValueService
 {
-    Task AddValue(DeviceSource source, string sourceId, SensorValueType type, string value, DateTime timestamp);
+    Task AddValue(int deviceId, SensorValueKind type, string value, DateTime timestamp, CancellationToken cancellationToken);
 }
 
 public class SensorValueService(DefaultContext context) : ISensorValueService
 {
-    public async Task AddValue(DeviceSource source, string sourceId, SensorValueType type, string value, DateTime timestamp)
+    public async Task AddValue(int deviceId, SensorValueKind type, string value, DateTime timestamp, CancellationToken cancellationToken)
     {
         SensorValue sensorValue = new()
         {
-            Source = source,
-            SourceID = sourceId,
+            DeviceId = deviceId,
             Type = type,
             Value = value,
             Timestamp = timestamp
         };
 
-        await context.SensorValues.AddAsync(sensorValue);
-        await context.SaveChangesAsync();
+        await context.SensorValues.AddAsync(sensorValue, cancellationToken);
+        await context.SaveChangesAsync(cancellationToken);
     }
 }

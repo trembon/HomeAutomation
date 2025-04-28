@@ -4,7 +4,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using System.Net.Http.Json;
 
-namespace HomeAutomation.ScheduledJobs;
+namespace HomeAutomation.Core.ScheduledJobs;
 
 public class ImportSunDataScheduleJob(ILogger<ImportSunDataScheduleJob> logger, IConfiguration configuration, ISunDataService sunDataService) : IScheduledJob
 {

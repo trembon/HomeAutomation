@@ -1,7 +1,7 @@
 ﻿namespace HomeAutomation.Database.Enums;
 
 [Flags]
-public enum SensorValueType : int
+public enum SensorValueKind : int
 {
     Temperature = 1,
     Humidity = 2,
