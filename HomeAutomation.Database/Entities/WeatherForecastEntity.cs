@@ -2,10 +2,8 @@
 
 namespace HomeAutomation.Database.Entities;
 
-public class WeatherForecastEntity
+public class WeatherForecastEntity : BaseEntity
 {
-    public int Id { get; set; }
-
     public DateTime Date { get; set; }
 
     public WeatherForecastPeriod Period { get; set; }

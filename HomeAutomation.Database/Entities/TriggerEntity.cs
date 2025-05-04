@@ -1,11 +1,10 @@
 ﻿using HomeAutomation.Database.Enums;
+using HomeAutomation.Database.Interfaces;
 
 namespace HomeAutomation.Database.Entities;
 
-public class TriggerEntity
+public class TriggerEntity : BaseEntity, IConditionedEntity
 {
-    public int Id { get; set; }
-
     public string Name { get; set; } = null!;
 
     public TriggerKind Kind { get; set; }

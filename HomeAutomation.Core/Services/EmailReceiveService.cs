@@ -1,6 +1,6 @@
-﻿using HomeAutomation.Database;
-using HomeAutomation.Database.Entities;
-using HomeAutomation.Entities.Enums;
+﻿using HomeAutomation.Database.Entities;
+using HomeAutomation.Database.Enums;
+using HomeAutomation.Database.Repositories;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using MimeKit;
@@ -11,17 +11,8 @@ using System.Buffers;
 
 namespace HomeAutomation.Core.Services;
 
-public class EmailReceiveService : MessageStore
+public class EmailReceiveService(IServiceScopeFactory serviceScopeFactory, ILogger<EmailReceiveService> logger) : MessageStore
 {
-    private readonly IServiceScopeFactory serviceScopeFactory;
-    private readonly ILogger<EmailReceiveService> logger;
-
-    public EmailReceiveService(IServiceScopeFactory serviceScopeFactory, ILogger<EmailReceiveService> logger)
-    {
-        this.serviceScopeFactory = serviceScopeFactory;
-        this.logger = logger;
-    }
-
     public override async Task<SmtpResponse> SaveAsync(ISessionContext context, IMessageTransaction transaction, ReadOnlySequence<byte> buffer, CancellationToken cancellationToken)
     {
         logger.LogInformation("Mail.Receive :: begin");
@@ -37,7 +28,7 @@ public class EmailReceiveService : MessageStore
 
             stream.Position = 0;
             var message = await MimeMessage.LoadAsync(stream, cancellationToken);
-            logger.LogInformation($"Mail.Receive :: subject:{message.Subject}, sender:{message.From}");
+            logger.LogInformation("Mail.Receive :: subject:{subject}, sender:{from}", message.Subject, message.From);
 
             bool saved = false;
             if (message.Subject.Equals("motion", StringComparison.OrdinalIgnoreCase))
@@ -49,10 +40,10 @@ public class EmailReceiveService : MessageStore
 
                     var deviceService = scope.ServiceProvider.GetRequiredService<IDeviceService>();
 
-                    var device = await deviceService.GetDevice(Database.Enums.DeviceSource.ONVIF, sourceId, cancellationToken);
+                    var device = await deviceService.GetDevice(DeviceSource.ONVIF, sourceId, cancellationToken);
                     if (device != null)
                     {
-                        await scope.ServiceProvider.GetRequiredService<ITriggerService>().FireTriggersFromDevice(device, DeviceEvent.Motion);
+                        await scope.ServiceProvider.GetRequiredService<ITriggerService>().FireTriggersFromDevice(device, DeviceEvent.Motion, cancellationToken);
                         await SaveToEml(scope, message.MessageId, stream.ToArray(), device.Id, cancellationToken);
                         saved = true;
                     }
@@ -73,17 +64,14 @@ public class EmailReceiveService : MessageStore
 
     private async Task SaveToEml(IServiceScope scope, string messageId, byte[] emlData, int? deviceId, CancellationToken cancellationToken)
     {
-        // TODO: fix to read real device here
         MailMessageEntity mailMessage = new()
         {
-            DeviceId = null,
+            DeviceId = deviceId,
             MessageId = messageId,
             EmlData = emlData
         };
 
-        var context = scope.ServiceProvider.GetRequiredService<DefaultContext>();
-
-        await context.MailMessages.AddAsync(mailMessage, cancellationToken);
-        await context.SaveChangesAsync(cancellationToken);
+        var repository = scope.ServiceProvider.GetRequiredService<IRepository<MailMessageEntity>>();
+        await repository.AddAndSave(mailMessage, cancellationToken);
     }
 }

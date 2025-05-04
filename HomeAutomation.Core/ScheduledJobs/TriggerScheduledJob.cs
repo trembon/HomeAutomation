@@ -1,13 +1,14 @@
 ﻿using HomeAutomation.Core.ScheduledJobs.Base;
 using HomeAutomation.Core.Services;
 using HomeAutomation.Database.Entities;
-using HomeAutomation.Entities.Enums;
+using HomeAutomation.Database.Enums;
+using HomeAutomation.Database.Repositories;
 
 namespace HomeAutomation.Core.ScheduledJobs;
 
-public class TriggerScheduledJob(IJsonDatabaseService jsonDatabaseService, ISunDataService sunDataService, ITriggerService triggerService) : IScheduledJob
+public class TriggerScheduledJob(ITriggerRepository repository, ISunDataService sunDataService, ITriggerService triggerService) : IScheduledJob
 {
-    public Task Execute(DateTime currentExecution, DateTime? lastExecution, CancellationToken cancellationToken)
+    public async Task Execute(DateTime currentExecution, DateTime? lastExecution, CancellationToken cancellationToken)
     {
         // get the from and to dates
         DateTime from = lastExecution.HasValue ? lastExecution.Value.ToLocalTime() : DateTime.Now.AddMinutes(-5);
@@ -16,33 +17,34 @@ public class TriggerScheduledJob(IJsonDatabaseService jsonDatabaseService, ISunD
         List<TriggerEntity> triggers = [];
 
         // calculate all the triggers
-        foreach (var trigger in jsonDatabaseService.ScheduledTriggers)
+        foreach (var trigger in await repository.GetScheduledTriggers(cancellationToken))
         {
-            DateTime calculatedTime = CalculateTriggerTime(trigger.At, trigger.Mode);
+            if (trigger.ScheduledAt is null || trigger.SchedulingMode is null)
+                continue;
+
+            DateTime calculatedTime = CalculateTriggerTime(trigger.ScheduledAt.Value, trigger.SchedulingMode.Value);
             if (calculatedTime > from && to >= calculatedTime)
                 triggers.Add(trigger);
         }
 
         // fire all found triggers
-        if (triggers.Any())
-            return triggerService.FireTriggers(triggers);
-
-        return Task.CompletedTask;
+        if (triggers.Count > 0)
+            await triggerService.FireTriggers(triggers, cancellationToken);
     }
 
-    private DateTime CalculateTriggerTime(TimeSpan at, ScheduleMode mode)
+    private DateTime CalculateTriggerTime(TimeOnly at, TimeMode mode)
     {
         var sunData = sunDataService.GetLatest();
 
         DateTime calculatedAt = DateTime.Today;
 
-        if (mode == ScheduleMode.Sunrise)
+        if (mode == TimeMode.Sunrise)
             calculatedAt = calculatedAt.Add(sunData.Sunrise.ToTimeSpan());
 
-        if (mode == ScheduleMode.Sunset)
+        if (mode == TimeMode.Sunset)
             calculatedAt = calculatedAt.Add(sunData.Sunset.ToTimeSpan());
 
         // set the event time, if together with sunrise/sunset add for example 5 minutes from that time
-        return calculatedAt.Add(at);
+        return calculatedAt.Add(at.ToTimeSpan());
     }
 }

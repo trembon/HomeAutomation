@@ -1,7 +1,6 @@
 ﻿using HomeAutomation.Base.Extensions;
 using HomeAutomation.Core.Models;
-using HomeAutomation.Entities.Devices;
-using HomeAutomation.Entities.Enums;
+using HomeAutomation.Database.Enums;
 using Microsoft.Extensions.Configuration;
 using System.Drawing;
 using System.Net.Http.Json;
@@ -14,9 +13,9 @@ public interface ITuyaAPIService
 
     Task<bool> SendCommand(string deviceId, Dictionary<int, object> dps);
 
-    Dictionary<int, object> ConvertStateToDPS(DeviceState state, Type deviceType, Dictionary<string, string> parameters);
+    Dictionary<int, object> ConvertStateToDPS(DeviceEvent state, DeviceKind deviceKind, Dictionary<string, string> parameters);
 
-    DeviceEvent ConvertPropertyToEvent(Type deviceType, Dictionary<int, object> dps);
+    DeviceEvent ConvertPropertyToEvent(DeviceKind deviceKind, Dictionary<int, object> dps);
 }
 
 public class TuyaAPIService : ITuyaAPIService
@@ -30,18 +29,18 @@ public class TuyaAPIService : ITuyaAPIService
         this.configuration = configuration;
     }
 
-    public DeviceEvent ConvertPropertyToEvent(Type deviceType, Dictionary<int, object> dps)
+    public DeviceEvent ConvertPropertyToEvent(DeviceKind deviceKind, Dictionary<int, object> dps)
     {
-        switch (deviceType.Name)
+        switch (deviceKind)
         {
-            case nameof(LightbulbDevice):
+            case DeviceKind.Lightbulb:
                 if (dps.ContainsKey(20))
                 {
                     return Convert.ToBoolean(dps[20]) ? DeviceEvent.On : DeviceEvent.Off;
                 }
                 break;
 
-            case nameof(PowerSwitchDevice):
+            case DeviceKind.PowerSwitch:
                 if (dps.ContainsKey(1))
                 {
                     return Convert.ToBoolean(dps[1]) ? DeviceEvent.On : DeviceEvent.Off;
@@ -52,21 +51,21 @@ public class TuyaAPIService : ITuyaAPIService
         return DeviceEvent.Unknown;
     }
 
-    public Dictionary<int, object> ConvertStateToDPS(DeviceState state, Type deviceType, Dictionary<string, string> parameters)
+    public Dictionary<int, object> ConvertStateToDPS(DeviceEvent state, DeviceKind deviceKind, Dictionary<string, string> parameters)
     {
         Dictionary<int, object> result = new();
 
-        switch (deviceType.Name)
+        switch (deviceKind)
         {
-            case nameof(LightbulbDevice):
-                if (state == DeviceState.On)
+            case DeviceKind.Lightbulb:
+                if (state == DeviceEvent.On)
                 {
                     result[20] = true;
 
                     // color: HSV value of the wanted color in hex values
                     // hue 0 - 360, saturation 0 - 360, value 0 - 1000
                     // ex: 00DC004B004E > 00DC|004B|004E > hue|saturation|value
-                    if (parameters.TryGetValue("color", out string hexColor))
+                    if (parameters.TryGetValue("color", out string? hexColor) && hexColor is not null)
                     {
                         result[21] = "colour";
                         result[24] = ColorTranslator.FromHtml(hexColor).ToHSVString();
@@ -79,7 +78,7 @@ public class TuyaAPIService : ITuyaAPIService
 
                         // brightness: 10-1000 (1-100%)
                         // if not specified, always go for 100%
-                        if (parameters.TryGetValue("brightness", out string brightness))
+                        if (parameters.TryGetValue("brightness", out string? brightness) && brightness is not null)
                         {
                             result[22] = int.Parse(brightness) * 10;
                         }
@@ -90,7 +89,7 @@ public class TuyaAPIService : ITuyaAPIService
 
                         // temperature: 0-1000 (0-100%)
                         // if not specified, always go for 100%
-                        if (parameters.TryGetValue("temperature", out string temperature))
+                        if (parameters.TryGetValue("temperature", out string? temperature) && temperature is not null)
                         {
                             result[22] = int.Parse(temperature) * 10;
                         }
@@ -100,19 +99,19 @@ public class TuyaAPIService : ITuyaAPIService
                         }
                     }
                 }
-                if (state == DeviceState.Off)
+                if (state == DeviceEvent.Off)
                 {
                     result[20] = false;
                     result[21] = "white";
                 }
                 break;
 
-            case nameof(PowerSwitchDevice):
-                if (state == DeviceState.On)
+            case DeviceKind.PowerSwitch:
+                if (state == DeviceEvent.On)
                 {
                     result[1] = true;
                 }
-                if (state == DeviceState.Off)
+                if (state == DeviceEvent.Off)
                 {
                     result[1] = false;
                 }

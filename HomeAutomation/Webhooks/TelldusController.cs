@@ -74,7 +74,7 @@ public class TelldusController : ControllerBase
             var state = telldusAPIService.ConvertCommandToEvent(model.Command);
 
             logger.LogInformation($"Telldus.DeviceEvent :: {device.Id} :: DeviceId:{model?.DeviceID}, Command:{model?.Command.ToString()}, Parameter:{model?.Parameter}, MappedState:{state}");
-            await triggerService.FireTriggersFromDevice(device, state);
+            await triggerService.FireTriggersFromDevice(device, state, cancellationToken);
         }
 
         return Ok(true);

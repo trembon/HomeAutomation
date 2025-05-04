@@ -1,7 +1,6 @@
 ﻿using HomeAutomation.Base.Enums;
 using HomeAutomation.Core.Models;
-using HomeAutomation.Entities.Devices;
-using HomeAutomation.Entities.Enums;
+using HomeAutomation.Database.Enums;
 using Microsoft.Extensions.Configuration;
 using System.Net.Http.Json;
 using System.Text.Json;
@@ -20,9 +19,9 @@ public interface IZWaveAPIService
 
     void SendEventMessage(string message, DateTime timestamp);
 
-    ZWaveCommandClass? ConvertStateToCommand(DeviceState state, out object value);
+    ZWaveCommandClass? ConvertStateToCommand(DeviceEvent state, out object value);
 
-    DeviceEvent ConvertParameterToEvent(Type deviceType, ZWaveEventParameter parameter, object value);
+    DeviceEvent ConvertParameterToEvent(DeviceKind deviceKind, ZWaveEventParameter parameter, object? value);
 }
 
 public class ZWaveAPIService : IZWaveAPIService
@@ -70,15 +69,15 @@ public class ZWaveAPIService : IZWaveAPIService
         ZWaveEventReceived?.Invoke(new ZWaveEventModel { Message = message, Timestamp = timestamp });
     }
 
-    public ZWaveCommandClass? ConvertStateToCommand(DeviceState state, out object value)
+    public ZWaveCommandClass? ConvertStateToCommand(DeviceEvent state, out object value)
     {
         switch (state)
         {
-            case DeviceState.On:
+            case DeviceEvent.On:
                 value = 255;
                 return ZWaveCommandClass.Basic;
 
-            case DeviceState.Off:
+            case DeviceEvent.Off:
                 value = 0;
                 return ZWaveCommandClass.Basic;
         }
@@ -87,7 +86,7 @@ public class ZWaveAPIService : IZWaveAPIService
         return null;
     }
 
-    public DeviceEvent ConvertParameterToEvent(Type deviceType, ZWaveEventParameter parameter, object value)
+    public DeviceEvent ConvertParameterToEvent(DeviceKind deviceKind, ZWaveEventParameter parameter, object? value)
     {
         if (value is JsonElement je)
         {
@@ -119,7 +118,7 @@ public class ZWaveAPIService : IZWaveAPIService
             }
         }
 
-        if (deviceType == typeof(MotionSensorDevice))
+        if (deviceKind == DeviceKind.MotionSensor)
         {
             if (parameter == ZWaveEventParameter.SensorMotion)
                 return DeviceEvent.Motion;

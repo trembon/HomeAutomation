@@ -2,10 +2,8 @@
 
 namespace HomeAutomation.Database.Entities;
 
-public class LogEntity
+public class LogEntity : BaseEntity
 {
-    public int Id { get; set; }
-
     public LogLevel Level { get; set; }
 
     public string Category { get; set; } = null!;

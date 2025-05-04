@@ -1,5 +1,4 @@
 ﻿using HomeAutomation.Core.ScheduledJobs.Base;
-using HomeAutomation.ScheduledJobs;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace HomeAutomation.Core.Extensions;

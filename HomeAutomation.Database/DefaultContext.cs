@@ -1,17 +1,22 @@
-﻿using HomeAutomation.Database.Entities;
+﻿using HomeAutomation.Database.Converters;
+using HomeAutomation.Database.Entities;
 using Microsoft.EntityFrameworkCore;
 
 namespace HomeAutomation.Database;
 
 public class DefaultContext(DbContextOptions<DefaultContext> options) : DbContext(options)
 {
-    public DbSet<Entities.ActionEntity> Actions { get; set; }
+    public DbSet<ActionEntity> Actions { get; set; }
+
+    public DbSet<ActionDeviceEntity> ActionDevices { get; set; }
 
     public DbSet<ConditionEntity> Conditions { get; set; }
 
     public DbSet<DeviceEntity> Devices { get; set; }
 
     public DbSet<TriggerEntity> Triggers { get; set; }
+
+    public DbSet<TriggerActionEntity> TriggerActions { get; set; }
 
     public DbSet<SensorValueEntity> SensorValues { get; set; }
 
@@ -25,15 +30,14 @@ public class DefaultContext(DbContextOptions<DefaultContext> options) : DbContex
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        base.OnModelCreating(modelBuilder);
+        modelBuilder.ApplyConfigurationsFromAssembly(typeof(DefaultContext).Assembly);
+    }
 
-        modelBuilder.Entity<SunDataEntity>().HasIndex(sd => sd.Date).IsUnique();
+    protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
+    {
+        base.ConfigureConventions(configurationBuilder);
 
-        foreach (var entityType in modelBuilder.Model.GetEntityTypes())
-        {
-            var dateTimeProperties = entityType.GetProperties().Where(p => p.ClrType == typeof(DateTime));
-            foreach (var property in dateTimeProperties)
-                modelBuilder.Entity(entityType.Name).Property<DateTime>(property.Name).HasConversion(v => v.ToUniversalTime(), v => DateTime.SpecifyKind(v, DateTimeKind.Utc));
-        }
+        configurationBuilder.Properties<DateTime>().HaveConversion<DateTimeUTCConverter>();
+        configurationBuilder.Properties<DateTime?>().HaveConversion<NullableDateTimeUTCConverter>();
     }
 }

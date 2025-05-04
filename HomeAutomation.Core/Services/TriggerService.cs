@@ -1,105 +1,94 @@
 ﻿using HomeAutomation.Database.Entities;
-using HomeAutomation.Entities.Enums;
-using HomeAutomation.Entities.Triggers;
+using HomeAutomation.Database.Enums;
+using HomeAutomation.Database.Repositories;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 namespace HomeAutomation.Core.Services;
 
 public interface ITriggerService
 {
-    Task FireTriggersFromDevice(DeviceEntity device, DeviceEvent deviceEvent);
+    Task FireTriggersFromDevice(DeviceEntity device, DeviceEvent deviceEvent, CancellationToken cancellationToken);
 
-    Task FireTriggers(IEnumerable<Trigger> triggers);
+    Task FireTriggers(IEnumerable<TriggerEntity> triggers, CancellationToken cancellationToken);
 
-    Task FireTriggers(IEnumerable<Trigger> triggers, object? source);
+    Task FireTriggers(IEnumerable<TriggerEntity> triggers, object? source, CancellationToken cancellationToken);
 }
 
-public class TriggerService : ITriggerService
+public class TriggerService(ITriggerRepository repository, IActionExecutionService actionExecutionService, IEvaluateConditionService evaluateConditionService, ILogger<TriggerService> logger) : ITriggerService
 {
-    private readonly IActionExecutionService actionExecutionService;
-    private readonly IEvaluateConditionService evaluateConditionService;
-    private readonly IJsonDatabaseService memoryEntitiesService;
-    private readonly ILogger<TriggerService> logger;
-
-    public TriggerService(IActionExecutionService actionExecutionService, IEvaluateConditionService evaluateConditionService, IJsonDatabaseService memoryEntitiesService, ILogger<TriggerService> logger)
-    {
-        this.actionExecutionService = actionExecutionService;
-        this.evaluateConditionService = evaluateConditionService;
-        this.memoryEntitiesService = memoryEntitiesService;
-        this.logger = logger;
-    }
-
-    public Task FireTriggersFromDevice(DeviceEntity device, DeviceEvent deviceEvent)
+    public async Task FireTriggersFromDevice(DeviceEntity device, DeviceEvent deviceEvent, CancellationToken cancellationToken)
     {
         // ignore events that are not known
         if (deviceEvent == DeviceEvent.Unknown)
-            return Task.CompletedTask;
+            return;
 
-        var triggers = memoryEntitiesService.StateTriggers.Where(st => st.Events.Contains(deviceEvent) && st.Devices.Contains(device.Id));
+        var triggers = await repository
+            .Table
+            .Where(x => x.Kind == TriggerKind.DeviceState && x.ListenOnDeviceId == device.Id && x.ListenOnDeviceEvent == deviceEvent)
+            .ToListAsync(cancellationToken);
 
-        if (triggers != null && triggers.Any())
+        if (triggers.Count > 0)
         {
-            logger.LogInformation($"Triggers.FireAll :: {string.Join(',', triggers.Select(x => x.ID))} :: Device:{device.Id}, Event:{deviceEvent}");
-            return ExecuteTriggerActions(triggers, device);
+            logger.LogInformation("Triggers.FireAll :: {triggers} :: Device:{deviceId}, Event:{deviceEvent}", string.Join(',', triggers.Select(x => x.Id)), device.Id, deviceEvent);
+            await ExecuteTriggerActions(triggers, device, cancellationToken);
         }
         else
         {
             logger.LogInformation($"Triggers.FireAll :: None :: Device:{device.Id}, Event:{deviceEvent}");
-            return Task.CompletedTask;
         }
     }
 
-    public Task FireTriggers(IEnumerable<Trigger> triggers)
+    public async Task FireTriggers(IEnumerable<TriggerEntity> triggers, CancellationToken cancellationToken)
     {
         if (triggers != null && triggers.Any())
         {
-            logger.LogInformation("Triggers.FireAll :: {triggers}", string.Join(',', triggers.Select(x => x.ID)));
-            return ExecuteTriggerActions(triggers, null);
+            logger.LogInformation("Triggers.FireAll :: {triggers}", string.Join(',', triggers.Select(x => x.Id)));
+            await ExecuteTriggerActions(triggers, null, cancellationToken);
         }
         else
         {
             logger.LogInformation($"Triggers.FireAll :: None");
-            return Task.CompletedTask;
         }
     }
 
-    public Task FireTriggers(IEnumerable<Trigger> triggers, object? source)
+    public async Task FireTriggers(IEnumerable<TriggerEntity> triggers, object? source, CancellationToken cancellationToken)
     {
         if (triggers != null && triggers.Any())
         {
-            logger.LogInformation("Triggers.FireAll :: {triggers} :: Source:{source}", string.Join(',', triggers.Select(x => x.ID)), source);
-            return ExecuteTriggerActions(triggers, source);
+            logger.LogInformation("Triggers.FireAll :: {triggers} :: Source:{source}", string.Join(',', triggers.Select(x => x.Id)), source);
+            await ExecuteTriggerActions(triggers, source, cancellationToken);
         }
         else
         {
             logger.LogInformation("Triggers.FireAll :: None :: Source:{source}", source);
-            return Task.CompletedTask;
         }
     }
 
-    private async Task ExecuteTriggerActions(IEnumerable<Trigger> triggers, object? source)
+    private async Task ExecuteTriggerActions(IEnumerable<TriggerEntity> triggers, object? source, CancellationToken cancellationToken)
     {
         foreach (var trigger in triggers)
         {
             if (trigger.Disabled)
             {
-                logger.LogInformation("Trigger.Fire :: {triggerId} :: Status:Disabled", trigger.ID);
+                logger.LogInformation("Trigger.Fire :: {triggerId} :: Status:Disabled", trigger.Id);
                 continue;
             }
 
-            bool meetConditions = await evaluateConditionService.MeetConditions(trigger, trigger.Conditions);
+            bool meetConditions = await evaluateConditionService.MeetConditions(trigger, cancellationToken);
             if (!meetConditions)
             {
-                logger.LogInformation("Trigger.Fire :: {triggerId} :: Status:ConditionsNotMet", trigger.ID);
+                logger.LogInformation("Trigger.Fire :: {triggerId} :: Status:ConditionsNotMet", trigger.Id);
                 continue;
             }
 
-            logger.LogInformation("Trigger.Fire :: {triggerId}", trigger.ID);
+            logger.LogInformation("Trigger.Fire :: {triggerId}", trigger.Id);
 
-            List<Task> triggerActionTasks = new(trigger.Actions.Length);
-            foreach (int action in trigger.Actions)
+            List<Task> triggerActionTasks = [];
+            var actions = await repository.GetActionsForTrigger(trigger.Id, cancellationToken);
+            foreach (var action in actions)
             {
-                triggerActionTasks.Add(actionExecutionService.Execute(action, source ?? trigger));
+                triggerActionTasks.Add(actionExecutionService.Execute(action.Id, source ?? trigger, cancellationToken));
             }
 
             await Task.WhenAll(triggerActionTasks);

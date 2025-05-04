@@ -2,10 +2,8 @@
 
 namespace HomeAutomation.Database.Entities;
 
-public class SensorValueEntity
+public class SensorValueEntity : BaseEntity
 {
-    public int Id { get; set; }
-
     public int DeviceId { get; set; }
 
     public DeviceEntity Device { get; set; } = null!;

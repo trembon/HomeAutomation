@@ -2,10 +2,8 @@
 
 namespace HomeAutomation.Database.Entities;
 
-public class DeviceEntity
+public class DeviceEntity : BaseEntity
 {
-    public int Id { get; set; }
-
     public DeviceSource Source { get; set; }
 
     public string SourceId { get; set; } = null!;
@@ -13,6 +11,8 @@ public class DeviceEntity
     public string Name { get; set; } = null!;
 
     public DeviceKind Kind { get; set; }
+
+    public bool Disabled { get; set; } = false;
 
     public string? Url { get; set; }
 

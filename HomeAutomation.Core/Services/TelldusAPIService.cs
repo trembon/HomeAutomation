@@ -1,11 +1,8 @@
 ﻿using HomeAutomation.Base.Enums;
 using HomeAutomation.Core.Models;
-using HomeAutomation.Database.Entities;
-using HomeAutomation.Entities.Enums;
+using HomeAutomation.Database.Enums;
 using Microsoft.Extensions.Configuration;
 using System.Net.Http.Json;
-using System.Text.Json;
-using System.Text.Json.Serialization;
 
 namespace HomeAutomation.Core.Services;
 
@@ -29,7 +26,7 @@ public interface ITelldusAPIService
 
     DeviceEvent ConvertCommandToEvent(TelldusDeviceMethods command);
 
-    TelldusDeviceMethods? ConvertStateToCommand(DeviceState state);
+    TelldusDeviceMethods? ConvertStateToCommand(DeviceEvent state);
 }
 
 public class TelldusAPIService(IConfiguration configuration) : ITelldusAPIService
@@ -104,12 +101,12 @@ public class TelldusAPIService(IConfiguration configuration) : ITelldusAPIServic
         }
     }
 
-    public TelldusDeviceMethods? ConvertStateToCommand(DeviceState state)
+    public TelldusDeviceMethods? ConvertStateToCommand(DeviceEvent state)
     {
         switch (state)
         {
-            case DeviceState.On: return TelldusDeviceMethods.TurnOn;
-            case DeviceState.Off: return TelldusDeviceMethods.TurnOff;
+            case DeviceEvent.On: return TelldusDeviceMethods.TurnOn;
+            case DeviceEvent.Off: return TelldusDeviceMethods.TurnOff;
         }
         return null;
     }

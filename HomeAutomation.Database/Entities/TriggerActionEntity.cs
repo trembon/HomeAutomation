@@ -1,9 +1,7 @@
 ﻿namespace HomeAutomation.Database.Entities;
 
-public class TriggerActionEntity
+public class TriggerActionEntity : BaseEntity
 {
-    public int Id { get; set; }
-
     public int TriggerId { get; set; }
 
     public TriggerEntity Trigger { get; set; } = null!;

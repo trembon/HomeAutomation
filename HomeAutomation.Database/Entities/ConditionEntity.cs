@@ -2,10 +2,8 @@
 
 namespace HomeAutomation.Database.Entities;
 
-public class ConditionEntity
+public class ConditionEntity : BaseEntity
 {
-    public int Id { get; set; }
-
     public string Name { get; set; } = null!;
 
     public ConditionKind Kind { get; set; }

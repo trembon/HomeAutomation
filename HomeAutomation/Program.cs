@@ -4,7 +4,7 @@ using HomeAutomation.Core.Extensions;
 using HomeAutomation.Core.Logging;
 using HomeAutomation.Core.ScheduledJobs;
 using HomeAutomation.Core.Services;
-using HomeAutomation.Database.Extensions;
+using HomeAutomation.Database;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using MudBlazor.Services;
 
@@ -30,7 +30,6 @@ builder.Services.AddSingleton<ITuyaAPIService, TuyaAPIService>();
 builder.Services.AddSingleton<IZWaveAPIService, ZWaveAPIService>();
 builder.Services.AddSingleton<ITelldusAPIService, TelldusAPIService>();
 
-builder.Services.AddSingleton<IJsonDatabaseService, JsonDatabaseService>();
 builder.Services.AddSingleton<IEvaluateConditionService, EvaluateConditionService>();
 
 builder.Services.AddTransient<IDeviceService, DeviceService>();
@@ -63,7 +62,6 @@ app.UseStaticFiles();
 app.UseAntiforgery();
 
 app.ApplyDatabaseMigrations();
-app.Services.GetRequiredService<IJsonDatabaseService>().Initialize();
 
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode()
