@@ -21,6 +21,7 @@ builder.Services.AddMudServices();
 builder.Services.AddHttpClient();
 
 builder.Services.AddDefaultDatabaseContext(builder.Configuration.GetConnectionString("Default")!);
+builder.Services.AddRepositories();
 
 builder.Logging.Services.TryAddEnumerable(ServiceDescriptor.Singleton<ILoggerProvider, DatabaseLoggerProvider>());
 if (!builder.Environment.IsDevelopment())
@@ -35,7 +36,6 @@ builder.Services.AddSingleton<IEvaluateConditionService, EvaluateConditionServic
 builder.Services.AddTransient<IDeviceService, DeviceService>();
 builder.Services.AddTransient<ISunDataService, SunDataService>();
 builder.Services.AddTransient<ITriggerService, TriggerService>();
-builder.Services.AddTransient<ISensorValueService, SensorValueService>();
 builder.Services.AddTransient<INotificationService, NotificationService>();
 builder.Services.AddTransient<IActionExecutionService, ActionExecutionService>();
 

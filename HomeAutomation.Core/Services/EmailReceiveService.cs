@@ -38,7 +38,7 @@ public class EmailReceiveService(IServiceScopeFactory serviceScopeFactory, ILogg
                 {
                     sourceId = sourceId[..sourceId.IndexOf('@')];
 
-                    var deviceService = scope.ServiceProvider.GetRequiredService<IDeviceService>();
+                    var deviceService = scope.ServiceProvider.GetRequiredService<IDeviceRepository>();
 
                     var device = await deviceService.GetDevice(DeviceSource.ONVIF, sourceId, cancellationToken);
                     if (device != null)

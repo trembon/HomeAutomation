@@ -66,11 +66,11 @@ public class EvaluateConditionService(IRepository<ConditionEntity> repository, I
         }
 
         bool result = false;
-        if (condition.TimeCompareKind == Database.Enums.CompareKind.GreaterThan)
+        if (condition?.TimeCompareKind == Database.Enums.CompareKind.GreaterThan)
         {
             result = DateTime.Now > compareDateTime;
         }
-        else if (condition.TimeCompareKind == Database.Enums.CompareKind.LesserThan)
+        else if (condition?.TimeCompareKind == Database.Enums.CompareKind.LesserThan)
         {
             result = compareDateTime > DateTime.Now;
         }
