@@ -1,5 +1,6 @@
 ﻿using HomeAutomation.Core.Services;
 using HomeAutomation.Database.Enums;
+using HomeAutomation.Database.Repositories;
 using HomeAutomation.Webhooks.Models.ZWave;
 using Microsoft.AspNetCore.Mvc;
 
@@ -7,23 +8,8 @@ namespace HomeAutomation.Webhooks;
 
 [ApiController]
 [Route("webhooks/zwave")]
-public class ZWaveController : ControllerBase
+public class ZWaveController(IDeviceRepository deviceRepository, IZWaveAPIService zwaveAPIService, ITriggerService triggerService, ILogger<ZWaveController> logger) : ControllerBase
 {
-    private readonly ILogger<ZWaveController> logger;
-
-    private readonly IJsonDatabaseService jsonDatabaseService;
-    private readonly IZWaveAPIService zwaveAPIService;
-    private readonly ITriggerService triggerService;
-
-    public ZWaveController(IJsonDatabaseService jsonDatabaseService, IZWaveAPIService zwaveAPIService, ITriggerService triggerService, ILogger<ZWaveController> logger)
-    {
-        this.logger = logger;
-
-        this.jsonDatabaseService = jsonDatabaseService;
-        this.zwaveAPIService = zwaveAPIService;
-        this.triggerService = triggerService;
-    }
-
     [HttpPost("controllerstatus")]
     public ActionResult ControllerStatus(ControllerStatusModel model)
     {
@@ -32,17 +18,17 @@ public class ZWaveController : ControllerBase
     }
 
     [HttpPost("nodeupdate")]
-    public async Task<ActionResult> NodeUpdate(NodeUpdateModel model)
+    public async Task<ActionResult> NodeUpdate(NodeUpdateModel model, CancellationToken cancellationToken)
     {
         zwaveAPIService.SendEventMessage($"NodeUpdate: {model.NodeId}, {model.ValueType}: {model.Value}", model.Timestamp.ToLocalTime());
 
-        var device = jsonDatabaseService.Devices.FirstOrDefault(s => s.Source == DeviceSource.ZWave && s.SourceID == model?.NodeId.ToString());
+        var device = await deviceRepository.GetDevice(DeviceSource.ZWave, model?.NodeId.ToString(), cancellationToken);
         if (device != null)
         {
-            var state = zwaveAPIService.ConvertParameterToEvent(device.GetType(), model.ValueType, model.Value);
+            var state = zwaveAPIService.ConvertParameterToEvent(device.Kind, model?.ValueType, model?.Value);
 
-            logger.LogInformation($"ZWave.NodeUpdate :: {device.ID} :: NodeId:{model.NodeId}, ValueType:{model.ValueType}: Value:{model.Value}, ValueObjectType:{model.Value.GetType().Name} MappedState:{state}");
-            await triggerService.FireTriggersFromDevice(device, state);
+            logger.LogInformation("ZWave.NodeUpdate :: {deviceId} :: NodeId:{nodeId}, ValueType:{valueType}: Value:{value}, ValueObjectType:{valueTyoe} MappedState:{state}", device.Id, model?.NodeId, model?.ValueType, model?.Value, model?.Value.GetType().Name, state);
+            await triggerService.FireTriggersFromDevice(device, state, cancellationToken);
         }
 
         return Ok();

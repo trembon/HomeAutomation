@@ -21,7 +21,7 @@ public interface IZWaveAPIService
 
     ZWaveCommandClass? ConvertStateToCommand(DeviceEvent state, out object value);
 
-    DeviceEvent ConvertParameterToEvent(DeviceKind deviceKind, ZWaveEventParameter parameter, object? value);
+    DeviceEvent ConvertParameterToEvent(DeviceKind deviceKind, ZWaveEventParameter? parameter, object? value);
 }
 
 public class ZWaveAPIService : IZWaveAPIService
@@ -86,7 +86,7 @@ public class ZWaveAPIService : IZWaveAPIService
         return null;
     }
 
-    public DeviceEvent ConvertParameterToEvent(DeviceKind deviceKind, ZWaveEventParameter parameter, object? value)
+    public DeviceEvent ConvertParameterToEvent(DeviceKind deviceKind, ZWaveEventParameter? parameter, object? value)
     {
         if (value is JsonElement je)
         {

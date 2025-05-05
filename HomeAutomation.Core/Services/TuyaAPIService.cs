@@ -15,7 +15,7 @@ public interface ITuyaAPIService
 
     Dictionary<int, object> ConvertStateToDPS(DeviceEvent state, DeviceKind deviceKind, Dictionary<string, string> parameters);
 
-    DeviceEvent ConvertPropertyToEvent(DeviceKind deviceKind, Dictionary<int, object> dps);
+    DeviceEvent ConvertPropertyToEvent(DeviceKind deviceKind, Dictionary<int, object>? dps);
 }
 
 public class TuyaAPIService : ITuyaAPIService
@@ -29,8 +29,11 @@ public class TuyaAPIService : ITuyaAPIService
         this.configuration = configuration;
     }
 
-    public DeviceEvent ConvertPropertyToEvent(DeviceKind deviceKind, Dictionary<int, object> dps)
+    public DeviceEvent ConvertPropertyToEvent(DeviceKind deviceKind, Dictionary<int, object>? dps)
     {
+        if (dps is null)
+            return DeviceEvent.Unknown;
+
         switch (deviceKind)
         {
             case DeviceKind.Lightbulb:

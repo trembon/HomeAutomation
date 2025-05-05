@@ -1,34 +1,18 @@
 ﻿using HomeAutomation.Core.Services;
 using HomeAutomation.Database.Enums;
+using HomeAutomation.Database.Repositories;
 using HomeAutomation.Webhooks.Models.Tuya;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.SignalR;
 using System.Text.Json;
 
 namespace HomeAutomation.Webhooks;
 
 [ApiController]
 [Route("webhooks/tuya")]
-public class TuyaController : ControllerBase
+public class TuyaController(IDeviceRepository deviceRepository, ITuyaAPIService tuyaAPIService, ITriggerService triggerService, ILogger<TuyaController> logger) : ControllerBase
 {
-    private readonly ILogger<TuyaController> logger;
-
-    private readonly IJsonDatabaseService jsonDatabaseService;
-    private readonly ITuyaAPIService tuyaAPIService;
-    private readonly ITriggerService triggerService;
-
-    public TuyaController(IJsonDatabaseService jsonDatabaseService, ITuyaAPIService tuyaAPIService, ITriggerService triggerService, ILogger<TuyaController> logger)
-    {
-        this.logger = logger;
-
-        this.jsonDatabaseService = jsonDatabaseService;
-        this.tuyaAPIService = tuyaAPIService;
-        this.triggerService = triggerService;
-    }
-
     [HttpPost("deviceupdate")]
-    public async Task<ActionResult> DeviceUpdate(DeviceUpdateModel model)
+    public async Task<ActionResult> DeviceUpdate(DeviceUpdateModel model, CancellationToken cancellationToken)
     {
         foreach (var data in model.Data)
         {
@@ -38,13 +22,17 @@ public class TuyaController : ControllerBase
             }
         }
 
-        var device = jsonDatabaseService.Devices.FirstOrDefault(s => s.Source == DeviceSource.Tuya && s.SourceID == model?.DeviceId);
+        var device = await deviceRepository.GetDevice(DeviceSource.Tuya, model?.DeviceId, cancellationToken);
         if (device != null)
         {
-            var state = tuyaAPIService.ConvertPropertyToEvent(device.GetType(), model.Data);
+            var state = tuyaAPIService.ConvertPropertyToEvent(device.Kind, model?.Data);
 
-            logger.LogInformation($"Tuya.DeviceUpdate :: {device.ID} :: DeviceId:{model.DeviceId}, DPS:{JsonSerializer.Serialize(model.Data)} MappedState:{state}");
-            await triggerService.FireTriggersFromDevice(device, state);
+            logger.LogInformation("Tuya.DeviceUpdate :: {deviceId} :: DeviceId:{sourceId}, DPS:{json} MappedState:{state}", device.Id, model?.DeviceId, JsonSerializer.Serialize(model?.Data), state);
+            await triggerService.FireTriggersFromDevice(device, state, cancellationToken);
+        }
+        else
+        {
+            logger.LogError("Tuya.DeviceUpdate :: Event from {sourceId}, but device is not mapped in database", model?.DeviceId);
         }
 
         return Ok();

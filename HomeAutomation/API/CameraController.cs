@@ -1,24 +1,24 @@
-﻿using HomeAutomation.Core.Services;
+﻿using HomeAutomation.Database.Repositories;
 using Microsoft.AspNetCore.Mvc;
 
 namespace HomeAutomation.API;
 
 [ApiController]
 [Route("api/camera")]
-public class CameraController(IJsonDatabaseService jsonDatabaseService, IHttpClientFactory httpClientFactory) : Controller
+public class CameraController(IDeviceRepository deviceRepository, IHttpClientFactory httpClientFactory) : Controller
 {
     [Route("capture/{deviceId}/{size}")]
-    public async Task<IActionResult> Index(int deviceId, string size)
+    public async Task<IActionResult> Index(int deviceId, string size, CancellationToken cancellationToken)
     {
-        var camera = jsonDatabaseService.Cameras.FirstOrDefault(x => x.ID == deviceId);
+        var camera = await deviceRepository.Get(deviceId, cancellationToken);
         if (camera == null)
             return NotFound();
 
-        string captureUrl = size == "thumbnail" ? camera.ThumbnailURL : camera.URL;
+        string? captureUrl = size == "thumbnail" ? camera.ThumbnailUrl : camera.Url;
         try
         {
-            var webClient = httpClientFactory.CreateClient("cameras");
-            var stream = await webClient.GetStreamAsync(captureUrl);
+            var client = httpClientFactory.CreateClient("cameras");
+            var stream = await client.GetStreamAsync(captureUrl, cancellationToken);
             return File(stream, "image/png");
         }
         catch

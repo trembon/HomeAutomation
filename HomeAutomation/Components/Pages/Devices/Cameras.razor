@@ -1,12 +1,14 @@
 ﻿@page "/devices/cameras"
-@inject IJsonDatabaseService jsonDatabaseService
+@using HomeAutomation.Database.Entities
+@using HomeAutomation.Database.Repositories
+@inject IDeviceRepository deviceRepository
 
 <MudText Typo="Typo.h2" Class="mb-5">Devices - Cameras</MudText>
 
 <MudGrid>
-    @foreach(var camera in jsonDatabaseService.Cameras)
+    @foreach (var camera in cameraList)
     {
-        string cameraThumbnailUrl = $"/api/camera/capture/{camera.ID}/thumbnail";
+        string cameraThumbnailUrl = $"/api/camera/capture/{camera.Id}/thumbnail";
         <MudItem xs="6">
             <MudCard>
                 <MudCardHeader>
@@ -19,7 +21,7 @@
                 </MudCardHeader>
                 <MudCardMedia Image="@cameraThumbnailUrl" Style="background-size: contain;" />
                 <MudCardContent>
-                    <MudText Typo="Typo.body2">@camera.Source - @camera.SourceID</MudText>
+                    <MudText Typo="Typo.body2">@camera.Source - @camera.SourceId</MudText>
                 </MudCardContent>
             </MudCard>
         </MudItem>
@@ -35,10 +37,18 @@
     private string overlayImageUrl = string.Empty;
     private System.Timers.Timer timer = new(1000);
 
-    public void OpenOverlay(Entities.Devices.CameraDevice camera)
+    private List<DeviceEntity> cameraList = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        cameraList = await deviceRepository.GetDevicesOfKind(Database.Enums.DeviceKind.Camera, CancellationToken.None);
+        await base.OnInitializedAsync();
+    }
+
+    public void OpenOverlay(DeviceEntity camera)
     {
         visible = true;
-        overlayImageUrl = $"/api/camera/capture/{camera.ID}/overlay";
+        overlayImageUrl = $"/api/camera/capture/{camera.Id}/overlay";
 
         timer.Elapsed += (sender, eventArgs) => OnTimerCallback();
         timer.AutoReset = true;
