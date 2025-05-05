@@ -1,6 +1,7 @@
 ﻿using HomeAutomation.Database.Converters;
 using HomeAutomation.Database.Entities;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Design;
 
 namespace HomeAutomation.Database;
 
@@ -39,5 +40,16 @@ public class DefaultContext(DbContextOptions<DefaultContext> options) : DbContex
 
         configurationBuilder.Properties<DateTime>().HaveConversion<DateTimeUTCConverter>();
         configurationBuilder.Properties<DateTime?>().HaveConversion<NullableDateTimeUTCConverter>();
+    }
+}
+
+public class DefaultContextFactory : IDesignTimeDbContextFactory<DefaultContext>
+{
+    public DefaultContext CreateDbContext(string[] args)
+    {
+        var optionsBuilder = new DbContextOptionsBuilder<DefaultContext>()
+            .UseNpgsql("");
+
+        return new DefaultContext(optionsBuilder.Options);
     }
 }

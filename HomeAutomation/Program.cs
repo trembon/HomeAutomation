@@ -31,13 +31,11 @@ builder.Services.AddSingleton<ITuyaAPIService, TuyaAPIService>();
 builder.Services.AddSingleton<IZWaveAPIService, ZWaveAPIService>();
 builder.Services.AddSingleton<ITelldusAPIService, TelldusAPIService>();
 
-builder.Services.AddSingleton<IEvaluateConditionService, EvaluateConditionService>();
-
-builder.Services.AddTransient<IDeviceService, DeviceService>();
 builder.Services.AddTransient<ISunDataService, SunDataService>();
 builder.Services.AddTransient<ITriggerService, TriggerService>();
 builder.Services.AddTransient<INotificationService, NotificationService>();
 builder.Services.AddTransient<IActionExecutionService, ActionExecutionService>();
+builder.Services.AddTransient<IEvaluateConditionService, EvaluateConditionService>();
 
 builder.Services.AddScheduleJob<CleanupLogScheduleJob>();
 builder.Services.AddScheduleJob<ImportSunDataScheduleJob>();
