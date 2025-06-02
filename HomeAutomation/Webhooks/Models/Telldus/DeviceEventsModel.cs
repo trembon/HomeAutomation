@@ -1,4 +1,4 @@
-﻿using HomeAutomation.Base.Enums;
+﻿using HomeAutomation.Core.Enums;
 
 namespace HomeAutomation.Webhooks.Models.Telldus;
 

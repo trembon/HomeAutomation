@@ -1,4 +1,4 @@
-﻿using HomeAutomation.Base.Enums;
+﻿using HomeAutomation.Core.Enums;
 using HomeAutomation.Core.Models;
 using HomeAutomation.Database.Enums;
 using Microsoft.Extensions.Configuration;
@@ -34,25 +34,25 @@ public class TelldusAPIService(IConfiguration configuration) : ITelldusAPIServic
     private readonly HttpClient httpClient = new();
     private readonly IConfiguration configuration = configuration;
 
-    public event Action<TelldusEventModel> TelldusEventReceived;
+    public event Action<TelldusEventModel>? TelldusEventReceived;
 
-    public event Action<TelldusEventModel> TelldusRawEventReceived;
+    public event Action<TelldusEventModel>? TelldusRawEventReceived;
 
     public async Task<IEnumerable<TelldusDeviceModel>> GetDevices()
     {
-        string baseUrl = configuration.GetSection("Telldus:APIUrl").Get<string>();
+        string baseUrl = configuration["Telldus:APIUrl"] ?? "";
 
         HttpRequestMessage request = new(HttpMethod.Get, $"{baseUrl}devices/");
 
         var response = await httpClient.SendAsync(request);
         response.EnsureSuccessStatusCode();
 
-        return await response.Content.ReadFromJsonAsync<TelldusDeviceModel[]>();
+        return await response.Content.ReadFromJsonAsync<TelldusDeviceModel[]>() ?? [];
     }
 
     public async Task<bool> SendCommand(int id, TelldusDeviceMethods command)
     {
-        string baseUrl = configuration.GetSection("Telldus:APIUrl").Get<string>();
+        string baseUrl = configuration["Telldus:APIUrl"] ?? "";
 
         // send the request to the controller
         HttpRequestMessage request = new(HttpMethod.Post, $"{baseUrl}devices/{id}/send/{command}");
@@ -65,7 +65,7 @@ public class TelldusAPIService(IConfiguration configuration) : ITelldusAPIServic
 
     public async Task<TelldusDeviceMethods> GetLastCommand(int id)
     {
-        string baseUrl = configuration.GetSection("Telldus:APIUrl").Get<string>();
+        string baseUrl = configuration["Telldus:APIUrl"] ?? "";
 
         HttpRequestMessage request = new(HttpMethod.Get, $"{baseUrl}devices/{id}/lastcommand");
 

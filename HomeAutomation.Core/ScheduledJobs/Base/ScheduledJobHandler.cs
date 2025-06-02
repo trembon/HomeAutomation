@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 
 namespace HomeAutomation.Core.ScheduledJobs.Base;
 
@@ -21,17 +22,21 @@ public class ScheduledJobHandler<TScheduledJob>(IServiceProvider serviceProvider
     private void ProcessTimer(object? state)
     {
         CancellationToken cancellationToken = state is not null ? (CancellationToken)state : CancellationToken.None;
+        if (cancellationToken.IsCancellationRequested)
+            return;
+
         DateTime currentExecution = DateTime.Now;
 
+        using var scope = serviceProvider.CreateScope();
         try
         {
-            using var scope = serviceProvider.CreateScope();
             var scheduledJob = scope.ServiceProvider.GetRequiredService<TScheduledJob>();
             scheduledJob.Execute(currentExecution, _lastExecution, cancellationToken).Wait();
         }
-        catch
+        catch (Exception ex)
         {
-            // ignore for now
+            var logger = scope.ServiceProvider.GetRequiredService<ILogger<ScheduledJobHandler<TScheduledJob>>>();
+            logger.LogError(ex, "Scheduled job threw exception during execution");
         }
 
         _lastExecution = currentExecution;

@@ -2,13 +2,13 @@
 
 public class TuyaDeviceModel
 {
-    public string ID { get; set; }
+    public string ID { get; set; } = null!;
 
-    public string Name { get; set; }
+    public string Name { get; set; } = null!;
 
-    public string IP { get; set; }
+    public string IP { get; set; } = null!;
 
-    public string ProductKey { get; set; }
+    public string ProductKey { get; set; } = null!;
 
     public bool IsConnected { get; set; }
 
@@ -17,7 +17,7 @@ public class TuyaDeviceModel
         return this.ID.GetHashCode();
     }
 
-    public override bool Equals(object obj)
+    public override bool Equals(object? obj)
     {
         if (obj != null && obj is TuyaDeviceModel model)
             return model.ID == this.ID;

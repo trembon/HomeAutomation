@@ -1,4 +1,4 @@
-﻿using HomeAutomation.Base.Enums;
+﻿using HomeAutomation.Core.Enums;
 using HomeAutomation.Core.Services;
 using HomeAutomation.Database.Entities;
 using HomeAutomation.Database.Enums;
@@ -70,7 +70,7 @@ public class TelldusController(IRepository<SensorValueEntity> repository, IDevic
     }
 
     [HttpPost("rawevents")]
-    public async Task<ActionResult<bool>> TelldusRawEvents(TelldusRawDeviceEventsModel model)
+    public ActionResult<bool> TelldusRawEvents(TelldusRawDeviceEventsModel model)
     {
         lock (duplicationRequestLock)
         {

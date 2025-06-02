@@ -1,4 +1,4 @@
-﻿namespace HomeAutomation.Base.Enums;
+﻿namespace HomeAutomation.Core.Enums;
 
 [Flags]
 public enum TelldusDeviceMethods
