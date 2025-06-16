@@ -13,10 +13,6 @@ public class ActionEntity : BaseEntity, IConditionedEntity
 
     public bool Disabled { get; set; } = false;
 
-    public int? ConditionId { get; set; }
-
-    public ConditionEntity? Condition { get; set; }
-
     public DeviceEvent? DeviceEventToSend { get; set; }
 
     public Dictionary<string, string> DeviceEventProperties { get; set; } = [];
@@ -28,6 +24,8 @@ public class ActionEntity : BaseEntity, IConditionedEntity
     public List<ActionDeviceEntity> Devices { get; set; } = [];
 
     public List<TriggerActionEntity> Triggers { get; set; } = [];
+
+    public List<ConditionEntity> Conditions { get; set; } = [];
 }
 
 public class ActionConfiguration : IEntityTypeConfiguration<ActionEntity>

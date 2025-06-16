@@ -25,6 +25,7 @@ public class TriggerService(ITriggerRepository repository, IActionExecutionServi
 
         var triggers = await repository
             .Table
+            .Include(x => x.Conditions)
             .Where(x => x.Kind == TriggerKind.DeviceState && x.ListenOnDeviceId == device.Id && x.ListenOnDeviceEvent == deviceEvent)
             .ToListAsync(cancellationToken);
 
@@ -75,7 +76,7 @@ public class TriggerService(ITriggerRepository repository, IActionExecutionServi
                 continue;
             }
 
-            bool meetConditions = await evaluateConditionService.MeetConditions(trigger, cancellationToken);
+            bool meetConditions = evaluateConditionService.MeetConditions(trigger);
             if (!meetConditions)
             {
                 logger.LogInformation("Trigger.Fire :: {triggerId} :: Status:ConditionsNotMet", trigger.Id);

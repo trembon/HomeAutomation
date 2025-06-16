@@ -13,4 +13,8 @@ public class ConditionEntity : BaseEntity
     public TimeOnly? TimeSpecified { get; set; }
 
     public CompareKind TimeCompareKind { get; set; }
+
+    public List<ActionEntity> Actions { get; set; } = [];
+
+    public List<TriggerEntity> Triggers { get; set; } = [];
 }

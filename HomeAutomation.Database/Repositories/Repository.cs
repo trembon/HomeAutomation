@@ -1,4 +1,5 @@
 ﻿using HomeAutomation.Database.Entities;
+using HomeAutomation.Database.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
 namespace HomeAutomation.Database.Repositories;
@@ -33,7 +34,12 @@ public class Repository<TEntity>(DefaultContext context) : IRepository<TEntity>,
 
     public async Task<TEntity?> Get(int id, CancellationToken cancellationToken)
     {
-        var entity = await Table.SingleOrDefaultAsync(x => x.Id == id, cancellationToken);
+        IQueryable<TEntity> query = Table;
+
+        if (typeof(TEntity).IsAssignableFrom(typeof(IConditionedEntity)))
+            query = query.Include(nameof(IConditionedEntity.Conditions));
+
+        var entity = await query.SingleOrDefaultAsync(x => x.Id == id, cancellationToken);
         return entity;
     }
 

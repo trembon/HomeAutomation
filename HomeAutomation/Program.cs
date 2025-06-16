@@ -39,7 +39,7 @@ builder.Services.AddTransient<IEvaluateConditionService, EvaluateConditionServic
 
 builder.Services.AddScheduleJob<CleanupLogScheduleJob>();
 builder.Services.AddScheduleJob<ImportSunDataScheduleJob>();
-builder.Services.AddScheduleJob<ImportWeatherDataScheduledJob>();
+//builder.Services.AddScheduleJob<ImportWeatherDataScheduledJob>();
 builder.Services.AddScheduleJob<TriggerScheduledJob>();
 
 builder.Services.AddSlackClient(builder.Configuration);

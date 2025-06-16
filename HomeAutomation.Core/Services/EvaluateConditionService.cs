@@ -6,24 +6,21 @@ namespace HomeAutomation.Core.Services;
 
 public interface IEvaluateConditionService
 {
-    Task<bool> MeetConditions(IConditionedEntity conditionedEntity, CancellationToken cancellationToken);
+    bool MeetConditions(IConditionedEntity conditionedEntity);
 
     bool MeetCondition(ConditionEntity? condition);
 }
 
 public class EvaluateConditionService(IRepository<ConditionEntity> repository, ISunDataService sunDataService) : IEvaluateConditionService
 {
-    public async Task<bool> MeetConditions(IConditionedEntity conditionedEntity, CancellationToken cancellationToken)
+    public bool MeetConditions(IConditionedEntity conditionedEntity)
     {
-        if (conditionedEntity.ConditionId is not null && conditionedEntity.Condition is null)
-        {
-            var condition = await repository.Get(conditionedEntity.ConditionId.Value, cancellationToken);
-            return MeetCondition(condition);
-        }
-        else
-        {
-            return MeetCondition(conditionedEntity.Condition);
-        }
+        if (conditionedEntity.Conditions is not null)
+            foreach (var condition in conditionedEntity.Conditions)
+                if (!MeetCondition(condition))
+                    return false;
+
+        return true;
     }
 
     public bool MeetCondition(ConditionEntity? condition)

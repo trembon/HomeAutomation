@@ -11,10 +11,6 @@ public class TriggerEntity : BaseEntity, IConditionedEntity
 
     public bool Disabled { get; set; } = false;
 
-    public int? ConditionId { get; set; }
-
-    public ConditionEntity? Condition { get; set; }
-
     public DeviceEvent? ListenOnDeviceEvent { get; set; }
 
     public int? ListenOnDeviceId { get; set; }
@@ -26,4 +22,6 @@ public class TriggerEntity : BaseEntity, IConditionedEntity
     public TimeOnly? ScheduledAt { get; set; }
 
     public List<TriggerActionEntity> Actions { get; set; } = [];
+
+    public List<ConditionEntity> Conditions { get; set; } = [];
 }

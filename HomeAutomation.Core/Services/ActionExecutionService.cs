@@ -29,7 +29,7 @@ public class ActionExecutionService(IRepository<ActionEntity> actionRepository, 
             return;
         }
 
-        bool meetConditions = await evaluateConditionService.MeetConditions(action, cancellationToken);
+        bool meetConditions = evaluateConditionService.MeetConditions(action);
         if (!meetConditions)
         {
             logger.LogInformation("Action.Execute :: {actionId} :: Status:ConditionsNotMet", actionId);
