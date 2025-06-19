@@ -27,7 +27,7 @@ public class ZWaveController(IDeviceRepository deviceRepository, IZWaveAPIServic
         {
             var state = zwaveAPIService.ConvertParameterToEvent(device.Kind, model?.ValueType, model?.Value);
 
-            logger.LogInformation("ZWave.NodeUpdate :: {deviceId} :: NodeId:{nodeId}, ValueType:{valueType}: Value:{value}, ValueObjectType:{valueTyoe} MappedState:{state}", device.Id, model?.NodeId, model?.ValueType, model?.Value, model?.Value.GetType().Name, state);
+            logger.LogInformation("ZWave.NodeUpdate :: {deviceId} :: NodeId:{nodeId}, ValueType:{valueType}: Value:{value}, ValueObjectType:{valueType} MappedState:{state}", device.Id, model?.NodeId, model?.ValueType, model?.Value, model?.Value?.GetType().Name, state);
             await triggerService.FireTriggersFromDevice(device, state, cancellationToken);
         }
 

@@ -36,7 +36,7 @@ public class TriggerService(ITriggerRepository repository, IActionExecutionServi
         }
         else
         {
-            logger.LogInformation($"Triggers.FireAll :: None :: Device:{device.Id}, Event:{deviceEvent}");
+            logger.LogInformation("Triggers.FireAll :: None :: Device:{deviceId}, Event:{deviceEvent}", device.Id, deviceEvent);
         }
     }
 

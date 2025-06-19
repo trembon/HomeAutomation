@@ -24,7 +24,7 @@ POST {{HomeAutomation_HostAddress}}/webhooks/telldus/deviceevents
 Content-Type: application/json
 
 {
-    "deviceID": 13,
+    "deviceID": 1,
     "command": 1,
     "parameter": ""
 }

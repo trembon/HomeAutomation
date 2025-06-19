@@ -10,5 +10,5 @@ public class SensorUpdatesModel
 
     public DateTime Timestamp { get; set; }
 
-    public string Value { get; set; }
+    public string Value { get; set; } = "";
 }

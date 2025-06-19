@@ -40,7 +40,7 @@ public class TelldusController(IRepository<SensorValueEntity> repository, IDevic
         }
         else
         {
-            logger.LogInformation("Received sensor update from telldus sensor with ID '{sensorId}'.", model?.SensorID);
+            logger.LogInformation("Received sensor update from telldus sensor with ID '{sensorId}' of type {type}.", model?.SensorID, model?.Type);
         }
 
         return Ok(true);
@@ -51,7 +51,7 @@ public class TelldusController(IRepository<SensorValueEntity> repository, IDevic
     {
         lock (duplicationRequestLock)
         {
-            if (IsDuplicateRequest(model.DeviceID, model.Command, model.Parameter))
+            if (IsDuplicateRequest(model.DeviceID, model.Command, model.Parameter ?? ""))
                 return Ok(false);
         }
 
@@ -62,7 +62,7 @@ public class TelldusController(IRepository<SensorValueEntity> repository, IDevic
         {
             var state = telldusAPIService.ConvertCommandToEvent(model.Command);
 
-            logger.LogInformation($"Telldus.DeviceEvent :: {device.Id} :: DeviceId:{model?.DeviceID}, Command:{model?.Command.ToString()}, Parameter:{model?.Parameter}, MappedState:{state}");
+            logger.LogInformation("Telldus.DeviceEvent :: {deviceId} :: DeviceId:{requestDeviceID}, Command:{command}, Parameter:{parameters}, MappedState:{state}", device.Id, model?.DeviceID, model?.Command, model?.Parameter, state);
             await triggerService.FireTriggersFromDevice(device, state, cancellationToken);
         }
 
@@ -79,6 +79,7 @@ public class TelldusController(IRepository<SensorValueEntity> repository, IDevic
         }
 
         telldusAPIService.SendRawLogMessage($"RAW: {model?.RawData} (Controller {model?.ControllerID})");
+        logger.LogInformation("Telldus.Raw :: {rawData}", model?.RawData);
         return Ok(true);
     }
 

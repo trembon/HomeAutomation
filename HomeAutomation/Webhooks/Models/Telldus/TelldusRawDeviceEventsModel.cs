@@ -4,5 +4,5 @@ public class TelldusRawDeviceEventsModel
 {
     public int ControllerID { get; set; }
 
-    public string RawData { get; set; }
+    public string RawData { get; set; } = "";
 }

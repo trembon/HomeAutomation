@@ -8,5 +8,5 @@ public class DeviceEventsModel
 
     public TelldusDeviceMethods Command { get; set; }
 
-    public string Parameter { get; set; }
+    public string? Parameter { get; set; }
 }

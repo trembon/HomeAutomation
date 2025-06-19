@@ -2,7 +2,7 @@
 
 public class TelldusEventModel
 {
-    public string Message { get; set; }
+    public string Message { get; set; } = null!;
 
     public DateTime Timestamp { get; set; }
 }

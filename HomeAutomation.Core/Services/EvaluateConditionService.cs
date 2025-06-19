@@ -1,6 +1,5 @@
 ﻿using HomeAutomation.Database.Entities;
 using HomeAutomation.Database.Interfaces;
-using HomeAutomation.Database.Repositories;
 
 namespace HomeAutomation.Core.Services;
 
@@ -11,7 +10,7 @@ public interface IEvaluateConditionService
     bool MeetCondition(ConditionEntity? condition);
 }
 
-public class EvaluateConditionService(IRepository<ConditionEntity> repository, ISunDataService sunDataService) : IEvaluateConditionService
+public class EvaluateConditionService(ISunDataService sunDataService) : IEvaluateConditionService
 {
     public bool MeetConditions(IConditionedEntity conditionedEntity)
     {
