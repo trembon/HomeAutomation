@@ -18,17 +18,8 @@ public interface ITuyaAPIService
     DeviceEvent ConvertPropertyToEvent(DeviceKind deviceKind, Dictionary<int, object>? dps);
 }
 
-public class TuyaAPIService : ITuyaAPIService
+public class TuyaAPIService(IConfiguration configuration, IHttpClientFactory httpClientFactory) : ITuyaAPIService
 {
-    private readonly HttpClient httpClient;
-    private readonly IConfiguration configuration;
-
-    public TuyaAPIService(IConfiguration configuration)
-    {
-        this.httpClient = new HttpClient();
-        this.configuration = configuration;
-    }
-
     public DeviceEvent ConvertPropertyToEvent(DeviceKind deviceKind, Dictionary<int, object>? dps)
     {
         if (dps is null)
@@ -126,9 +117,10 @@ public class TuyaAPIService : ITuyaAPIService
 
     public async Task<IEnumerable<TuyaDeviceModel>> GetDevices()
     {
-        string baseUrl = configuration.GetSection("Tuya:APIUrl").Get<string>();
+        string baseUrl = configuration["Tuya:APIUrl"] ?? "";
         HttpRequestMessage request = new(HttpMethod.Get, $"{baseUrl}devices/");
 
+        var httpClient = httpClientFactory.CreateClient(nameof(TuyaAPIService));
         var response = await httpClient.SendAsync(request);
         response.EnsureSuccessStatusCode();
 
@@ -137,12 +129,13 @@ public class TuyaAPIService : ITuyaAPIService
 
     public async Task<bool> SendCommand(string deviceId, Dictionary<int, object> dps)
     {
-        string baseUrl = configuration.GetSection("Tuya:APIUrl").Get<string>();
+        string baseUrl = configuration["Tuya:APIUrl"] ?? "";
         HttpRequestMessage request = new(HttpMethod.Post, $"{baseUrl}devices/{deviceId}/send")
         {
             Content = JsonContent.Create(new { data = dps })
         };
 
+        var httpClient = httpClientFactory.CreateClient(nameof(TuyaAPIService));
         var sendResult = await httpClient.SendAsync(request);
         sendResult.EnsureSuccessStatusCode();
 
