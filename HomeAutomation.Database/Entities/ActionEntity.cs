@@ -15,7 +15,7 @@ public class ActionEntity : BaseEntity, IConditionedEntity
 
     public DeviceEvent? DeviceEventToSend { get; set; }
 
-    public Dictionary<string, string> DeviceEventProperties { get; set; } = [];
+    public Dictionary<string, string>? DeviceEventProperties { get; set; }
 
     public string? MessageChannel { get; set; }
 
