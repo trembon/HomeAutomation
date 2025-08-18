@@ -20,7 +20,7 @@ public class MigrateJsonDatabase
         if (!File.Exists(databaseFile))
             return;
 
-        string databaseString = File.ReadAllText(DATABASE_FILE, Encoding.UTF8);
+        string databaseString = File.ReadAllText(databaseFile, Encoding.UTF8);
         var memoryEntities = JsonConvert.DeserializeObject<MemoryEntities>(databaseString);
 
         using var scope = serviceProvider.CreateScope();
