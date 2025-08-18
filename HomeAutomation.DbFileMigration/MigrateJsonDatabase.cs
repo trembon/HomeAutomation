@@ -104,8 +104,8 @@ public class MigrateJsonDatabase
                 break;
 
             case StateAction stateAction:
-                actionEntity.Kind = Database.Enums.ActionKind.DeviceEvent;
                 actionEntity.Name = $"{nameof(StateAction)} - {action.ID}";
+                actionEntity.Kind = Database.Enums.ActionKind.DeviceEvent;
                 actionEntity.DeviceEventToSend = ConvertDeviceState(stateAction.State);
                 actionEntity.DeviceEventProperties = stateAction.Parameters;
                 break;
@@ -137,14 +137,14 @@ public class MigrateJsonDatabase
         switch (trigger)
         {
             case DeviceTrigger deviceTrigger:
-                triggerEntity.Kind = Database.Enums.TriggerKind.Scheduled;
+                triggerEntity.Kind = Database.Enums.TriggerKind.DeviceState;
                 triggerEntity.Name = $"{nameof(DeviceTrigger)} - {trigger.ID}";
                 triggerEntity.ListenOnDeviceId = deviceIdMapping[deviceTrigger.Devices.First()];
                 triggerEntity.ListenOnDeviceEvent = ConvertDeviceEvent(deviceTrigger.Events.FirstOrDefault());
                 break;
 
             case ScheduleTrigger scheduleTrigger:
-                triggerEntity.Kind = Database.Enums.TriggerKind.DeviceState;
+                triggerEntity.Kind = Database.Enums.TriggerKind.Scheduled;
                 triggerEntity.Name = $"{nameof(ScheduleTrigger)} - {trigger.ID}";
                 triggerEntity.SchedulingMode = ConvertScheduleMode(scheduleTrigger.Mode);
                 triggerEntity.ScheduledAt = new TimeOnly(scheduleTrigger.At.Hours, scheduleTrigger.At.Minutes, scheduleTrigger.At.Seconds);
