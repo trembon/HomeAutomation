@@ -12,9 +12,10 @@ public static class Startup
     {
         var dataSourceBuilder = new NpgsqlDataSourceBuilder(connectionString);
         dataSourceBuilder.EnableDynamicJson();
+        var datasource = dataSourceBuilder.Build();
 
         var assembly = Assembly.GetExecutingAssembly();
-        services.AddDbContext<DefaultContext>(options => options.UseNpgsql(dataSourceBuilder.Build(), x => x.MigrationsAssembly(assembly)), ServiceLifetime.Transient);
+        services.AddDbContext<DefaultContext>(options => options.UseNpgsql(datasource, x => x.MigrationsAssembly(assembly)), ServiceLifetime.Transient);
     }
 
     public static void ApplyDatabaseMigrations(this IHost host)
