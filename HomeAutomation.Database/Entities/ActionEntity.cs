@@ -32,6 +32,6 @@ public class ActionConfiguration : IEntityTypeConfiguration<ActionEntity>
 {
     public void Configure(EntityTypeBuilder<ActionEntity> builder)
     {
-        builder.OwnsOne(x => x.DeviceEventProperties, x => x.ToJson());
+        builder.Property(e => e.DeviceEventProperties).HasColumnType("jsonb");
     }
 }
