@@ -36,8 +36,6 @@ public class DefaultContext(DbContextOptions<DefaultContext> options) : DbContex
 
     protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
     {
-        base.ConfigureConventions(configurationBuilder);
-
         configurationBuilder.Properties<DateTime>().HaveConversion<DateTimeUTCConverter>();
         configurationBuilder.Properties<DateTime?>().HaveConversion<NullableDateTimeUTCConverter>();
     }

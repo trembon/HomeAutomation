@@ -5,7 +5,7 @@ using Microsoft.Extensions.Logging;
 
 namespace HomeAutomation.Core.ScheduledJobs.Base;
 
-public class ScheduledJobHandler<TScheduledJob>(IServiceProvider serviceProvider, IConfiguration configuration) : IHostedService, IDisposable where TScheduledJob : IScheduledJob
+public class ScheduledJobHandler<TScheduledJob>(IServiceScopeFactory serviceScopeFactory, IConfiguration configuration, ILogger<ScheduledJobHandler<TScheduledJob>> logger) : IHostedService, IDisposable where TScheduledJob : IScheduledJob
 {
     private Timer? _timer = null;
     private DateTime? _lastExecution = null;
@@ -14,7 +14,14 @@ public class ScheduledJobHandler<TScheduledJob>(IServiceProvider serviceProvider
     {
         bool gotInterval = int.TryParse(configuration[$"ScheduledJobs:{typeof(TScheduledJob).Name}"], out int interval);
         if (gotInterval)
-            _timer = new Timer(ProcessTimer, cancellationToken, TimeSpan.Zero, TimeSpan.FromSeconds(interval));
+        {
+            _timer = new Timer(ProcessTimer, cancellationToken, TimeSpan.FromSeconds(30), TimeSpan.FromSeconds(interval));
+            logger.LogInformation("Starting scheduled job for {class} with interval {interval}", typeof(TScheduledJob).Name, interval);
+        }
+        else
+        {
+            logger.LogInformation("Skipping scheduled job for {class}, not configured interval found", typeof(TScheduledJob).Name);
+        }
 
         return Task.CompletedTask;
     }
@@ -27,7 +34,7 @@ public class ScheduledJobHandler<TScheduledJob>(IServiceProvider serviceProvider
 
         DateTime currentExecution = DateTime.Now;
 
-        using var scope = serviceProvider.CreateScope();
+        using var scope = serviceScopeFactory.CreateScope();
         try
         {
             var scheduledJob = scope.ServiceProvider.GetRequiredService<TScheduledJob>();
@@ -35,7 +42,6 @@ public class ScheduledJobHandler<TScheduledJob>(IServiceProvider serviceProvider
         }
         catch (Exception ex)
         {
-            var logger = scope.ServiceProvider.GetRequiredService<ILogger<ScheduledJobHandler<TScheduledJob>>>();
             logger.LogError(ex, "Scheduled job threw exception during execution");
         }
 

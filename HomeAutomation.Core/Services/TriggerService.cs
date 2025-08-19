@@ -85,14 +85,9 @@ public class TriggerService(ITriggerRepository repository, IActionExecutionServi
 
             logger.LogInformation("Trigger.Fire :: {triggerId}", trigger.Id);
 
-            List<Task> triggerActionTasks = [];
             var actions = await repository.GetActionsForTrigger(trigger.Id, cancellationToken);
             foreach (var action in actions)
-            {
-                triggerActionTasks.Add(actionExecutionService.Execute(action.Id, source ?? trigger, cancellationToken));
-            }
-
-            await Task.WhenAll(triggerActionTasks);
+                await actionExecutionService.Execute(action.Id, source ?? trigger, cancellationToken);
         }
     }
 }

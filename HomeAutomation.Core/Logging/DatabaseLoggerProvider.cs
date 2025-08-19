@@ -4,7 +4,7 @@ using System.Collections.Concurrent;
 
 namespace HomeAutomation.Core.Logging;
 
-public class DatabaseLoggerProvider(IServiceProvider serviceProvider) : ILoggerProvider
+public class DatabaseLoggerProvider(IServiceScopeFactory serviceScopeFactory) : ILoggerProvider
 {
     private const string BASE_NAMESPACE = "HomeAutomation";
 
@@ -13,7 +13,7 @@ public class DatabaseLoggerProvider(IServiceProvider serviceProvider) : ILoggerP
     public ILogger CreateLogger(string categoryName)
     {
         bool enabled = categoryName.StartsWith(BASE_NAMESPACE); // only enable database logging for this dll
-        return loggers.GetOrAdd(categoryName, name => new DatabaseLogger(name, serviceProvider.CreateScope(), enabled));
+        return loggers.GetOrAdd(categoryName, name => new DatabaseLogger(name, serviceScopeFactory.CreateScope(), enabled));
     }
 
     public void Dispose()
