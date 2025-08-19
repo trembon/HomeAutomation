@@ -69,6 +69,9 @@ app.MapRazorComponents<App>()
 
 app.MapControllers();
 
-new MigrateJsonDatabase().Migrate(app.Configuration, app.Services);
+using (var scope = app.Services.CreateScope())
+{
+    new MigrateJsonDatabase().Migrate(app.Configuration, scope);
+}
 
 app.Run();

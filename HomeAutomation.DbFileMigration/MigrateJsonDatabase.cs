@@ -14,7 +14,7 @@ public class MigrateJsonDatabase
 {
     private const string DATABASE_FILE = "database.json";
 
-    public void Migrate(IConfiguration configuration, IServiceScopeFactory serviceScopeFactory)
+    public void Migrate(IConfiguration configuration, IServiceScope scope)
     {
         string databaseFile = configuration.GetConnectionString("Json") ?? DATABASE_FILE;
         if (!File.Exists(databaseFile))
@@ -23,7 +23,6 @@ public class MigrateJsonDatabase
         string databaseString = File.ReadAllText(databaseFile, Encoding.UTF8);
         var memoryEntities = JsonConvert.DeserializeObject<MemoryEntities>(databaseString);
 
-        using var scope = serviceScopeFactory.CreateScope();
         using var context = scope.ServiceProvider.GetRequiredService<DefaultContext>();
 
         Dictionary<int, int> deviceIdMapping = [];
