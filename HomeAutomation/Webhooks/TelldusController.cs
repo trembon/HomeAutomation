@@ -29,7 +29,7 @@ public class TelldusController(IRepository<SensorValueEntity> repository, IDevic
         var sensor = await deviceRepository.GetDevice(DeviceSource.Telldus, model?.SensorID.ToString() ?? string.Empty, cancellationToken);
         if (model is not null && sensor is not null)
         {
-            logger.LogInformation("Received sensor update from device '{sensor}'.", sensor);
+            logger.LogInformation("Telldus.Sensor :: Received sensor update from device '{sensor}', type {type}, value {value}.", sensor, model.Type, model.Value);
             await repository.AddAndSave(new()
             {
                 DeviceId = sensor.Id,
@@ -40,7 +40,7 @@ public class TelldusController(IRepository<SensorValueEntity> repository, IDevic
         }
         else
         {
-            logger.LogInformation("Received sensor update from telldus sensor with ID '{sensorId}' of type {type}.", model?.SensorID, model?.Type);
+            logger.LogInformation("Telldus.Sensor :: Received sensor update from unmapped telldus sensor with ID '{sensorId}' of type {type}.", model?.SensorID, model?.Type);
         }
 
         return Ok(true);

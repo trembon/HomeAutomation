@@ -72,18 +72,18 @@ public class TriggerService(ITriggerRepository repository, IActionExecutionServi
         {
             if (trigger.Disabled)
             {
-                logger.LogInformation("Trigger.Fire :: {triggerId} :: Status:Disabled", trigger.Id);
+                logger.LogInformation("Trigger.Fire :: {trigger} :: Status:Disabled", trigger.Name);
                 continue;
             }
 
             bool meetConditions = evaluateConditionService.MeetConditions(trigger);
             if (!meetConditions)
             {
-                logger.LogInformation("Trigger.Fire :: {triggerId} :: Status:ConditionsNotMet", trigger.Id);
+                logger.LogInformation("Trigger.Fire :: {trigger} :: Status:ConditionsNotMet", trigger.Name);
                 continue;
             }
 
-            logger.LogInformation("Trigger.Fire :: {triggerId}", trigger.Id);
+            logger.LogInformation("Trigger.Fire :: {trigger}", trigger.Name);
 
             var actions = await repository.GetActionsForTrigger(trigger.Id, cancellationToken);
             foreach (var action in actions)

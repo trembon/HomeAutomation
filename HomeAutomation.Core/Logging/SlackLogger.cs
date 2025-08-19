@@ -34,7 +34,7 @@ public class SlackLogger(string categoryName, ISlackApiClient slackApiClient) : 
                 Text = message,
             });
 
-            if (response is not null)
+            if (response is null)
                 throw new Exception("Slack communication error.");
         }
         catch (Exception ex)

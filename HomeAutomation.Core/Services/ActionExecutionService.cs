@@ -25,19 +25,19 @@ public class ActionExecutionService(IRepository<ActionEntity> actionRepository, 
 
         if (action.Disabled)
         {
-            logger.LogInformation("Action.Execute :: {actionId} :: Status:Disabled", actionId);
+            logger.LogInformation("Action.Execute :: {action} :: Status:Disabled", action.Name);
             return;
         }
 
         bool meetConditions = evaluateConditionService.MeetConditions(action);
         if (!meetConditions)
         {
-            logger.LogInformation("Action.Execute :: {actionId} :: Status:ConditionsNotMet", actionId);
+            logger.LogInformation("Action.Execute :: {action} :: Status:ConditionsNotMet", action.Name);
             return;
         }
 
         List<DeviceEntity> devices = await deviceRepository.GetDevicesForAction(actionId, cancellationToken);
-        logger.LogInformation("Action.Execute :: {actionId} :: Source:{source}, Devices:{deviceIds}", actionId, source, string.Join(',', devices.Select(x => x.Id)));
+        logger.LogInformation("Action.Execute :: {action} :: Source:{source}, Devices:{deviceIds}", action.Name, source, string.Join(',', devices.Select(x => x.Id)));
 
         try
         {
