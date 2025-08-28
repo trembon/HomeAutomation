@@ -11,7 +11,6 @@
     <ProjectReference Include="..\HomeAutomation.Client\HomeAutomation.Client.csproj" />
     <ProjectReference Include="..\HomeAutomation.Core\HomeAutomation.Core.csproj" />
     <ProjectReference Include="..\HomeAutomation.Database\HomeAutomation.Database.csproj" />
-    <ProjectReference Include="..\HomeAutomation.DbFileMigration\HomeAutomation.DbFileMigration.csproj" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="9.0.2" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.2">
       <PrivateAssets>all</PrivateAssets>
