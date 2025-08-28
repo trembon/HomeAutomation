@@ -5,7 +5,6 @@ using HomeAutomation.Core.Logging;
 using HomeAutomation.Core.ScheduledJobs;
 using HomeAutomation.Core.Services;
 using HomeAutomation.Database;
-using HomeAutomation.DbFileMigration;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using MudBlazor.Services;
 
@@ -69,10 +68,5 @@ app.MapRazorComponents<App>()
     .AddAdditionalAssemblies(typeof(HomeAutomation.Client._Imports).Assembly);
 
 app.MapControllers();
-
-using (var scope = app.Services.CreateScope())
-{
-    new MigrateJsonDatabase().Migrate(app.Configuration, scope);
-}
 
 app.Run();
