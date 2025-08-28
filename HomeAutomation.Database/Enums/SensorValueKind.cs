@@ -3,6 +3,7 @@
 [Flags]
 public enum SensorValueKind : int
 {
+    Unknown = 0,
     Temperature = 1,
     Humidity = 2,
     RainRate = 4,

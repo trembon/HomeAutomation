@@ -124,7 +124,7 @@ public class TuyaAPIService(IConfiguration configuration, IHttpClientFactory htt
         var response = await httpClient.SendAsync(request);
         response.EnsureSuccessStatusCode();
 
-        return await response.Content.ReadFromJsonAsync<IEnumerable<TuyaDeviceModel>>();
+        return await response.Content.ReadFromJsonAsync<IEnumerable<TuyaDeviceModel>>() ?? [];
     }
 
     public async Task<bool> SendCommand(string deviceId, Dictionary<int, object> dps)

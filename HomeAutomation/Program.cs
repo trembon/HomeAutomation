@@ -31,6 +31,7 @@ if (!builder.Environment.IsDevelopment())
 builder.Services.AddSingleton<ITuyaAPIService, TuyaAPIService>();
 builder.Services.AddSingleton<IZWaveAPIService, ZWaveAPIService>();
 builder.Services.AddSingleton<ITelldusAPIService, TelldusAPIService>();
+builder.Services.AddSingleton<IVerisureAPIService, VerisureAPIService>();
 
 builder.Services.AddTransient<ISunDataService, SunDataService>();
 builder.Services.AddTransient<ITriggerService, TriggerService>();

@@ -1,0 +1,29 @@
+﻿@page "/verisure"
+@inject IVerisureAPIService verisureAPIService
+
+<MudText Typo="Typo.h2" Class="mb-5">Verisure - Devices</MudText>
+
+<MudTable Items="@devices" Hover="true" Loading="@(devices == null)" LoadingProgressColor="Color.Info">
+    <HeaderContent>
+        <MudTh>Id</MudTh>
+        <MudTh>Name</MudTh>
+        <MudTh>Type</MudTh>
+        <MudTh>State</MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd DataLabel="ID">@context.Id</MudTd>
+        <MudTd DataLabel="Name">@context.Name</MudTd>
+        <MudTd DataLabel="IP">@context.Type</MudTd>
+        <MudTd DataLabel="ProductKey">@context.State</MudTd>
+    </RowTemplate>
+</MudTable>
+
+@code {
+    private Core.Models.VerisureDeviceModel[]? devices;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var result = await verisureAPIService.GetDevices();
+        devices = result.ToArray();
+    }
+}

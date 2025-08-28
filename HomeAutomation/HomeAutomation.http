@@ -53,3 +53,15 @@ Content-Type: application/json
 }
 
 ###
+
+POST {{HomeAutomation_HostAddress}}/webhooks/verisure/deviceupdate
+Content-Type: application/json
+
+{
+  "id": "{{$randomInt 1000 9999}}",
+  "state": "CLOSE",
+  "changedAt": "2025-08-21T05:14:38.000Z",
+  "by": null
+}
+
+###
