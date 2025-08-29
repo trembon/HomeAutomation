@@ -62,6 +62,7 @@ app.UseAntiforgery();
 
 app.ApplyDatabaseMigrations();
 
+app.MapStaticAssets();
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode()
     .AddInteractiveWebAssemblyRenderMode()

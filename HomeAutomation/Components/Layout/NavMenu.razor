@@ -1,28 +1,28 @@
 ﻿<MudNavMenu>
     <MudNavLink Href="/" Match="NavLinkMatch.All">Dashboard</MudNavLink>
     <MudNavGroup Title="Devices" Expanded="true">
-        <MudNavLink Href="/devices/cameras" Match="NavLinkMatch.Prefix">Cameras</MudNavLink>
-        <MudNavLink Href="/devices/powerswitches" Match="NavLinkMatch.Prefix">Power Switches</MudNavLink>
+        <MudNavLink Href="/devices/cameras" Match="NavLinkMatch.All">Cameras</MudNavLink>
+        <MudNavLink Href="/devices/powerswitches" Match="NavLinkMatch.All">Power Switches</MudNavLink>
     </MudNavGroup>
     <MudNavGroup Title="Integrations" Expanded="false">
         <MudNavGroup Title="Telldus" Expanded="false">
             <MudNavLink Href="/telldus" Match="NavLinkMatch.All">Devices</MudNavLink>
-            <MudNavLink Href="/telldus/event-stream" Match="NavLinkMatch.Prefix">Event Stream</MudNavLink>
-            <MudNavLink Href="/telldus/raw-stream" Match="NavLinkMatch.Prefix">Raw Stream</MudNavLink>
+            <MudNavLink Href="/telldus/event-stream" Match="NavLinkMatch.All">Event Stream</MudNavLink>
+            <MudNavLink Href="/telldus/raw-stream" Match="NavLinkMatch.All">Raw Stream</MudNavLink>
         </MudNavGroup>
         <MudNavGroup Title="Z-Wave" Expanded="false">
             <MudNavLink Href="/z-wave" Match="NavLinkMatch.All">Devices</MudNavLink>
-            <MudNavLink Href="/z-wave/event-stream" Match="NavLinkMatch.Prefix">Event Stream</MudNavLink>
+            <MudNavLink Href="/z-wave/event-stream" Match="NavLinkMatch.All">Event Stream</MudNavLink>
         </MudNavGroup>
         <MudNavGroup Title="Tuya" Expanded="false">
-            <MudNavLink Href="/tuya" Match="NavLinkMatch.Prefix">Devices</MudNavLink>
+            <MudNavLink Href="/tuya" Match="NavLinkMatch.All">Devices</MudNavLink>
         </MudNavGroup>
         <MudNavGroup Title="Verisure" Expanded="false">
-            <MudNavLink Href="/verisure" Match="NavLinkMatch.Prefix">Devices</MudNavLink>
+            <MudNavLink Href="/verisure" Match="NavLinkMatch.All">Devices</MudNavLink>
         </MudNavGroup>
     </MudNavGroup>
     <MudNavGroup Title="Logs" Expanded="false">
-        <MudNavLink Href="/logs" Match="NavLinkMatch.Prefix">Standard</MudNavLink>
-        <MudNavLink Href="/logs/smtp" Match="NavLinkMatch.Prefix">SMTP</MudNavLink>
+        <MudNavLink Href="/logs" Match="NavLinkMatch.All">Standard</MudNavLink>
+        <MudNavLink Href="/logs/smtp" Match="NavLinkMatch.All">SMTP</MudNavLink>
     </MudNavGroup>
 </MudNavMenu>

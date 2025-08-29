@@ -11,12 +11,12 @@
     <ProjectReference Include="..\HomeAutomation.Client\HomeAutomation.Client.csproj" />
     <ProjectReference Include="..\HomeAutomation.Core\HomeAutomation.Core.csproj" />
     <ProjectReference Include="..\HomeAutomation.Database\HomeAutomation.Database.csproj" />
-    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="9.0.2" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.2">
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="9.0.8" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.8">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="MudBlazor" Version="7.1.0" />
+    <PackageReference Include="MudBlazor" Version="8.11.0" />
   </ItemGroup>
 
   <ItemGroup>
