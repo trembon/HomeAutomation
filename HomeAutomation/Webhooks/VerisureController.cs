@@ -14,7 +14,7 @@ public class VerisureController(IRepository<SensorValueEntity> repository, IDevi
     [HttpPost("deviceupdate")]
     public async Task<ActionResult> DeviceUpdate(DeviceUpdateModel model, CancellationToken cancellationToken)
     {
-        var device = await deviceRepository.GetDevice(DeviceSource.Verisure, model.Id, cancellationToken);
+        var device = await deviceRepository.Get(DeviceSource.Verisure, model.Id, cancellationToken);
         if (device != null)
         {
             var state = verisureAPIService.MapStateToDeviceEvent(model.State);
@@ -34,7 +34,7 @@ public class VerisureController(IRepository<SensorValueEntity> repository, IDevi
     {
         //zwaveAPIService.SendEventMessage($"NodeUpdate: {model.NodeId}, {model.ValueType}: {model.Value}", model.Timestamp.ToLocalTime());
 
-        var device = await deviceRepository.GetDevice(DeviceSource.Verisure, model.Id, cancellationToken);
+        var device = await deviceRepository.Get(DeviceSource.Verisure, model.Id, cancellationToken);
 
         if (device != null && device.Kind == DeviceKind.Sensor)
         {

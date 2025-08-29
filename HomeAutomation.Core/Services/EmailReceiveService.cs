@@ -40,7 +40,7 @@ public class EmailReceiveService(IServiceScopeFactory serviceScopeFactory, ILogg
 
                     var deviceService = scope.ServiceProvider.GetRequiredService<IDeviceRepository>();
 
-                    var device = await deviceService.GetDevice(DeviceSource.ONVIF, sourceId, cancellationToken);
+                    var device = await deviceService.Get(DeviceSource.ONVIF, sourceId, cancellationToken);
                     if (device != null)
                     {
                         await scope.ServiceProvider.GetRequiredService<ITriggerService>().FireTriggersFromDevice(device, DeviceEvent.Motion, cancellationToken);

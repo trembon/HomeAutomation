@@ -22,7 +22,7 @@ public class TuyaController(IDeviceRepository deviceRepository, ITuyaAPIService 
             }
         }
 
-        var device = await deviceRepository.GetDevice(DeviceSource.Tuya, model?.DeviceId, cancellationToken);
+        var device = await deviceRepository.Get(DeviceSource.Tuya, model?.DeviceId, cancellationToken);
         if (device != null)
         {
             var state = tuyaAPIService.ConvertPropertyToEvent(device.Kind, model?.Data);

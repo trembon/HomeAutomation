@@ -22,7 +22,7 @@ public class ZWaveController(IDeviceRepository deviceRepository, IZWaveAPIServic
     {
         zwaveAPIService.SendEventMessage($"NodeUpdate: {model.NodeId}, {model.ValueType}: {model.Value}", model.Timestamp.ToLocalTime());
 
-        var device = await deviceRepository.GetDevice(DeviceSource.ZWave, model?.NodeId.ToString(), cancellationToken);
+        var device = await deviceRepository.Get(DeviceSource.ZWave, model?.NodeId.ToString(), cancellationToken);
         if (device != null)
         {
             var state = zwaveAPIService.ConvertParameterToEvent(device.Kind, model?.ValueType, model?.Value);

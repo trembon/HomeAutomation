@@ -36,7 +36,7 @@ public class ActionExecutionService(IRepository<ActionEntity> actionRepository, 
             return;
         }
 
-        List<DeviceEntity> devices = await deviceRepository.GetDevicesForAction(actionId, cancellationToken);
+        List<DeviceEntity> devices = await deviceRepository.GetForAction(actionId, cancellationToken);
         logger.LogInformation("Action.Execute :: {action} :: Source:{source}, Devices:{deviceIds}", action.Name, source, string.Join(',', devices.Select(x => x.Id)));
 
         try

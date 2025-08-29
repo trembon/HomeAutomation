@@ -26,7 +26,7 @@ public class TelldusController(IRepository<SensorValueEntity> repository, IDevic
 
         telldusAPIService.SendLogMessage($"DEVICE {model?.SensorID}: {model?.Type.ToString()} - {model?.Value}", model?.Timestamp ?? DateTime.Now);
 
-        var sensor = await deviceRepository.GetDevice(DeviceSource.Telldus, model?.SensorID.ToString() ?? string.Empty, cancellationToken);
+        var sensor = await deviceRepository.Get(DeviceSource.Telldus, model?.SensorID.ToString() ?? string.Empty, cancellationToken);
         if (model is not null && sensor is not null)
         {
             logger.LogInformation("Telldus.Sensor :: Received sensor update from device '{sensor}', type {type}, value {value}.", sensor, model.Type, model.Value);
@@ -57,7 +57,7 @@ public class TelldusController(IRepository<SensorValueEntity> repository, IDevic
 
         telldusAPIService.SendLogMessage($"DEVICEID {model?.DeviceID}: {model?.Command.ToString()} ({model?.Parameter})");
 
-        var device = await deviceRepository.GetDevice(DeviceSource.Telldus, model?.DeviceID.ToString() ?? string.Empty, cancellationToken);
+        var device = await deviceRepository.Get(DeviceSource.Telldus, model?.DeviceID.ToString() ?? string.Empty, cancellationToken);
         if (model is not null && device is not null)
         {
             var state = telldusAPIService.ConvertCommandToEvent(model.Command);

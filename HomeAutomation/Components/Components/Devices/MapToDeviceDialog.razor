@@ -1,0 +1,52 @@
+﻿@inject IDeviceRepository deviceRepository
+
+<MudDialog>
+    <TitleContent>
+        <MudText Typo="Typo.h6">
+            <MudIcon Icon="@Icons.Material.Filled.AddHomeWork" Class="mr-3 mb-n1" />
+            Add mapping to device
+        </MudText>
+    </TitleContent>
+    <DialogContent>
+        <div class="pa-2" style="min-width: 500px;">
+            <MudTextField Value="@Name" Label="Name" Class="mb-4" />
+            <MudTextField Value="@Source" Label="Source" ReadOnly="true" Class="mb-4" />
+            <MudTextField Value="@SourceId" Label="Source ID" ReadOnly="true" Class="mb-4" />
+            <MudSelect @bind-Value="DeviceKindValue" Variant="Variant.Text" Label="Device Kind" Class="mb-4">
+                @foreach (string kind in Enum.GetNames(typeof(DeviceKind)))
+                {
+                    <MudSelectItem Value="kind">@kind</MudSelectItem>
+                }
+            </MudSelect>
+        </div>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Cancel</MudButton>
+        <MudButton Color="Color.Primary" OnClick="Submit">OK</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter]
+    private IMudDialogInstance MudDialog { get; set; } = null!;
+
+    [Parameter]
+    public string Name { get; set; } = string.Empty;
+
+    [Parameter]
+    public DeviceSource Source { get; set; }
+
+    [Parameter]
+    public string SourceId { get; set; } = string.Empty;
+
+    [Parameter]
+    public string DeviceKindValue { get; set; } = string.Empty;
+
+    private void Cancel() => MudDialog.Cancel();
+
+    private async Task Submit()
+    {
+        await deviceRepository.Add(Name, Source, SourceId, (DeviceKind)Enum.Parse(typeof(DeviceKind), DeviceKindValue), CancellationToken.None);
+        MudDialog.Close(DialogResult.Ok(true));
+    }
+}

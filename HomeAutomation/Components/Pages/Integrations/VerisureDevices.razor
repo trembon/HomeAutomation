@@ -1,5 +1,6 @@
 ﻿@page "/verisure"
 @inject IVerisureAPIService verisureAPIService
+@inject IDeviceRepository deviceRepository
 
 <MudText Typo="Typo.h2" Class="mb-5">Verisure - Devices</MudText>
 
@@ -9,21 +10,38 @@
         <MudTh>Name</MudTh>
         <MudTh>Type</MudTh>
         <MudTh>State</MudTh>
+        <MudTh>Mapped</MudTh>
+        <MudTh></MudTh>
     </HeaderContent>
     <RowTemplate>
         <MudTd DataLabel="ID">@context.Id</MudTd>
         <MudTd DataLabel="Name">@context.Name</MudTd>
         <MudTd DataLabel="IP">@context.Type</MudTd>
         <MudTd DataLabel="ProductKey">@context.State</MudTd>
+        <MudTd>
+            @if (mappedDevices.Contains(context.Id))
+            {
+                <MudIcon Icon="@Icons.Material.Filled.Check" Title="Yes" />
+            }
+            else
+            {
+                <MudIcon Icon="@Icons.Material.Filled.Clear" Title="Not yet" />
+            }
+        </MudTd>
+        <MudTd style="width: 60px;"><HomeAutomation.Components.Components.Devices.MapToDeviceDialogAction Source="DeviceSource.Verisure" SourceId="@context.Id" Name="@context.Name" Disabled="@mappedDevices.Contains(context.Id)" /></MudTd>
     </RowTemplate>
 </MudTable>
 
 @code {
     private Core.Models.VerisureDeviceModel[]? devices;
+    private HashSet<string> mappedDevices = [];
 
     protected override async Task OnInitializedAsync()
     {
         var result = await verisureAPIService.GetDevices();
         devices = result.ToArray();
+
+        var verisureDevices = await deviceRepository.GetOfSource(DeviceSource.Verisure, CancellationToken.None);
+        verisureDevices?.ForEach(x => mappedDevices.Add(x.SourceId));
     }
 }

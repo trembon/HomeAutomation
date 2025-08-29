@@ -1,0 +1,29 @@
+﻿@using HomeAutomation.Database.Enums
+@inject IDialogService DialogService
+
+<MudIconButton @onclick="OpenDialogAsync" Icon="@Icons.Material.Filled.AddHomeWork" aria-label="map device" Disabled="Disabled" />
+
+@code {
+    [Parameter]
+    public DeviceSource Source { get; set; }
+
+    [Parameter]
+    public string SourceId { get; set; } = null!;
+
+    [Parameter]
+    public string Name { get; set; } = null!;
+
+    [Parameter]
+    public bool Disabled { get; set; } = false;
+
+    private Task OpenDialogAsync()
+    {
+        var parameters = new DialogParameters<MapToDeviceDialog>();
+        parameters.Add(x => x.Name, Name);
+        parameters.Add(x => x.SourceId, SourceId);
+        parameters.Add(x => x.Source, Source);
+        var options = new DialogOptions { CloseOnEscapeKey = true,  };
+
+        return DialogService.ShowAsync<MapToDeviceDialog>("Add mapping to device", parameters, options);
+    }
+}

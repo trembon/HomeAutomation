@@ -41,7 +41,7 @@
 
     protected override async Task OnInitializedAsync()
     {
-        cameraList = await deviceRepository.GetDevicesOfKind(Database.Enums.DeviceKind.Camera, CancellationToken.None);
+        cameraList = await deviceRepository.GetOfKind(Database.Enums.DeviceKind.Camera, CancellationToken.None);
         await base.OnInitializedAsync();
     }
 
