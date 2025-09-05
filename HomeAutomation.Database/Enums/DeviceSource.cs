@@ -6,5 +6,6 @@ public enum DeviceSource
     Telldus = 1,
     ZWave = 2,
     Tuya = 3,
-    Verisure = 4
+    Verisure = 4,
+    FusionSolar = 5
 }

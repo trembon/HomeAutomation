@@ -1,0 +1,43 @@
+﻿@page "/fusion-solar"
+@inject IFusionSolarService fusionSolarService
+@inject IDeviceRepository deviceRepository
+
+<MudText Typo="Typo.h2" Class="mb-5">FusionSolar - Devices</MudText>
+
+<MudTable Items="@devices" Hover="true" Loading="@(devices == null)" LoadingProgressColor="Color.Info">
+    <HeaderContent>
+        <MudTh>Id</MudTh>
+        <MudTh>Name</MudTh>
+        <MudTh>Mapped</MudTh>
+        <MudTh></MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd DataLabel="Id">@context.Id</MudTd>
+        <MudTd DataLabel="Name">@context.Name</MudTd>
+        <MudTd>
+            @if (mappedDevices.Contains(context.Id))
+            {
+                <MudIcon Icon="@Icons.Material.Filled.Check" Title="Yes" />
+            }
+            else
+            {
+                <MudIcon Icon="@Icons.Material.Filled.Clear" Title="Not yet" />
+            }
+        </MudTd>
+        <MudTd style="width: 60px;"><HomeAutomation.Components.Components.Devices.MapToDeviceDialogAction Source="DeviceSource.FusionSolar" SourceId="@context.Id" Name="@context.Name" Disabled="@mappedDevices.Contains(context.Id)" /></MudTd>
+    </RowTemplate>
+</MudTable>
+
+@code {
+    private Core.Models.FusionSolarDeviceModel[]? devices;
+    private HashSet<string> mappedDevices = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        var result = await fusionSolarService.GetDevices();
+        devices = result.ToArray();
+
+        var verisureDevices = await deviceRepository.GetOfSource(DeviceSource.Verisure, CancellationToken.None);
+        verisureDevices?.ForEach(x => mappedDevices.Add(x.SourceId));
+    }
+}
