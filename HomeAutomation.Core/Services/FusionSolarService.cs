@@ -15,7 +15,7 @@ public class FusionSolarService(IConfiguration configuration, IHttpClientFactory
 {
     public SensorValueKind MapTypeToSensorKind(string property)
     {
-        return property.ToLowerInvariant() switch
+        return property switch
         {
             "gridFlow" => SensorValueKind.EnergyFlow,
             "batteryFlow" => SensorValueKind.EnergyFlow,
