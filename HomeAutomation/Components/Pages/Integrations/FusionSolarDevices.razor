@@ -37,7 +37,7 @@
         var result = await fusionSolarService.GetDevices();
         devices = result.ToArray();
 
-        var verisureDevices = await deviceRepository.GetOfSource(DeviceSource.Verisure, CancellationToken.None);
-        verisureDevices?.ForEach(x => mappedDevices.Add(x.SourceId));
+        var fusionSolarDevices = await deviceRepository.GetOfSource(DeviceSource.FusionSolar, CancellationToken.None);
+        fusionSolarDevices?.ForEach(x => mappedDevices.Add(x.SourceId));
     }
 }

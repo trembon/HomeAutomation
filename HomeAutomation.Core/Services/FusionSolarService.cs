@@ -15,15 +15,15 @@ public class FusionSolarService(IConfiguration configuration, IHttpClientFactory
 {
     public SensorValueKind MapTypeToSensorKind(string property)
     {
-        switch (property.ToLowerInvariant())
+        return property.ToLowerInvariant() switch
         {
-            case "gridFlow": return SensorValueKind.EnergyFlow;
-            case "batteryFlow": return SensorValueKind.BatteryFlow;
-            case "batteryChargeLevel": return SensorValueKind.BatteryChargeLevel;
-            case "houseConsumption": return SensorValueKind.ConsumptionFlow;
-            case "solarGeneration": return SensorValueKind.EnergyGeneration;
-            default: return SensorValueKind.Unknown;
-        }
+            "gridFlow" => SensorValueKind.EnergyFlow,
+            "batteryFlow" => SensorValueKind.EnergyFlow,
+            "batteryChargeLevel" => SensorValueKind.ChargeLevel,
+            "houseConsumption" => SensorValueKind.EnergyFlow,
+            "solarGeneration" => SensorValueKind.EnergyFlow,
+            _ => SensorValueKind.Unknown,
+        };
     }
 
     public async Task<IEnumerable<FusionSolarDeviceModel>> GetDevices()

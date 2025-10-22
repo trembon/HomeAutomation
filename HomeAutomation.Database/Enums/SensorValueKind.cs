@@ -12,8 +12,5 @@ public enum SensorValueKind : int
     WindAverage = 32,
     WindGust = 64,
     EnergyFlow = 128,
-    BatteryFlow = 256,
-    BatteryChargeLevel = 512,
-    ConsumptionFlow = 1024,
-    EnergyGeneration = 2048,
+    ChargeLevel = 256,
 }
