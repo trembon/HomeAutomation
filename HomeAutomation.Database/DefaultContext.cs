@@ -15,6 +15,8 @@ public class DefaultContext(DbContextOptions<DefaultContext> options) : DbContex
 
     public DbSet<DeviceEntity> Devices { get; set; }
 
+    public DbSet<EnergyPricingEntity> EnergyPricing { get; set; }
+
     public DbSet<TriggerEntity> Triggers { get; set; }
 
     public DbSet<TriggerActionEntity> TriggerActions { get; set; }
