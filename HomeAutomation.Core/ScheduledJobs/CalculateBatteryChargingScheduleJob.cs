@@ -216,7 +216,7 @@ public class CalculateBatteryChargingScheduleJob(DefaultContext context, IFusion
 
         public override string ToString()
         {
-            return $"{Start.TimeOfDay} - {End.TimeOfDay} Avg: {Average}kr, Low: {Low}kr, High: {High}kr";
+            return $"{Start.TimeOfDay} - {End.TimeOfDay} Avg: {Average}, Low: {Low}, High: {High}";
         }
     }
 
