@@ -12,6 +12,8 @@ namespace HomeAutomation.Core.ScheduledJobs;
 
 public class CalculateBatteryChargingScheduleJob(DefaultContext context, IFusionSolarService fusionSolarService, INotificationService notificationService, IHttpClientFactory httpClientFactory, ILogger<CalculateBatteryChargingScheduleJob> logger) : IScheduledJob
 {
+    private const string HOUR_FORMAT = "HH:mm";
+
     public async Task Execute(DateTime currentExecution, DateTime? lastExecution, CancellationToken cancellationToken)
     {
         logger.LogInformation("Schedule.BatteryCharging :: starting");
@@ -94,15 +96,15 @@ public class CalculateBatteryChargingScheduleJob(DefaultContext context, IFusion
             var night = GetCheapestPeriod([.. rows], TimeSpan.FromHours(0), TimeSpan.FromHours(5.5), TimeSpan.FromHours(3), 20);
             var day = GetCheapestPeriod([.. rows], TimeSpan.FromHours(10), TimeSpan.FromHours(16.5), TimeSpan.FromHours(2), 20);
 
-            string discharge1start = day.End.AddMinutes(1).ToString("hh:mm");
-            string discharge1end = night.Start.AddMinutes(-1).ToString("hh:mm");
-            string discharge2start = night.End.AddMinutes(1).ToString("hh:mm");
-            string discharge2end = day.Start.AddMinutes(-1).ToString("hh:mm");
+            string discharge1start = day.End.AddMinutes(1).ToString(HOUR_FORMAT);
+            string discharge1end = night.Start.AddMinutes(-1).ToString(HOUR_FORMAT);
+            string discharge2start = night.End.AddMinutes(1).ToString(HOUR_FORMAT);
+            string discharge2end = day.Start.AddMinutes(-1).ToString(HOUR_FORMAT);
 
             List<ScheduleItem> schedule = [
-                new ScheduleItem { StartTime = night.Start.ToString("hh:mm"), EndTime = night.End.ToString("hh:mm"), OnOff = 0 },
+                new ScheduleItem { StartTime = night.Start.ToString(HOUR_FORMAT), EndTime = night.End.ToString(HOUR_FORMAT), OnOff = 0 },
                 new ScheduleItem { StartTime = discharge2start, EndTime = discharge2end, OnOff = 1 },
-                new ScheduleItem { StartTime = day.Start.ToString("hh:mm"), EndTime = day.End.ToString("hh:mm"), OnOff = 0 },
+                new ScheduleItem { StartTime = day.Start.ToString(HOUR_FORMAT), EndTime = day.End.ToString(HOUR_FORMAT), OnOff = 0 },
                 new ScheduleItem { StartTime = discharge1start, EndTime = discharge1end, OnOff = 1 }
             ];
             var payload = new SchedulePayload { Id = "230190101", Value = JsonSerializer.Serialize(schedule) };
