@@ -79,8 +79,8 @@ public class CalculateBatteryChargingScheduleJob(DefaultContext context, IFusion
                 await context.SaveChangesAsync(cancellationToken);
             }
 
-            // we dont have real data to work with
-            if (rows == null || !rows.All(x => x.Definitive))
+            // we dont have real data to work with, or its not late enough yet to use not definitive data
+            if (rows == null || (!rows.All(x => x.Definitive) && currentExecution.Hour < 22))
             {
                 logger.LogInformation("Schedule.BatteryCharging :: no real pricing data for {tomorrow}, retry at a later time", tomorrow);
                 return;
