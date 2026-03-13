@@ -8,7 +8,7 @@ using System.Globalization;
 
 namespace HomeAutomation.Core.ScheduledJobs;
 
-internal class SummarizeSolarGenerationScheduleJob(DefaultContext context, ILogger<SummarizeSolarGenerationScheduleJob> logger) : IScheduledJob
+public class SummarizeSolarGenerationScheduleJob(DefaultContext context, ILogger<SummarizeSolarGenerationScheduleJob> logger) : IScheduledJob
 {
     private const int LOOKBACK_DAYS = 30;
 

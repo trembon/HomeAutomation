@@ -44,6 +44,7 @@ builder.Services.AddScheduleJob<ImportSunDataScheduleJob>();
 //builder.Services.AddScheduleJob<ImportWeatherDataScheduledJob>();
 builder.Services.AddScheduleJob<TriggerScheduledJob>();
 builder.Services.AddScheduleJob<CalculateBatteryChargingScheduleJob>();
+builder.Services.AddScheduleJob<SummarizeSolarGenerationScheduleJob>();
 
 builder.Services.AddSlackClient(builder.Configuration);
 

@@ -18,7 +18,7 @@ namespace HomeAutomation.Database.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "9.0.8")
+                .HasAnnotation("ProductVersion", "10.0.5")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -287,6 +287,34 @@ namespace HomeAutomation.Database.Migrations
                     b.HasIndex("DeviceId");
 
                     b.ToTable("SensorValues");
+                });
+
+            modelBuilder.Entity("HomeAutomation.Database.Entities.SolarGenerationSummaryEntity", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateOnly>("Date")
+                        .HasColumnType("date");
+
+                    b.Property<TimeOnly>("Ended")
+                        .HasColumnType("time without time zone");
+
+                    b.Property<TimeOnly>("Started")
+                        .HasColumnType("time without time zone");
+
+                    b.Property<decimal>("TotalKwh")
+                        .HasColumnType("numeric");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Date")
+                        .IsUnique();
+
+                    b.ToTable("SolarGenerationSummaries");
                 });
 
             modelBuilder.Entity("HomeAutomation.Database.Entities.SunDataEntity", b =>
