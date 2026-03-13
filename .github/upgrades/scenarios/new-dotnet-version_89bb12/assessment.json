@@ -1,0 +1,1277 @@
+{
+  "settings": {
+    "components": {
+      "code": true,
+      "binaries": false
+    },
+    "targetId": "net10.0",
+    "targetDisplayName": ".NETCoreApp,Version=v10.0"
+  },
+  "analysisStartTime": "2026-03-13T09:32:11.3895629Z",
+  "analysisEndTime": "2026-03-13T09:32:16.2025543Z",
+  "privacyModeHelpUrl": "https://go.microsoft.com/fwlink/?linkid=2270980",
+  "stats": {
+    "summary": {
+      "projects": 4,
+      "issues": 6,
+      "incidents": 41,
+      "effort": 41
+    },
+    "charts": {
+      "severity": {
+        "Mandatory": 7,
+        "Optional": 1,
+        "Potential": 33,
+        "Information": 0
+      },
+      "category": {
+        "NuGet": 10,
+        "Project": 4,
+        "Api": 27
+      }
+    }
+  },
+  "projects": [
+    {
+      "path": "HomeAutomation.Client\\HomeAutomation.Client.csproj",
+      "startingProject": true,
+      "issues": 2,
+      "storyPoints": 2,
+      "properties": {
+        "appName": "HomeAutomation.Client",
+        "projectKind": "AspNetCore",
+        "frameworks": [
+          "net9.0"
+        ],
+        "languages": [
+          "C#"
+        ],
+        "tools": [
+          "MSBuild"
+        ],
+        "isSdkStyle": true,
+        "numberOfFiles": 4,
+        "numberOfCodeFiles": 1,
+        "linesTotal": 30,
+        "linesOfCode": 5,
+        "totalApiScanned": 9,
+        "minLinesOfCodeToChange": 0,
+        "maxLinesOfCodeToChange": 0
+      },
+      "ruleInstances": [
+        {
+          "incidentId": "5993d4b6-1a56-4dfb-8798-b8ac53888b24",
+          "ruleId": "NuGet.0002",
+          "projectPath": "HomeAutomation.Client\\HomeAutomation.Client.csproj",
+          "state": "Active",
+          "location": {
+            "snippetModel": {
+              "unrestricted": "Microsoft.AspNetCore.Components.WebAssembly, 9.0.8\n\nRecommendation:\n\nRemove Microsoft.AspNetCore.Components.WebAssembly, and replace with new package Microsoft.AspNetCore.Components.WebAssembly 10.0.5",
+              "protected": "Microsoft.AspNetCore.Components.WebAssembly, 9.0.8\n\nRecommendation:\n\nRemove Microsoft.AspNetCore.Components.WebAssembly, and replace with new package Microsoft.AspNetCore.Components.WebAssembly 10.0.5"
+            },
+            "kind": "File",
+            "path": "HomeAutomation.Client\\HomeAutomation.Client.csproj",
+            "snippet": "Microsoft.AspNetCore.Components.WebAssembly, 9.0.8\n\nRecommendation:\n\nRemove Microsoft.AspNetCore.Components.WebAssembly, and replace with new package Microsoft.AspNetCore.Components.WebAssembly 10.0.5",
+            "protectedSnippet": "Microsoft.AspNetCore.Components.WebAssembly, 9.0.8\n\nRecommendation:\n\nRemove Microsoft.AspNetCore.Components.WebAssembly, and replace with new package Microsoft.AspNetCore.Components.WebAssembly 10.0.5",
+            "label": "Microsoft.AspNetCore.Components.WebAssembly 9.0.8",
+            "properties": {
+              "PackageId": "Microsoft.AspNetCore.Components.WebAssembly",
+              "PackageVersion": "9.0.8",
+              "PackageNewVersion": "10.0.5",
+              "PackageReplacements": null
+            }
+          }
+        },
+        {
+          "incidentId": "8e99bce7-7ec6-427a-bae6-3862ed01d087",
+          "ruleId": "Project.0002",
+          "projectPath": "HomeAutomation.Client\\HomeAutomation.Client.csproj",
+          "state": "Active",
+          "location": {
+            "snippetModel": {
+              "unrestricted": "Current target framework: net9.0\nRecommended target framework: net10.0",
+              "protected": "Current target framework: net9.0\nRecommended target framework: net10.0"
+            },
+            "kind": "File",
+            "path": "HomeAutomation.Client\\HomeAutomation.Client.csproj",
+            "snippet": "Current target framework: net9.0\nRecommended target framework: net10.0",
+            "protectedSnippet": "Current target framework: net9.0\nRecommended target framework: net10.0",
+            "properties": {
+              "CurrentTargetFramework": "net9.0",
+              "RecommendedTargetFramework": "net10.0"
+            }
+          }
+        }
+      ],
+      "features": []
+    },
+    {
+      "path": "HomeAutomation.Core\\HomeAutomation.Core.csproj",
+      "startingProject": true,
+      "issues": 6,
+      "storyPoints": 32,
+      "properties": {
+        "appName": "HomeAutomation.Core",
+        "projectKind": "ClassLibrary",
+        "frameworks": [
+          "net9.0"
+        ],
+        "languages": [
+          "C#"
+        ],
+        "tools": [
+          "MSBuild"
+        ],
+        "isSdkStyle": true,
+        "numberOfFiles": 45,
+        "numberOfCodeFiles": 45,
+        "linesTotal": 2590,
+        "linesOfCode": 2590,
+        "totalApiScanned": 2562,
+        "minLinesOfCodeToChange": 25,
+        "maxLinesOfCodeToChange": 25
+      },
+      "ruleInstances": [
+        {
+          "incidentId": "40abb978-a555-44ad-a7f7-98e7aea61ab2",
+          "ruleId": "NuGet.0002",
+          "projectPath": "HomeAutomation.Core\\HomeAutomation.Core.csproj",
+          "state": "Active",
+          "location": {
+            "snippetModel": {
+              "unrestricted": "Microsoft.Extensions.Configuration.Abstractions, 9.0.8\n\nRecommendation:\n\nRemove Microsoft.Extensions.Configuration.Abstractions, and replace with new package Microsoft.Extensions.Configuration.Abstractions 10.0.5",
+              "protected": "Microsoft.Extensions.Configuration.Abstractions, 9.0.8\n\nRecommendation:\n\nRemove Microsoft.Extensions.Configuration.Abstractions, and replace with new package Microsoft.Extensions.Configuration.Abstractions 10.0.5"
+            },
+            "kind": "File",
+            "path": "HomeAutomation.Core\\HomeAutomation.Core.csproj",
+            "snippet": "Microsoft.Extensions.Configuration.Abstractions, 9.0.8\n\nRecommendation:\n\nRemove Microsoft.Extensions.Configuration.Abstractions, and replace with new package Microsoft.Extensions.Configuration.Abstractions 10.0.5",
+            "protectedSnippet": "Microsoft.Extensions.Configuration.Abstractions, 9.0.8\n\nRecommendation:\n\nRemove Microsoft.Extensions.Configuration.Abstractions, and replace with new package Microsoft.Extensions.Configuration.Abstractions 10.0.5",
+            "label": "Microsoft.Extensions.Configuration.Abstractions 9.0.8",
+            "properties": {
+              "PackageId": "Microsoft.Extensions.Configuration.Abstractions",
+              "PackageVersion": "9.0.8",
+              "PackageNewVersion": "10.0.5",
+              "PackageReplacements": null
+            }
+          }
+        },
+        {
+          "incidentId": "94df4a03-1502-4452-9881-5c40dc236b0b",
+          "ruleId": "NuGet.0002",
+          "projectPath": "HomeAutomation.Core\\HomeAutomation.Core.csproj",
+          "state": "Active",
+          "location": {
+            "snippetModel": {
+              "unrestricted": "Microsoft.Extensions.Configuration.Binder, 9.0.8\n\nRecommendation:\n\nRemove Microsoft.Extensions.Configuration.Binder, and replace with new package Microsoft.Extensions.Configuration.Binder 10.0.5",
+              "protected": "Microsoft.Extensions.Configuration.Binder, 9.0.8\n\nRecommendation:\n\nRemove Microsoft.Extensions.Configuration.Binder, and replace with new package Microsoft.Extensions.Configuration.Binder 10.0.5"
+            },
+            "kind": "File",
+            "path": "HomeAutomation.Core\\HomeAutomation.Core.csproj",
+            "snippet": "Microsoft.Extensions.Configuration.Binder, 9.0.8\n\nRecommendation:\n\nRemove Microsoft.Extensions.Configuration.Binder, and replace with new package Microsoft.Extensions.Configuration.Binder 10.0.5",
+            "protectedSnippet": "Microsoft.Extensions.Configuration.Binder, 9.0.8\n\nRecommendation:\n\nRemove Microsoft.Extensions.Configuration.Binder, and replace with new package Microsoft.Extensions.Configuration.Binder 10.0.5",
+            "label": "Microsoft.Extensions.Configuration.Binder 9.0.8",
+            "properties": {
+              "PackageId": "Microsoft.Extensions.Configuration.Binder",
+              "PackageVersion": "9.0.8",
+              "PackageNewVersion": "10.0.5",
+              "PackageReplacements": null
+            }
+          }
+        },
+        {
+          "incidentId": "63fdea47-faf2-4161-ae30-f53a24b05aab",
+          "ruleId": "NuGet.0002",
+          "projectPath": "HomeAutomation.Core\\HomeAutomation.Core.csproj",
+          "state": "Active",
+          "location": {
+            "snippetModel": {
+              "unrestricted": "Microsoft.Extensions.Hosting.Abstractions, 9.0.8\n\nRecommendation:\n\nRemove Microsoft.Extensions.Hosting.Abstractions, and replace with new package Microsoft.Extensions.Hosting.Abstractions 10.0.5",
+              "protected": "Microsoft.Extensions.Hosting.Abstractions, 9.0.8\n\nRecommendation:\n\nRemove Microsoft.Extensions.Hosting.Abstractions, and replace with new package Microsoft.Extensions.Hosting.Abstractions 10.0.5"
+            },
+            "kind": "File",
+            "path": "HomeAutomation.Core\\HomeAutomation.Core.csproj",
+            "snippet": "Microsoft.Extensions.Hosting.Abstractions, 9.0.8\n\nRecommendation:\n\nRemove Microsoft.Extensions.Hosting.Abstractions, and replace with new package Microsoft.Extensions.Hosting.Abstractions 10.0.5",
+            "protectedSnippet": "Microsoft.Extensions.Hosting.Abstractions, 9.0.8\n\nRecommendation:\n\nRemove Microsoft.Extensions.Hosting.Abstractions, and replace with new package Microsoft.Extensions.Hosting.Abstractions 10.0.5",
+            "label": "Microsoft.Extensions.Hosting.Abstractions 9.0.8",
+            "properties": {
+              "PackageId": "Microsoft.Extensions.Hosting.Abstractions",
+              "PackageVersion": "9.0.8",
+              "PackageNewVersion": "10.0.5",
+              "PackageReplacements": null
+            }
+          }
+        },
+        {
+          "incidentId": "35936779-1577-4b75-a1e6-4c6b2b08d16a",
+          "ruleId": "NuGet.0002",
+          "projectPath": "HomeAutomation.Core\\HomeAutomation.Core.csproj",
+          "state": "Active",
+          "location": {
+            "snippetModel": {
+              "unrestricted": "Microsoft.Extensions.Http, 9.0.8\n\nRecommendation:\n\nRemove Microsoft.Extensions.Http, and replace with new package Microsoft.Extensions.Http 10.0.5",
+              "protected": "Microsoft.Extensions.Http, 9.0.8\n\nRecommendation:\n\nRemove Microsoft.Extensions.Http, and replace with new package Microsoft.Extensions.Http 10.0.5"
+            },
+            "kind": "File",
+            "path": "HomeAutomation.Core\\HomeAutomation.Core.csproj",
+            "snippet": "Microsoft.Extensions.Http, 9.0.8\n\nRecommendation:\n\nRemove Microsoft.Extensions.Http, and replace with new package Microsoft.Extensions.Http 10.0.5",
+            "protectedSnippet": "Microsoft.Extensions.Http, 9.0.8\n\nRecommendation:\n\nRemove Microsoft.Extensions.Http, and replace with new package Microsoft.Extensions.Http 10.0.5",
+            "label": "Microsoft.Extensions.Http 9.0.8",
+            "properties": {
+              "PackageId": "Microsoft.Extensions.Http",
+              "PackageVersion": "9.0.8",
+              "PackageNewVersion": "10.0.5",
+              "PackageReplacements": null
+            }
+          }
+        },
+        {
+          "incidentId": "c6f61fa2-f85b-44cf-ab57-6fcd58f1d488",
+          "ruleId": "NuGet.0002",
+          "projectPath": "HomeAutomation.Core\\HomeAutomation.Core.csproj",
+          "state": "Active",
+          "location": {
+            "snippetModel": {
+              "unrestricted": "Microsoft.Extensions.Logging.Abstractions, 9.0.8\n\nRecommendation:\n\nRemove Microsoft.Extensions.Logging.Abstractions, and replace with new package Microsoft.Extensions.Logging.Abstractions 10.0.5",
+              "protected": "Microsoft.Extensions.Logging.Abstractions, 9.0.8\n\nRecommendation:\n\nRemove Microsoft.Extensions.Logging.Abstractions, and replace with new package Microsoft.Extensions.Logging.Abstractions 10.0.5"
+            },
+            "kind": "File",
+            "path": "HomeAutomation.Core\\HomeAutomation.Core.csproj",
+            "snippet": "Microsoft.Extensions.Logging.Abstractions, 9.0.8\n\nRecommendation:\n\nRemove Microsoft.Extensions.Logging.Abstractions, and replace with new package Microsoft.Extensions.Logging.Abstractions 10.0.5",
+            "protectedSnippet": "Microsoft.Extensions.Logging.Abstractions, 9.0.8\n\nRecommendation:\n\nRemove Microsoft.Extensions.Logging.Abstractions, and replace with new package Microsoft.Extensions.Logging.Abstractions 10.0.5",
+            "label": "Microsoft.Extensions.Logging.Abstractions 9.0.8",
+            "properties": {
+              "PackageId": "Microsoft.Extensions.Logging.Abstractions",
+              "PackageVersion": "9.0.8",
+              "PackageNewVersion": "10.0.5",
+              "PackageReplacements": null
+            }
+          }
+        },
+        {
+          "incidentId": "0cb714b8-c8d2-47b1-88f7-8b5cee772805",
+          "ruleId": "NuGet.0004",
+          "projectPath": "HomeAutomation.Core\\HomeAutomation.Core.csproj",
+          "state": "Active",
+          "location": {
+            "snippetModel": {
+              "unrestricted": "MimeKit, 4.13.0\n\nRecommendation:\n\nMimeKit, 4.15.1",
+              "protected": "MimeKit, 4.13.0\n\nRecommendation:\n\nMimeKit, 4.15.1"
+            },
+            "kind": "File",
+            "path": "HomeAutomation.Core\\HomeAutomation.Core.csproj",
+            "snippet": "MimeKit, 4.13.0\n\nRecommendation:\n\nMimeKit, 4.15.1",
+            "protectedSnippet": "MimeKit, 4.13.0\n\nRecommendation:\n\nMimeKit, 4.15.1",
+            "label": "MimeKit 4.13.0",
+            "properties": {
+              "PackageId": "MimeKit",
+              "PackageVersion": "4.13.0",
+              "PackageNewVersion": "4.15.1",
+              "PackageReplacements": null
+            }
+          }
+        },
+        {
+          "incidentId": "24e83b9e-1c34-41b2-9e4e-5a0951f4c146",
+          "ruleId": "Project.0002",
+          "projectPath": "HomeAutomation.Core\\HomeAutomation.Core.csproj",
+          "state": "Active",
+          "location": {
+            "snippetModel": {
+              "unrestricted": "Current target framework: net9.0\nRecommended target framework: net10.0",
+              "protected": "Current target framework: net9.0\nRecommended target framework: net10.0"
+            },
+            "kind": "File",
+            "path": "HomeAutomation.Core\\HomeAutomation.Core.csproj",
+            "snippet": "Current target framework: net9.0\nRecommended target framework: net10.0",
+            "protectedSnippet": "Current target framework: net9.0\nRecommended target framework: net10.0",
+            "properties": {
+              "CurrentTargetFramework": "net9.0",
+              "RecommendedTargetFramework": "net10.0"
+            }
+          }
+        },
+        {
+          "incidentId": "dc7968eb-37d2-4907-a3b0-8f577c6f4d97",
+          "ruleId": "Api.0002",
+          "description": "Breaking change: New TimeSpan.From*() overloads that take integers ",
+          "projectPath": "HomeAutomation.Core\\HomeAutomation.Core.csproj",
+          "state": "Active",
+          "location": {
+            "snippetModel": {
+              "unrestricted": "_timer = new Timer(ProcessTimer, cancellationToken, TimeSpan.FromSeconds(30), TimeSpan.FromSeconds(interval));",
+              "protected": "M:System.TimeSpan.FromSeconds(System.Int64)"
+            },
+            "kind": "File",
+            "path": "HomeAutomation.Core\\ScheduledJobs\\Base\\ScheduledJobHandler.cs",
+            "snippet": "_timer = new Timer(ProcessTimer, cancellationToken, TimeSpan.FromSeconds(30), TimeSpan.FromSeconds(interval));",
+            "protectedSnippet": "M:System.TimeSpan.FromSeconds(System.Int64)",
+            "label": "M:System.TimeSpan.FromSeconds(System.Int64)",
+            "links": [
+              {
+                "title": "API documentation",
+                "url": "https://github.com/dotnet/docs/blob/main/docs/core/compatibility/core-libraries/9.0/timespan-from-overloads.md",
+                "isCustom": false
+              }
+            ],
+            "line": 17,
+            "column": 12
+          }
+        },
+        {
+          "incidentId": "b3dca381-8f6f-43a1-ae94-6600a3d5eee9",
+          "ruleId": "Api.0002",
+          "description": "Breaking change: New TimeSpan.From*() overloads that take integers ",
+          "projectPath": "HomeAutomation.Core\\HomeAutomation.Core.csproj",
+          "state": "Active",
+          "location": {
+            "snippetModel": {
+              "unrestricted": "_timer = new Timer(ProcessTimer, cancellationToken, TimeSpan.FromSeconds(30), TimeSpan.FromSeconds(interval));",
+              "protected": "M:System.TimeSpan.FromSeconds(System.Int64)"
+            },
+            "kind": "File",
+            "path": "HomeAutomation.Core\\ScheduledJobs\\Base\\ScheduledJobHandler.cs",
+            "snippet": "_timer = new Timer(ProcessTimer, cancellationToken, TimeSpan.FromSeconds(30), TimeSpan.FromSeconds(interval));",
+            "protectedSnippet": "M:System.TimeSpan.FromSeconds(System.Int64)",
+            "label": "M:System.TimeSpan.FromSeconds(System.Int64)",
+            "links": [
+              {
+                "title": "API documentation",
+                "url": "https://github.com/dotnet/docs/blob/main/docs/core/compatibility/core-libraries/9.0/timespan-from-overloads.md",
+                "isCustom": false
+              }
+            ],
+            "line": 17,
+            "column": 12
+          }
+        },
+        {
+          "incidentId": "07c4a9b7-0058-4a97-a6a6-595c08274a31",
+          "ruleId": "Api.0003",
+          "description": "Breaking change - Streaming HTTP responses enabled by default in browser HTTP clients ",
+          "projectPath": "HomeAutomation.Core\\HomeAutomation.Core.csproj",
+          "state": "Active",
+          "location": {
+            "snippetModel": {
+              "unrestricted": "var data = await response.Content.ReadFromJsonAsync\u003CSunDataResponse\u003E(cancellationToken);",
+              "protected": "T:System.Net.Http.HttpContent"
+            },
+            "kind": "File",
+            "path": "HomeAutomation.Core\\ScheduledJobs\\ImportSunDataScheduleJob.cs",
+            "snippet": "var data = await response.Content.ReadFromJsonAsync\u003CSunDataResponse\u003E(cancellationToken);",
+            "protectedSnippet": "T:System.Net.Http.HttpContent",
+            "label": "T:System.Net.Http.HttpContent",
+            "links": [
+              {
+                "title": "API documentation",
+                "url": "https://github.com/dotnet/docs/blob/main/docs/core/compatibility/networking/10.0/default-http-streaming.md",
+                "isCustom": false
+              }
+            ],
+            "line": 21,
+            "column": 12
+          }
+        },
+        {
+          "incidentId": "6e1934f3-1562-4f9b-840c-6a4d041be8cb",
+          "ruleId": "Api.0003",
+          "description": "Breaking change: URI length limits removed ",
+          "projectPath": "HomeAutomation.Core\\HomeAutomation.Core.csproj",
+          "state": "Active",
+          "location": {
+            "snippetModel": {
+              "unrestricted": "request.Headers.Referrer = new Uri(configuration.GetValue(\u0022EnergyPrices:Referrer\u0022, \u0022\u0022));",
+              "protected": "T:System.Uri"
+            },
+            "kind": "File",
+            "path": "HomeAutomation.Core\\ScheduledJobs\\CalculateBatteryChargingScheduleJob.cs",
+            "snippet": "request.Headers.Referrer = new Uri(configuration.GetValue(\u0022EnergyPrices:Referrer\u0022, \u0022\u0022));",
+            "protectedSnippet": "T:System.Uri",
+            "label": "T:System.Uri",
+            "links": [
+              {
+                "title": "API documentation",
+                "url": "https://github.com/dotnet/docs/blob/main/docs/core/compatibility/networking/10.0/uri-length-limits-removed.md",
+                "isCustom": false
+              }
+            ],
+            "line": 164,
+            "column": 8
+          }
+        },
+        {
+          "incidentId": "09ac8deb-ff71-4643-a7e3-4d0bf2f6c505",
+          "ruleId": "Api.0003",
+          "description": "Breaking change: URI length limits removed ",
+          "projectPath": "HomeAutomation.Core\\HomeAutomation.Core.csproj",
+          "state": "Active",
+          "location": {
+            "snippetModel": {
+              "unrestricted": "request.Headers.Referrer = new Uri(configuration.GetValue(\u0022EnergyPrices:Referrer\u0022, \u0022\u0022));",
+              "protected": "M:System.Uri.#ctor(System.String)"
+            },
+            "kind": "File",
+            "path": "HomeAutomation.Core\\ScheduledJobs\\CalculateBatteryChargingScheduleJob.cs",
+            "snippet": "request.Headers.Referrer = new Uri(configuration.GetValue(\u0022EnergyPrices:Referrer\u0022, \u0022\u0022));",
+            "protectedSnippet": "M:System.Uri.#ctor(System.String)",
+            "label": "M:System.Uri.#ctor(System.String)",
+            "links": [
+              {
+                "title": "API documentation",
+                "url": "https://github.com/dotnet/docs/blob/main/docs/core/compatibility/networking/10.0/uri-length-limits-removed.md",
+                "isCustom": false
+              }
+            ],
+            "line": 164,
+            "column": 8
+          }
+        },
+        {
+          "incidentId": "0b6f867e-5543-416c-a0f1-2aee04ad1f3f",
+          "ruleId": "Api.0003",
+          "description": "Breaking change: URI length limits removed ",
+          "projectPath": "HomeAutomation.Core\\HomeAutomation.Core.csproj",
+          "state": "Active",
+          "location": {
+            "snippetModel": {
+              "unrestricted": "request.Headers.Referrer = new Uri(configuration.GetValue(\u0022EnergyPrices:Referrer\u0022, \u0022\u0022));",
+              "protected": "T:System.Uri"
+            },
+            "kind": "File",
+            "path": "HomeAutomation.Core\\ScheduledJobs\\CalculateBatteryChargingScheduleJob.cs",
+            "snippet": "request.Headers.Referrer = new Uri(configuration.GetValue(\u0022EnergyPrices:Referrer\u0022, \u0022\u0022));",
+            "protectedSnippet": "T:System.Uri",
+            "label": "T:System.Uri",
+            "links": [
+              {
+                "title": "API documentation",
+                "url": "https://github.com/dotnet/docs/blob/main/docs/core/compatibility/networking/10.0/uri-length-limits-removed.md",
+                "isCustom": false
+              }
+            ],
+            "line": 164,
+            "column": 8
+          }
+        },
+        {
+          "incidentId": "b6830d33-8814-438d-bc38-67ca04eda6ad",
+          "ruleId": "Api.0001",
+          "description": "Breaking change: DynamicallyAccessedMembers annotation removed from trim-unsafe configuration APIs ",
+          "projectPath": "HomeAutomation.Core\\HomeAutomation.Core.csproj",
+          "state": "Active",
+          "location": {
+            "snippetModel": {
+              "unrestricted": "var request = new HttpRequestMessage(HttpMethod.Get, configuration.GetValue\u003Cstring\u003E(\u0022EnergyPrices:APIUrl\u0022) \u002B date.ToString(\u0022yyyy-MM-dd\u0022));",
+              "protected": "M:Microsoft.Extensions.Configuration.ConfigurationBinder.GetValue\u0060\u00601(Microsoft.Extensions.Configuration.IConfiguration,System.String)"
+            },
+            "kind": "File",
+            "path": "HomeAutomation.Core\\ScheduledJobs\\CalculateBatteryChargingScheduleJob.cs",
+            "snippet": "var request = new HttpRequestMessage(HttpMethod.Get, configuration.GetValue\u003Cstring\u003E(\u0022EnergyPrices:APIUrl\u0022) \u002B date.ToString(\u0022yyyy-MM-dd\u0022));",
+            "protectedSnippet": "M:Microsoft.Extensions.Configuration.ConfigurationBinder.GetValue\u0060\u00601(Microsoft.Extensions.Configuration.IConfiguration,System.String)",
+            "label": "M:Microsoft.Extensions.Configuration.ConfigurationBinder.GetValue\u0060\u00601(Microsoft.Extensions.Configuration.IConfiguration,System.String)",
+            "links": [
+              {
+                "title": "API documentation",
+                "url": "https://github.com/dotnet/docs/blob/main/docs/core/compatibility/extensions/10.0/dynamically-accessed-members-configuration.md",
+                "isCustom": false
+              }
+            ],
+            "line": 151,
+            "column": 8
+          }
+        },
+        {
+          "incidentId": "5083368e-8c06-4e77-93b3-9a7a171e35d9",
+          "ruleId": "Api.0002",
+          "description": "Breaking change: New TimeSpan.From*() overloads that take integers ",
+          "projectPath": "HomeAutomation.Core\\HomeAutomation.Core.csproj",
+          "state": "Active",
+          "location": {
+            "snippetModel": {
+              "unrestricted": "var day = GetCheapestPeriod([.. rows],\r\n                TimeSpan.FromHours(configuration.GetValue\u003Cdouble\u003E(\u0022EnergyCalculation:DayChargingStartHour\u0022, 10)),\r\n                TimeSpan.FromHours(configuration.GetValue\u003Cdouble\u003E(\u0022EnergyCalculation:DayChargingEndHour\u0022, 16.5)),\r\n                TimeSpan.FromHours(configuration.GetValue\u003Cdouble\u003E(\u0022EnergyCalculation:DayChargingPeriodLength\u0022, 2)),\r\n                thresholdPrice);",
+              "protected": "M:System.TimeSpan.FromHours(System.Double)"
+            },
+            "kind": "File",
+            "path": "HomeAutomation.Core\\ScheduledJobs\\CalculateBatteryChargingScheduleJob.cs",
+            "snippet": "var day = GetCheapestPeriod([.. rows],\r\n                TimeSpan.FromHours(configuration.GetValue\u003Cdouble\u003E(\u0022EnergyCalculation:DayChargingStartHour\u0022, 10)),\r\n                TimeSpan.FromHours(configuration.GetValue\u003Cdouble\u003E(\u0022EnergyCalculation:DayChargingEndHour\u0022, 16.5)),\r\n                TimeSpan.FromHours(configuration.GetValue\u003Cdouble\u003E(\u0022EnergyCalculation:DayChargingPeriodLength\u0022, 2)),\r\n                thresholdPrice);",
+            "protectedSnippet": "M:System.TimeSpan.FromHours(System.Double)",
+            "label": "M:System.TimeSpan.FromHours(System.Double)",
+            "links": [
+              {
+                "title": "API documentation",
+                "url": "https://github.com/dotnet/docs/blob/main/docs/core/compatibility/core-libraries/9.0/timespan-from-overloads.md",
+                "isCustom": false
+              }
+            ],
+            "line": 109,
+            "column": 12
+          }
+        },
+        {
+          "incidentId": "6969862f-45b5-419a-b8c9-3dfd7c69d691",
+          "ruleId": "Api.0002",
+          "description": "Breaking change: New TimeSpan.From*() overloads that take integers ",
+          "projectPath": "HomeAutomation.Core\\HomeAutomation.Core.csproj",
+          "state": "Active",
+          "location": {
+            "snippetModel": {
+              "unrestricted": "var day = GetCheapestPeriod([.. rows],\r\n                TimeSpan.FromHours(configuration.GetValue\u003Cdouble\u003E(\u0022EnergyCalculation:DayChargingStartHour\u0022, 10)),\r\n                TimeSpan.FromHours(configuration.GetValue\u003Cdouble\u003E(\u0022EnergyCalculation:DayChargingEndHour\u0022, 16.5)),\r\n                TimeSpan.FromHours(configuration.GetValue\u003Cdouble\u003E(\u0022EnergyCalculation:DayChargingPeriodLength\u0022, 2)),\r\n                thresholdPrice);",
+              "protected": "M:System.TimeSpan.FromHours(System.Double)"
+            },
+            "kind": "File",
+            "path": "HomeAutomation.Core\\ScheduledJobs\\CalculateBatteryChargingScheduleJob.cs",
+            "snippet": "var day = GetCheapestPeriod([.. rows],\r\n                TimeSpan.FromHours(configuration.GetValue\u003Cdouble\u003E(\u0022EnergyCalculation:DayChargingStartHour\u0022, 10)),\r\n                TimeSpan.FromHours(configuration.GetValue\u003Cdouble\u003E(\u0022EnergyCalculation:DayChargingEndHour\u0022, 16.5)),\r\n                TimeSpan.FromHours(configuration.GetValue\u003Cdouble\u003E(\u0022EnergyCalculation:DayChargingPeriodLength\u0022, 2)),\r\n                thresholdPrice);",
+            "protectedSnippet": "M:System.TimeSpan.FromHours(System.Double)",
+            "label": "M:System.TimeSpan.FromHours(System.Double)",
+            "links": [
+              {
+                "title": "API documentation",
+                "url": "https://github.com/dotnet/docs/blob/main/docs/core/compatibility/core-libraries/9.0/timespan-from-overloads.md",
+                "isCustom": false
+              }
+            ],
+            "line": 109,
+            "column": 12
+          }
+        },
+        {
+          "incidentId": "a3c10a58-7bf4-43b8-b61b-04801f2e26ec",
+          "ruleId": "Api.0002",
+          "description": "Breaking change: New TimeSpan.From*() overloads that take integers ",
+          "projectPath": "HomeAutomation.Core\\HomeAutomation.Core.csproj",
+          "state": "Active",
+          "location": {
+            "snippetModel": {
+              "unrestricted": "var day = GetCheapestPeriod([.. rows],\r\n                TimeSpan.FromHours(configuration.GetValue\u003Cdouble\u003E(\u0022EnergyCalculation:DayChargingStartHour\u0022, 10)),\r\n                TimeSpan.FromHours(configuration.GetValue\u003Cdouble\u003E(\u0022EnergyCalculation:DayChargingEndHour\u0022, 16.5)),\r\n                TimeSpan.FromHours(configuration.GetValue\u003Cdouble\u003E(\u0022EnergyCalculation:DayChargingPeriodLength\u0022, 2)),\r\n                thresholdPrice);",
+              "protected": "M:System.TimeSpan.FromHours(System.Double)"
+            },
+            "kind": "File",
+            "path": "HomeAutomation.Core\\ScheduledJobs\\CalculateBatteryChargingScheduleJob.cs",
+            "snippet": "var day = GetCheapestPeriod([.. rows],\r\n                TimeSpan.FromHours(configuration.GetValue\u003Cdouble\u003E(\u0022EnergyCalculation:DayChargingStartHour\u0022, 10)),\r\n                TimeSpan.FromHours(configuration.GetValue\u003Cdouble\u003E(\u0022EnergyCalculation:DayChargingEndHour\u0022, 16.5)),\r\n                TimeSpan.FromHours(configuration.GetValue\u003Cdouble\u003E(\u0022EnergyCalculation:DayChargingPeriodLength\u0022, 2)),\r\n                thresholdPrice);",
+            "protectedSnippet": "M:System.TimeSpan.FromHours(System.Double)",
+            "label": "M:System.TimeSpan.FromHours(System.Double)",
+            "links": [
+              {
+                "title": "API documentation",
+                "url": "https://github.com/dotnet/docs/blob/main/docs/core/compatibility/core-libraries/9.0/timespan-from-overloads.md",
+                "isCustom": false
+              }
+            ],
+            "line": 109,
+            "column": 12
+          }
+        },
+        {
+          "incidentId": "ae584d89-4620-4ba9-9b76-917628f86d00",
+          "ruleId": "Api.0002",
+          "description": "Breaking change: New TimeSpan.From*() overloads that take integers ",
+          "projectPath": "HomeAutomation.Core\\HomeAutomation.Core.csproj",
+          "state": "Active",
+          "location": {
+            "snippetModel": {
+              "unrestricted": "var night = GetCheapestPeriod([.. rows],\r\n                TimeSpan.FromHours(configuration.GetValue\u003Cdouble\u003E(\u0022EnergyCalculation:NightChargingStartHour\u0022, 0)),\r\n                TimeSpan.FromHours(configuration.GetValue\u003Cdouble\u003E(\u0022EnergyCalculation:NightChargingEndHour\u0022, 5.5)),\r\n                TimeSpan.FromHours(configuration.GetValue\u003Cdouble\u003E(\u0022EnergyCalculation:NightChargingPeriodLength\u0022, 3)),\r\n                thresholdPrice);",
+              "protected": "M:System.TimeSpan.FromHours(System.Double)"
+            },
+            "kind": "File",
+            "path": "HomeAutomation.Core\\ScheduledJobs\\CalculateBatteryChargingScheduleJob.cs",
+            "snippet": "var night = GetCheapestPeriod([.. rows],\r\n                TimeSpan.FromHours(configuration.GetValue\u003Cdouble\u003E(\u0022EnergyCalculation:NightChargingStartHour\u0022, 0)),\r\n                TimeSpan.FromHours(configuration.GetValue\u003Cdouble\u003E(\u0022EnergyCalculation:NightChargingEndHour\u0022, 5.5)),\r\n                TimeSpan.FromHours(configuration.GetValue\u003Cdouble\u003E(\u0022EnergyCalculation:NightChargingPeriodLength\u0022, 3)),\r\n                thresholdPrice);",
+            "protectedSnippet": "M:System.TimeSpan.FromHours(System.Double)",
+            "label": "M:System.TimeSpan.FromHours(System.Double)",
+            "links": [
+              {
+                "title": "API documentation",
+                "url": "https://github.com/dotnet/docs/blob/main/docs/core/compatibility/core-libraries/9.0/timespan-from-overloads.md",
+                "isCustom": false
+              }
+            ],
+            "line": 103,
+            "column": 12
+          }
+        },
+        {
+          "incidentId": "dbb3ea9d-15b8-4bf8-bd41-1698b4e8312c",
+          "ruleId": "Api.0002",
+          "description": "Breaking change: New TimeSpan.From*() overloads that take integers ",
+          "projectPath": "HomeAutomation.Core\\HomeAutomation.Core.csproj",
+          "state": "Active",
+          "location": {
+            "snippetModel": {
+              "unrestricted": "var night = GetCheapestPeriod([.. rows],\r\n                TimeSpan.FromHours(configuration.GetValue\u003Cdouble\u003E(\u0022EnergyCalculation:NightChargingStartHour\u0022, 0)),\r\n                TimeSpan.FromHours(configuration.GetValue\u003Cdouble\u003E(\u0022EnergyCalculation:NightChargingEndHour\u0022, 5.5)),\r\n                TimeSpan.FromHours(configuration.GetValue\u003Cdouble\u003E(\u0022EnergyCalculation:NightChargingPeriodLength\u0022, 3)),\r\n                thresholdPrice);",
+              "protected": "M:System.TimeSpan.FromHours(System.Double)"
+            },
+            "kind": "File",
+            "path": "HomeAutomation.Core\\ScheduledJobs\\CalculateBatteryChargingScheduleJob.cs",
+            "snippet": "var night = GetCheapestPeriod([.. rows],\r\n                TimeSpan.FromHours(configuration.GetValue\u003Cdouble\u003E(\u0022EnergyCalculation:NightChargingStartHour\u0022, 0)),\r\n                TimeSpan.FromHours(configuration.GetValue\u003Cdouble\u003E(\u0022EnergyCalculation:NightChargingEndHour\u0022, 5.5)),\r\n                TimeSpan.FromHours(configuration.GetValue\u003Cdouble\u003E(\u0022EnergyCalculation:NightChargingPeriodLength\u0022, 3)),\r\n                thresholdPrice);",
+            "protectedSnippet": "M:System.TimeSpan.FromHours(System.Double)",
+            "label": "M:System.TimeSpan.FromHours(System.Double)",
+            "links": [
+              {
+                "title": "API documentation",
+                "url": "https://github.com/dotnet/docs/blob/main/docs/core/compatibility/core-libraries/9.0/timespan-from-overloads.md",
+                "isCustom": false
+              }
+            ],
+            "line": 103,
+            "column": 12
+          }
+        },
+        {
+          "incidentId": "dcfac72e-df07-4052-b387-b8564c9ac9ce",
+          "ruleId": "Api.0002",
+          "description": "Breaking change: New TimeSpan.From*() overloads that take integers ",
+          "projectPath": "HomeAutomation.Core\\HomeAutomation.Core.csproj",
+          "state": "Active",
+          "location": {
+            "snippetModel": {
+              "unrestricted": "var night = GetCheapestPeriod([.. rows],\r\n                TimeSpan.FromHours(configuration.GetValue\u003Cdouble\u003E(\u0022EnergyCalculation:NightChargingStartHour\u0022, 0)),\r\n                TimeSpan.FromHours(configuration.GetValue\u003Cdouble\u003E(\u0022EnergyCalculation:NightChargingEndHour\u0022, 5.5)),\r\n                TimeSpan.FromHours(configuration.GetValue\u003Cdouble\u003E(\u0022EnergyCalculation:NightChargingPeriodLength\u0022, 3)),\r\n                thresholdPrice);",
+              "protected": "M:System.TimeSpan.FromHours(System.Double)"
+            },
+            "kind": "File",
+            "path": "HomeAutomation.Core\\ScheduledJobs\\CalculateBatteryChargingScheduleJob.cs",
+            "snippet": "var night = GetCheapestPeriod([.. rows],\r\n                TimeSpan.FromHours(configuration.GetValue\u003Cdouble\u003E(\u0022EnergyCalculation:NightChargingStartHour\u0022, 0)),\r\n                TimeSpan.FromHours(configuration.GetValue\u003Cdouble\u003E(\u0022EnergyCalculation:NightChargingEndHour\u0022, 5.5)),\r\n                TimeSpan.FromHours(configuration.GetValue\u003Cdouble\u003E(\u0022EnergyCalculation:NightChargingPeriodLength\u0022, 3)),\r\n                thresholdPrice);",
+            "protectedSnippet": "M:System.TimeSpan.FromHours(System.Double)",
+            "label": "M:System.TimeSpan.FromHours(System.Double)",
+            "links": [
+              {
+                "title": "API documentation",
+                "url": "https://github.com/dotnet/docs/blob/main/docs/core/compatibility/core-libraries/9.0/timespan-from-overloads.md",
+                "isCustom": false
+              }
+            ],
+            "line": 103,
+            "column": 12
+          }
+        },
+        {
+          "incidentId": "3481c5b3-6b63-4a1d-9fed-e151be6a070e",
+          "ruleId": "Api.0003",
+          "description": "Breaking change - Streaming HTTP responses enabled by default in browser HTTP clients ",
+          "projectPath": "HomeAutomation.Core\\HomeAutomation.Core.csproj",
+          "state": "Active",
+          "location": {
+            "snippetModel": {
+              "unrestricted": "message = await response.Content.ReadAsStringAsync(cancellationToken);",
+              "protected": "T:System.Net.Http.HttpContent"
+            },
+            "kind": "File",
+            "path": "HomeAutomation.Core\\ScheduledJobs\\CalculateBatteryChargingScheduleJob.cs",
+            "snippet": "message = await response.Content.ReadAsStringAsync(cancellationToken);",
+            "protectedSnippet": "T:System.Net.Http.HttpContent",
+            "label": "T:System.Net.Http.HttpContent",
+            "links": [
+              {
+                "title": "API documentation",
+                "url": "https://github.com/dotnet/docs/blob/main/docs/core/compatibility/networking/10.0/default-http-streaming.md",
+                "isCustom": false
+              }
+            ],
+            "line": 61,
+            "column": 24
+          }
+        },
+        {
+          "incidentId": "2e161cd6-adb2-456a-8f04-f0ac3357ea7f",
+          "ruleId": "Api.0003",
+          "description": "Breaking change - Streaming HTTP responses enabled by default in browser HTTP clients ",
+          "projectPath": "HomeAutomation.Core\\HomeAutomation.Core.csproj",
+          "state": "Active",
+          "location": {
+            "snippetModel": {
+              "unrestricted": "rows = await response.Content.ReadFromJsonAsync\u003CFetchedPricingRow[]\u003E(cancellationToken);",
+              "protected": "T:System.Net.Http.HttpContent"
+            },
+            "kind": "File",
+            "path": "HomeAutomation.Core\\ScheduledJobs\\CalculateBatteryChargingScheduleJob.cs",
+            "snippet": "rows = await response.Content.ReadFromJsonAsync\u003CFetchedPricingRow[]\u003E(cancellationToken);",
+            "protectedSnippet": "T:System.Net.Http.HttpContent",
+            "label": "T:System.Net.Http.HttpContent",
+            "links": [
+              {
+                "title": "API documentation",
+                "url": "https://github.com/dotnet/docs/blob/main/docs/core/compatibility/networking/10.0/default-http-streaming.md",
+                "isCustom": false
+              }
+            ],
+            "line": 54,
+            "column": 20
+          }
+        },
+        {
+          "incidentId": "b33be59e-39dd-48c9-a659-1451aac3e12f",
+          "ruleId": "Api.0003",
+          "description": "Breaking change - Streaming HTTP responses enabled by default in browser HTTP clients ",
+          "projectPath": "HomeAutomation.Core\\HomeAutomation.Core.csproj",
+          "state": "Active",
+          "location": {
+            "snippetModel": {
+              "unrestricted": "HttpRequestMessage request = new(HttpMethod.Post, $\u0022{baseUrl}devices/{deviceId}/send\u0022)\r\n        {\r\n            Content = JsonContent.Create(new { data = dps })\r\n        };",
+              "protected": "T:System.Net.Http.HttpContent"
+            },
+            "kind": "File",
+            "path": "HomeAutomation.Core\\Services\\TuyaAPIService.cs",
+            "snippet": "HttpRequestMessage request = new(HttpMethod.Post, $\u0022{baseUrl}devices/{deviceId}/send\u0022)\r\n        {\r\n            Content = JsonContent.Create(new { data = dps })\r\n        };",
+            "protectedSnippet": "T:System.Net.Http.HttpContent",
+            "label": "T:System.Net.Http.HttpContent",
+            "links": [
+              {
+                "title": "API documentation",
+                "url": "https://github.com/dotnet/docs/blob/main/docs/core/compatibility/networking/10.0/default-http-streaming.md",
+                "isCustom": false
+              }
+            ],
+            "line": 132,
+            "column": 8
+          }
+        },
+        {
+          "incidentId": "fc5665ba-5310-4109-9356-a2ef7fc78fca",
+          "ruleId": "Api.0003",
+          "description": "Breaking change - Streaming HTTP responses enabled by default in browser HTTP clients ",
+          "projectPath": "HomeAutomation.Core\\HomeAutomation.Core.csproj",
+          "state": "Active",
+          "location": {
+            "snippetModel": {
+              "unrestricted": "return await response.Content.ReadFromJsonAsync\u003CIEnumerable\u003CTuyaDeviceModel\u003E\u003E() ?? [];",
+              "protected": "T:System.Net.Http.HttpContent"
+            },
+            "kind": "File",
+            "path": "HomeAutomation.Core\\Services\\TuyaAPIService.cs",
+            "snippet": "return await response.Content.ReadFromJsonAsync\u003CIEnumerable\u003CTuyaDeviceModel\u003E\u003E() ?? [];",
+            "protectedSnippet": "T:System.Net.Http.HttpContent",
+            "label": "T:System.Net.Http.HttpContent",
+            "links": [
+              {
+                "title": "API documentation",
+                "url": "https://github.com/dotnet/docs/blob/main/docs/core/compatibility/networking/10.0/default-http-streaming.md",
+                "isCustom": false
+              }
+            ],
+            "line": 126,
+            "column": 8
+          }
+        },
+        {
+          "incidentId": "f76f6833-a7e8-44a4-976a-37c3727eb820",
+          "ruleId": "Api.0003",
+          "description": "Breaking change - Streaming HTTP responses enabled by default in browser HTTP clients ",
+          "projectPath": "HomeAutomation.Core\\HomeAutomation.Core.csproj",
+          "state": "Active",
+          "location": {
+            "snippetModel": {
+              "unrestricted": "return await response.Content.ReadFromJsonAsync\u003CIEnumerable\u003CVerisureDeviceModel\u003E\u003E() ?? [];",
+              "protected": "T:System.Net.Http.HttpContent"
+            },
+            "kind": "File",
+            "path": "HomeAutomation.Core\\Services\\VerisureAPIService.cs",
+            "snippet": "return await response.Content.ReadFromJsonAsync\u003CIEnumerable\u003CVerisureDeviceModel\u003E\u003E() ?? [];",
+            "protectedSnippet": "T:System.Net.Http.HttpContent",
+            "label": "T:System.Net.Http.HttpContent",
+            "links": [
+              {
+                "title": "API documentation",
+                "url": "https://github.com/dotnet/docs/blob/main/docs/core/compatibility/networking/10.0/default-http-streaming.md",
+                "isCustom": false
+              }
+            ],
+            "line": 51,
+            "column": 8
+          }
+        },
+        {
+          "incidentId": "80838635-d5b0-4344-a1b9-a7c0d4e25467",
+          "ruleId": "Api.0001",
+          "description": "Breaking change: DynamicallyAccessedMembers annotation removed from trim-unsafe configuration APIs ",
+          "projectPath": "HomeAutomation.Core\\HomeAutomation.Core.csproj",
+          "state": "Active",
+          "location": {
+            "snippetModel": {
+              "unrestricted": "string baseUrl = configuration.GetSection(\u0022ZWave:APIUrl\u0022).Get\u003Cstring\u003E();",
+              "protected": "M:Microsoft.Extensions.Configuration.ConfigurationBinder.Get\u0060\u00601(Microsoft.Extensions.Configuration.IConfiguration)"
+            },
+            "kind": "File",
+            "path": "HomeAutomation.Core\\Services\\ZWaveAPIService.cs",
+            "snippet": "string baseUrl = configuration.GetSection(\u0022ZWave:APIUrl\u0022).Get\u003Cstring\u003E();",
+            "protectedSnippet": "M:Microsoft.Extensions.Configuration.ConfigurationBinder.Get\u0060\u00601(Microsoft.Extensions.Configuration.IConfiguration)",
+            "label": "M:Microsoft.Extensions.Configuration.ConfigurationBinder.Get\u0060\u00601(Microsoft.Extensions.Configuration.IConfiguration)",
+            "links": [
+              {
+                "title": "API documentation",
+                "url": "https://github.com/dotnet/docs/blob/main/docs/core/compatibility/extensions/10.0/dynamically-accessed-members-configuration.md",
+                "isCustom": false
+              }
+            ],
+            "line": 52,
+            "column": 8
+          }
+        },
+        {
+          "incidentId": "d454a73f-7471-4884-91c3-fcb6394817f4",
+          "ruleId": "Api.0003",
+          "description": "Breaking change - Streaming HTTP responses enabled by default in browser HTTP clients ",
+          "projectPath": "HomeAutomation.Core\\HomeAutomation.Core.csproj",
+          "state": "Active",
+          "location": {
+            "snippetModel": {
+              "unrestricted": "return await response.Content.ReadFromJsonAsync\u003CIEnumerable\u003CZWaveDeviceModel\u003E\u003E();",
+              "protected": "T:System.Net.Http.HttpContent"
+            },
+            "kind": "File",
+            "path": "HomeAutomation.Core\\Services\\ZWaveAPIService.cs",
+            "snippet": "return await response.Content.ReadFromJsonAsync\u003CIEnumerable\u003CZWaveDeviceModel\u003E\u003E();",
+            "protectedSnippet": "T:System.Net.Http.HttpContent",
+            "label": "T:System.Net.Http.HttpContent",
+            "links": [
+              {
+                "title": "API documentation",
+                "url": "https://github.com/dotnet/docs/blob/main/docs/core/compatibility/networking/10.0/default-http-streaming.md",
+                "isCustom": false
+              }
+            ],
+            "line": 47,
+            "column": 8
+          }
+        },
+        {
+          "incidentId": "5e5cf6f2-d0d0-4fdb-a9c9-f3289cc968a8",
+          "ruleId": "Api.0001",
+          "description": "Breaking change: DynamicallyAccessedMembers annotation removed from trim-unsafe configuration APIs ",
+          "projectPath": "HomeAutomation.Core\\HomeAutomation.Core.csproj",
+          "state": "Active",
+          "location": {
+            "snippetModel": {
+              "unrestricted": "string baseUrl = configuration.GetSection(\u0022ZWave:APIUrl\u0022).Get\u003Cstring\u003E();",
+              "protected": "M:Microsoft.Extensions.Configuration.ConfigurationBinder.Get\u0060\u00601(Microsoft.Extensions.Configuration.IConfiguration)"
+            },
+            "kind": "File",
+            "path": "HomeAutomation.Core\\Services\\ZWaveAPIService.cs",
+            "snippet": "string baseUrl = configuration.GetSection(\u0022ZWave:APIUrl\u0022).Get\u003Cstring\u003E();",
+            "protectedSnippet": "M:Microsoft.Extensions.Configuration.ConfigurationBinder.Get\u0060\u00601(Microsoft.Extensions.Configuration.IConfiguration)",
+            "label": "M:Microsoft.Extensions.Configuration.ConfigurationBinder.Get\u0060\u00601(Microsoft.Extensions.Configuration.IConfiguration)",
+            "links": [
+              {
+                "title": "API documentation",
+                "url": "https://github.com/dotnet/docs/blob/main/docs/core/compatibility/extensions/10.0/dynamically-accessed-members-configuration.md",
+                "isCustom": false
+              }
+            ],
+            "line": 41,
+            "column": 8
+          }
+        },
+        {
+          "incidentId": "f5db29ae-34b3-4ae5-894d-22da4208b27c",
+          "ruleId": "Api.0003",
+          "description": "Breaking change - Streaming HTTP responses enabled by default in browser HTTP clients ",
+          "projectPath": "HomeAutomation.Core\\HomeAutomation.Core.csproj",
+          "state": "Active",
+          "location": {
+            "snippetModel": {
+              "unrestricted": "var result = await response.Content.ReadFromJsonAsync\u003CSetConfigSignalsResponse\u003E();",
+              "protected": "T:System.Net.Http.HttpContent"
+            },
+            "kind": "File",
+            "path": "HomeAutomation.Core\\Services\\FusionSolarService.cs",
+            "snippet": "var result = await response.Content.ReadFromJsonAsync\u003CSetConfigSignalsResponse\u003E();",
+            "protectedSnippet": "T:System.Net.Http.HttpContent",
+            "label": "T:System.Net.Http.HttpContent",
+            "links": [
+              {
+                "title": "API documentation",
+                "url": "https://github.com/dotnet/docs/blob/main/docs/core/compatibility/networking/10.0/default-http-streaming.md",
+                "isCustom": false
+              }
+            ],
+            "line": 55,
+            "column": 8
+          }
+        },
+        {
+          "incidentId": "d02f4535-0913-4072-ba6a-4f5c854c113d",
+          "ruleId": "Api.0003",
+          "description": "Breaking change - Streaming HTTP responses enabled by default in browser HTTP clients ",
+          "projectPath": "HomeAutomation.Core\\HomeAutomation.Core.csproj",
+          "state": "Active",
+          "location": {
+            "snippetModel": {
+              "unrestricted": "return await response.Content.ReadFromJsonAsync\u003CIEnumerable\u003CFusionSolarDeviceModel\u003E\u003E() ?? [];",
+              "protected": "T:System.Net.Http.HttpContent"
+            },
+            "kind": "File",
+            "path": "HomeAutomation.Core\\Services\\FusionSolarService.cs",
+            "snippet": "return await response.Content.ReadFromJsonAsync\u003CIEnumerable\u003CFusionSolarDeviceModel\u003E\u003E() ?? [];",
+            "protectedSnippet": "T:System.Net.Http.HttpContent",
+            "label": "T:System.Net.Http.HttpContent",
+            "links": [
+              {
+                "title": "API documentation",
+                "url": "https://github.com/dotnet/docs/blob/main/docs/core/compatibility/networking/10.0/default-http-streaming.md",
+                "isCustom": false
+              }
+            ],
+            "line": 41,
+            "column": 8
+          }
+        },
+        {
+          "incidentId": "3f188e05-a94b-41fe-bd49-4fc5aea83989",
+          "ruleId": "Api.0003",
+          "description": "Breaking change - Streaming HTTP responses enabled by default in browser HTTP clients ",
+          "projectPath": "HomeAutomation.Core\\HomeAutomation.Core.csproj",
+          "state": "Active",
+          "location": {
+            "snippetModel": {
+              "unrestricted": "return await response.Content.ReadFromJsonAsync\u003CTelldusDeviceMethods\u003E();",
+              "protected": "T:System.Net.Http.HttpContent"
+            },
+            "kind": "File",
+            "path": "HomeAutomation.Core\\Services\\TelldusAPIService.cs",
+            "snippet": "return await response.Content.ReadFromJsonAsync\u003CTelldusDeviceMethods\u003E();",
+            "protectedSnippet": "T:System.Net.Http.HttpContent",
+            "label": "T:System.Net.Http.HttpContent",
+            "links": [
+              {
+                "title": "API documentation",
+                "url": "https://github.com/dotnet/docs/blob/main/docs/core/compatibility/networking/10.0/default-http-streaming.md",
+                "isCustom": false
+              }
+            ],
+            "line": 74,
+            "column": 8
+          }
+        },
+        {
+          "incidentId": "e141dfb2-8acf-40a1-95b6-f89081e86141",
+          "ruleId": "Api.0003",
+          "description": "Breaking change - Streaming HTTP responses enabled by default in browser HTTP clients ",
+          "projectPath": "HomeAutomation.Core\\HomeAutomation.Core.csproj",
+          "state": "Active",
+          "location": {
+            "snippetModel": {
+              "unrestricted": "return await response.Content.ReadFromJsonAsync\u003CTelldusDeviceModel[]\u003E() ?? [];",
+              "protected": "T:System.Net.Http.HttpContent"
+            },
+            "kind": "File",
+            "path": "HomeAutomation.Core\\Services\\TelldusAPIService.cs",
+            "snippet": "return await response.Content.ReadFromJsonAsync\u003CTelldusDeviceModel[]\u003E() ?? [];",
+            "protectedSnippet": "T:System.Net.Http.HttpContent",
+            "label": "T:System.Net.Http.HttpContent",
+            "links": [
+              {
+                "title": "API documentation",
+                "url": "https://github.com/dotnet/docs/blob/main/docs/core/compatibility/networking/10.0/default-http-streaming.md",
+                "isCustom": false
+              }
+            ],
+            "line": 49,
+            "column": 8
+          }
+        }
+      ],
+      "features": []
+    },
+    {
+      "path": "HomeAutomation\\HomeAutomation.csproj",
+      "startingProject": true,
+      "issues": 3,
+      "storyPoints": 5,
+      "properties": {
+        "appName": "HomeAutomation",
+        "projectKind": "AspNetCore",
+        "frameworks": [
+          "net9.0"
+        ],
+        "languages": [
+          "C#"
+        ],
+        "tools": [
+          "MSBuild"
+        ],
+        "isSdkStyle": true,
+        "numberOfFiles": 42,
+        "numberOfCodeFiles": 19,
+        "linesTotal": 1295,
+        "linesOfCode": 537,
+        "totalApiScanned": 3980,
+        "minLinesOfCodeToChange": 2,
+        "maxLinesOfCodeToChange": 2
+      },
+      "ruleInstances": [
+        {
+          "incidentId": "af0c66d1-73af-40c2-966f-d9d0581d2371",
+          "ruleId": "NuGet.0002",
+          "projectPath": "HomeAutomation\\HomeAutomation.csproj",
+          "state": "Active",
+          "location": {
+            "snippetModel": {
+              "unrestricted": "Microsoft.AspNetCore.Components.WebAssembly.Server, 9.0.8\n\nRecommendation:\n\nRemove Microsoft.AspNetCore.Components.WebAssembly.Server, and replace with new package Microsoft.AspNetCore.Components.WebAssembly.Server 10.0.5",
+              "protected": "Microsoft.AspNetCore.Components.WebAssembly.Server, 9.0.8\n\nRecommendation:\n\nRemove Microsoft.AspNetCore.Components.WebAssembly.Server, and replace with new package Microsoft.AspNetCore.Components.WebAssembly.Server 10.0.5"
+            },
+            "kind": "File",
+            "path": "HomeAutomation\\HomeAutomation.csproj",
+            "snippet": "Microsoft.AspNetCore.Components.WebAssembly.Server, 9.0.8\n\nRecommendation:\n\nRemove Microsoft.AspNetCore.Components.WebAssembly.Server, and replace with new package Microsoft.AspNetCore.Components.WebAssembly.Server 10.0.5",
+            "protectedSnippet": "Microsoft.AspNetCore.Components.WebAssembly.Server, 9.0.8\n\nRecommendation:\n\nRemove Microsoft.AspNetCore.Components.WebAssembly.Server, and replace with new package Microsoft.AspNetCore.Components.WebAssembly.Server 10.0.5",
+            "label": "Microsoft.AspNetCore.Components.WebAssembly.Server 9.0.8",
+            "properties": {
+              "PackageId": "Microsoft.AspNetCore.Components.WebAssembly.Server",
+              "PackageVersion": "9.0.8",
+              "PackageNewVersion": "10.0.5",
+              "PackageReplacements": null
+            }
+          }
+        },
+        {
+          "incidentId": "6cb478de-5e51-4fba-9888-ee464fd6fb3a",
+          "ruleId": "NuGet.0002",
+          "projectPath": "HomeAutomation\\HomeAutomation.csproj",
+          "state": "Active",
+          "location": {
+            "snippetModel": {
+              "unrestricted": "Microsoft.EntityFrameworkCore.Design, 9.0.8\n\nRecommendation:\n\nRemove Microsoft.EntityFrameworkCore.Design, and replace with new package Microsoft.EntityFrameworkCore.Design 10.0.5",
+              "protected": "Microsoft.EntityFrameworkCore.Design, 9.0.8\n\nRecommendation:\n\nRemove Microsoft.EntityFrameworkCore.Design, and replace with new package Microsoft.EntityFrameworkCore.Design 10.0.5"
+            },
+            "kind": "File",
+            "path": "HomeAutomation\\HomeAutomation.csproj",
+            "snippet": "Microsoft.EntityFrameworkCore.Design, 9.0.8\n\nRecommendation:\n\nRemove Microsoft.EntityFrameworkCore.Design, and replace with new package Microsoft.EntityFrameworkCore.Design 10.0.5",
+            "protectedSnippet": "Microsoft.EntityFrameworkCore.Design, 9.0.8\n\nRecommendation:\n\nRemove Microsoft.EntityFrameworkCore.Design, and replace with new package Microsoft.EntityFrameworkCore.Design 10.0.5",
+            "label": "Microsoft.EntityFrameworkCore.Design 9.0.8",
+            "properties": {
+              "PackageId": "Microsoft.EntityFrameworkCore.Design",
+              "PackageVersion": "9.0.8",
+              "PackageNewVersion": "10.0.5",
+              "PackageReplacements": null
+            }
+          }
+        },
+        {
+          "incidentId": "5ed9157a-7504-48a3-ac35-3021b7881b50",
+          "ruleId": "Project.0002",
+          "projectPath": "HomeAutomation\\HomeAutomation.csproj",
+          "state": "Active",
+          "location": {
+            "snippetModel": {
+              "unrestricted": "Current target framework: net9.0\nRecommended target framework: net10.0",
+              "protected": "Current target framework: net9.0\nRecommended target framework: net10.0"
+            },
+            "kind": "File",
+            "path": "HomeAutomation\\HomeAutomation.csproj",
+            "snippet": "Current target framework: net9.0\nRecommended target framework: net10.0",
+            "protectedSnippet": "Current target framework: net9.0\nRecommended target framework: net10.0",
+            "properties": {
+              "CurrentTargetFramework": "net9.0",
+              "RecommendedTargetFramework": "net10.0"
+            }
+          }
+        },
+        {
+          "incidentId": "4f72441c-294c-4ef8-b3f7-615b16cb7f7a",
+          "ruleId": "Api.0003",
+          "description": "Breaking change: Exception diagnostics are suppressed when IExceptionHandler.TryHandleAsync returns true ",
+          "projectPath": "HomeAutomation\\HomeAutomation.csproj",
+          "state": "Active",
+          "location": {
+            "snippetModel": {
+              "unrestricted": "app.UseExceptionHandler(\u0022/Error\u0022, createScopeForErrors: true);",
+              "protected": "M:Microsoft.AspNetCore.Builder.ExceptionHandlerExtensions.UseExceptionHandler(Microsoft.AspNetCore.Builder.IApplicationBuilder,System.String,System.Boolean)"
+            },
+            "kind": "File",
+            "path": "HomeAutomation\\Program.cs",
+            "snippet": "app.UseExceptionHandler(\u0022/Error\u0022, createScopeForErrors: true);",
+            "protectedSnippet": "M:Microsoft.AspNetCore.Builder.ExceptionHandlerExtensions.UseExceptionHandler(Microsoft.AspNetCore.Builder.IApplicationBuilder,System.String,System.Boolean)",
+            "label": "M:Microsoft.AspNetCore.Builder.ExceptionHandlerExtensions.UseExceptionHandler(Microsoft.AspNetCore.Builder.IApplicationBuilder,System.String,System.Boolean)",
+            "links": [
+              {
+                "title": "API documentation",
+                "url": "https://github.com/dotnet/docs/blob/main/docs/core/compatibility/aspnet-core/10/exception-handler-diagnostics-suppressed.md",
+                "isCustom": false
+              }
+            ],
+            "line": 58,
+            "column": 4
+          }
+        },
+        {
+          "incidentId": "417b4a5c-7853-4ce2-8b87-7166c8e9e98b",
+          "ruleId": "Api.0003",
+          "description": "URI query redaction in IHttpClientFactory logs ",
+          "projectPath": "HomeAutomation\\HomeAutomation.csproj",
+          "state": "Active",
+          "location": {
+            "snippetModel": {
+              "unrestricted": "builder.Services.AddHttpClient();",
+              "protected": "M:Microsoft.Extensions.DependencyInjection.HttpClientFactoryServiceCollectionExtensions.AddHttpClient(Microsoft.Extensions.DependencyInjection.IServiceCollection)"
+            },
+            "kind": "File",
+            "path": "HomeAutomation\\Program.cs",
+            "snippet": "builder.Services.AddHttpClient();",
+            "protectedSnippet": "M:Microsoft.Extensions.DependencyInjection.HttpClientFactoryServiceCollectionExtensions.AddHttpClient(Microsoft.Extensions.DependencyInjection.IServiceCollection)",
+            "label": "M:Microsoft.Extensions.DependencyInjection.HttpClientFactoryServiceCollectionExtensions.AddHttpClient(Microsoft.Extensions.DependencyInjection.IServiceCollection)",
+            "links": [
+              {
+                "title": "API documentation",
+                "url": "https://github.com/dotnet/docs/blob/main/docs/core/compatibility/networking/9.0/query-redaction-logs.md",
+                "isCustom": false
+              }
+            ],
+            "line": 20,
+            "column": 0
+          }
+        }
+      ],
+      "features": []
+    },
+    {
+      "path": "HomeAutomation.Database\\HomeAutomation.Database.csproj",
+      "startingProject": true,
+      "issues": 2,
+      "storyPoints": 2,
+      "properties": {
+        "appName": "HomeAutomation.Database",
+        "projectKind": "ClassLibrary",
+        "frameworks": [
+          "net9.0"
+        ],
+        "languages": [
+          "C#"
+        ],
+        "tools": [
+          "MSBuild"
+        ],
+        "isSdkStyle": true,
+        "numberOfFiles": 45,
+        "numberOfCodeFiles": 45,
+        "linesTotal": 4918,
+        "linesOfCode": 4918,
+        "totalApiScanned": 6494,
+        "minLinesOfCodeToChange": 0,
+        "maxLinesOfCodeToChange": 0
+      },
+      "ruleInstances": [
+        {
+          "incidentId": "476e8402-d937-45a8-9a8d-dae188d7eb4d",
+          "ruleId": "NuGet.0002",
+          "projectPath": "HomeAutomation.Database\\HomeAutomation.Database.csproj",
+          "state": "Active",
+          "location": {
+            "snippetModel": {
+              "unrestricted": "Microsoft.Extensions.Hosting.Abstractions, 9.0.8\n\nRecommendation:\n\nRemove Microsoft.Extensions.Hosting.Abstractions, and replace with new package Microsoft.Extensions.Hosting.Abstractions 10.0.5",
+              "protected": "Microsoft.Extensions.Hosting.Abstractions, 9.0.8\n\nRecommendation:\n\nRemove Microsoft.Extensions.Hosting.Abstractions, and replace with new package Microsoft.Extensions.Hosting.Abstractions 10.0.5"
+            },
+            "kind": "File",
+            "path": "HomeAutomation.Database\\HomeAutomation.Database.csproj",
+            "snippet": "Microsoft.Extensions.Hosting.Abstractions, 9.0.8\n\nRecommendation:\n\nRemove Microsoft.Extensions.Hosting.Abstractions, and replace with new package Microsoft.Extensions.Hosting.Abstractions 10.0.5",
+            "protectedSnippet": "Microsoft.Extensions.Hosting.Abstractions, 9.0.8\n\nRecommendation:\n\nRemove Microsoft.Extensions.Hosting.Abstractions, and replace with new package Microsoft.Extensions.Hosting.Abstractions 10.0.5",
+            "label": "Microsoft.Extensions.Hosting.Abstractions 9.0.8",
+            "properties": {
+              "PackageId": "Microsoft.Extensions.Hosting.Abstractions",
+              "PackageVersion": "9.0.8",
+              "PackageNewVersion": "10.0.5",
+              "PackageReplacements": null
+            }
+          }
+        },
+        {
+          "incidentId": "05166c93-adc4-4348-b5a5-4abe4ec282bd",
+          "ruleId": "Project.0002",
+          "projectPath": "HomeAutomation.Database\\HomeAutomation.Database.csproj",
+          "state": "Active",
+          "location": {
+            "snippetModel": {
+              "unrestricted": "Current target framework: net9.0\nRecommended target framework: net10.0",
+              "protected": "Current target framework: net9.0\nRecommended target framework: net10.0"
+            },
+            "kind": "File",
+            "path": "HomeAutomation.Database\\HomeAutomation.Database.csproj",
+            "snippet": "Current target framework: net9.0\nRecommended target framework: net10.0",
+            "protectedSnippet": "Current target framework: net9.0\nRecommended target framework: net10.0",
+            "properties": {
+              "CurrentTargetFramework": "net9.0",
+              "RecommendedTargetFramework": "net10.0"
+            }
+          }
+        }
+      ],
+      "features": []
+    }
+  ],
+  "rules": {
+    "NuGet.0002": {
+      "id": "NuGet.0002",
+      "isFeature": false,
+      "description": "NuGet package upgrade is recommended for selected target framework.\n\nStandard .NET packages are recommended to have versions matching version of .NET that project targets.\n\nSome other packages also are known to work better for selected target frameworks.",
+      "label": "NuGet package upgrade is recommended",
+      "severity": "Potential",
+      "effort": 1,
+      "links": [
+        {
+          "url": "https://go.microsoft.com/fwlink/?linkid=2262530",
+          "isCustom": false
+        }
+      ]
+    },
+    "Project.0002": {
+      "id": "Project.0002",
+      "isFeature": false,
+      "description": "Project\u0027s target framework(s) needs to be changed to the new target framework that you selected for this upgrade.\n\nDuring upgrade target framework will be adjusted to corresponding platform when applicable. In some cases project would result in multiple target frameworks after the upgrade if it was using features that now have their own platforms in modern .NET frameworks (windows, iOS, Android etc).",
+      "label": "Project\u0027s target framework(s) needs to be changed",
+      "severity": "Mandatory",
+      "effort": 1,
+      "links": [
+        {
+          "title": "Overview of porting from .NET Framework to .NET",
+          "url": "https://go.microsoft.com/fwlink/?linkid=2265227",
+          "isCustom": false
+        },
+        {
+          "title": ".NET project SDKs",
+          "url": "https://go.microsoft.com/fwlink/?linkid=2265226",
+          "isCustom": false
+        }
+      ]
+    },
+    "NuGet.0004": {
+      "id": "NuGet.0004",
+      "isFeature": false,
+      "description": "NuGet package contains security vulnerabilities.\n\nPackage needs to be upgraded to a newer version that addresses known security vulnerabilities.",
+      "label": "NuGet package contains security vulnerability",
+      "severity": "Optional",
+      "effort": 1
+    },
+    "Api.0002": {
+      "id": "Api.0002",
+      "isFeature": false,
+      "description": "API is source incompatible for selected .NET version: requires code changes to compile successfully when targeting a new version, such as removing obsolete APIs or changing method signatures.",
+      "label": "Source incompatible for selected .NET version",
+      "severity": "Potential",
+      "effort": 1,
+      "links": [
+        {
+          "title": "Breaking changes in .NET",
+          "url": "https://go.microsoft.com/fwlink/?linkid=2262679",
+          "isCustom": false
+        }
+      ]
+    },
+    "Api.0003": {
+      "id": "Api.0003",
+      "isFeature": false,
+      "description": "API has a behavioral change in selected .NET version: code and binaries may behave differently at runtime without needing recompilation, but the new behavior might be undesirable and require updates.",
+      "label": "Behavioral change in selected .NET version",
+      "severity": "Potential",
+      "effort": 1
+    },
+    "Api.0001": {
+      "id": "Api.0001",
+      "isFeature": false,
+      "description": "API is binary incompatible for selected .NET version: affects existing binaries, often requiring recompilation, because the API has changed in a way that prevents older binaries from loading or executing.",
+      "label": "Binary incompatible for selected .NET version",
+      "severity": "Mandatory",
+      "effort": 1,
+      "links": [
+        {
+          "title": "Breaking changes in .NET",
+          "url": "https://go.microsoft.com/fwlink/?linkid=2262679",
+          "isCustom": false
+        }
+      ]
+    }
+  }
+}
