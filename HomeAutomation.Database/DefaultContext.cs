@@ -23,6 +23,8 @@ public class DefaultContext(DbContextOptions<DefaultContext> options) : DbContex
 
     public DbSet<SensorValueEntity> SensorValues { get; set; }
 
+    public DbSet<SolarGenerationSummaryEntity> SolarGenerationSummaries { get; set; }
+
     public DbSet<SunDataEntity> SunData { get; set; }
 
     public DbSet<WeatherForecastEntity> WeatherForecast { get; set; }
