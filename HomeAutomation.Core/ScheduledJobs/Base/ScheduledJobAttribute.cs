@@ -4,4 +4,5 @@ namespace HomeAutomation.Core.ScheduledJobs.Base;
 public sealed class ScheduledJobAttribute(int intervalInSeconds) : Attribute
 {
     public int IntervalInSeconds { get; } = intervalInSeconds;
+    public int DelayInSeconds { get; init; } = 30;
 }

@@ -15,8 +15,8 @@ public class ScheduledJobHandler<TScheduledJob>(IServiceScopeFactory serviceScop
         var attribute = typeof(TScheduledJob).GetCustomAttribute<ScheduledJobAttribute>();
         if (attribute != null)
         {
-            _timer = new Timer(ProcessTimer, cancellationToken, TimeSpan.FromSeconds(30), TimeSpan.FromSeconds(attribute.IntervalInSeconds));
-            logger.LogInformation("Starting scheduled job for {class} with interval {interval}s", typeof(TScheduledJob).Name, attribute.IntervalInSeconds);
+            _timer = new Timer(ProcessTimer, cancellationToken, TimeSpan.FromSeconds(attribute.DelayInSeconds), TimeSpan.FromSeconds(attribute.IntervalInSeconds));
+            logger.LogInformation("Starting scheduled job for {class} with interval {interval}s and delay {delay}s", typeof(TScheduledJob).Name, attribute.IntervalInSeconds, attribute.DelayInSeconds);
         }
         else
         {
