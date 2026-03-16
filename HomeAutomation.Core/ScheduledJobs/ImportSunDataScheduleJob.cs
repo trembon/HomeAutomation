@@ -6,6 +6,7 @@ using System.Net.Http.Json;
 
 namespace HomeAutomation.Core.ScheduledJobs;
 
+[ScheduledJob(7200)]
 public class ImportSunDataScheduleJob(ILogger<ImportSunDataScheduleJob> logger, IConfiguration configuration, ISunDataService sunDataService) : IScheduledJob
 {
     public async Task Execute(DateTime currentExecution, DateTime? lastExecution, CancellationToken cancellationToken)

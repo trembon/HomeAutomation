@@ -1,26 +1,26 @@
-﻿using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using System.Reflection;
 
 namespace HomeAutomation.Core.ScheduledJobs.Base;
 
-public class ScheduledJobHandler<TScheduledJob>(IServiceScopeFactory serviceScopeFactory, IConfiguration configuration, ILogger<ScheduledJobHandler<TScheduledJob>> logger) : IHostedService, IDisposable where TScheduledJob : IScheduledJob
+public class ScheduledJobHandler<TScheduledJob>(IServiceScopeFactory serviceScopeFactory, ILogger<ScheduledJobHandler<TScheduledJob>> logger) : IHostedService, IDisposable where TScheduledJob : IScheduledJob
 {
     private Timer? _timer = null;
     private DateTime? _lastExecution = null;
 
     public Task StartAsync(CancellationToken cancellationToken)
     {
-        bool gotInterval = int.TryParse(configuration[$"ScheduledJobs:{typeof(TScheduledJob).Name}"], out int interval);
-        if (gotInterval)
+        var attribute = typeof(TScheduledJob).GetCustomAttribute<ScheduledJobAttribute>();
+        if (attribute != null)
         {
-            _timer = new Timer(ProcessTimer, cancellationToken, TimeSpan.FromSeconds(30), TimeSpan.FromSeconds(interval));
-            logger.LogInformation("Starting scheduled job for {class} with interval {interval}", typeof(TScheduledJob).Name, interval);
+            _timer = new Timer(ProcessTimer, cancellationToken, TimeSpan.FromSeconds(30), TimeSpan.FromSeconds(attribute.IntervalInSeconds));
+            logger.LogInformation("Starting scheduled job for {class} with interval {interval}s", typeof(TScheduledJob).Name, attribute.IntervalInSeconds);
         }
         else
         {
-            logger.LogInformation("Skipping scheduled job for {class}, not configured interval found", typeof(TScheduledJob).Name);
+            logger.LogWarning("Skipping scheduled job for {class}, no ScheduledJobAttribute found", typeof(TScheduledJob).Name);
         }
 
         return Task.CompletedTask;

@@ -2,7 +2,6 @@ using HomeAutomation.Components;
 using HomeAutomation.Core;
 using HomeAutomation.Core.Extensions;
 using HomeAutomation.Core.Logging;
-using HomeAutomation.Core.ScheduledJobs;
 using HomeAutomation.Core.Services;
 using HomeAutomation.Database;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -39,12 +38,7 @@ builder.Services.AddTransient<INotificationService, NotificationService>();
 builder.Services.AddTransient<IActionExecutionService, ActionExecutionService>();
 builder.Services.AddTransient<IEvaluateConditionService, EvaluateConditionService>();
 
-builder.Services.AddScheduleJob<CleanupLogScheduleJob>();
-builder.Services.AddScheduleJob<ImportSunDataScheduleJob>();
-//builder.Services.AddScheduleJob<ImportWeatherDataScheduledJob>();
-builder.Services.AddScheduleJob<TriggerScheduledJob>();
-builder.Services.AddScheduleJob<CalculateBatteryChargingScheduleJob>();
-builder.Services.AddScheduleJob<SummarizeSolarGenerationScheduleJob>();
+builder.Services.AddScheduleJobs();
 
 builder.Services.AddSlackClient(builder.Configuration);
 

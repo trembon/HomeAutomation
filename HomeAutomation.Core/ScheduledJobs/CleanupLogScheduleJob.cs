@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging;
 
 namespace HomeAutomation.Core.ScheduledJobs;
 
+[ScheduledJob(86400)]
 public class CleanupLogScheduleJob(DefaultContext context, ILogger<CleanupLogScheduleJob> logger) : IScheduledJob
 {
     public async Task Execute(DateTime currentExecution, DateTime? lastExecution, CancellationToken cancellationToken)

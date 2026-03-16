@@ -6,6 +6,7 @@ using HomeAutomation.Database.Repositories;
 
 namespace HomeAutomation.Core.ScheduledJobs;
 
+[ScheduledJob(600)]
 public class TriggerScheduledJob(ITriggerRepository repository, ISunDataService sunDataService, ITriggerService triggerService) : IScheduledJob
 {
     public async Task Execute(DateTime currentExecution, DateTime? lastExecution, CancellationToken cancellationToken)

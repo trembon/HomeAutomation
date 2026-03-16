@@ -11,6 +11,7 @@ using System.Text.Json.Serialization;
 
 namespace HomeAutomation.Core.ScheduledJobs;
 
+[ScheduledJob(3600)]
 public class CalculateBatteryChargingScheduleJob(DefaultContext context, IFusionSolarService fusionSolarService, INotificationService notificationService, IHttpClientFactory httpClientFactory, IConfiguration configuration, ILogger<CalculateBatteryChargingScheduleJob> logger) : IScheduledJob
 {
     private const string HOUR_FORMAT = "HH:mm";
