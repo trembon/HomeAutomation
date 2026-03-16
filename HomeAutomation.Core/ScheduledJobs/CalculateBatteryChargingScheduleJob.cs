@@ -15,13 +15,25 @@ public class CalculateBatteryChargingScheduleJob(DefaultContext context, IFusion
 {
     private const string HOUR_FORMAT = "HH:mm";
 
+    private const int CALCULATE_AFTER_HOUR = 14;
+    private const int SET_CHARGING_AFTER_HOUR = 18;
+    private const int SET_CHARGING_AFTER_HOUR_WHEN_NOT_DEFINITIVE = 22;
+    private const int CHARGING_THRESHOLD_PRICE = 20;
+    private const double NIGHT_CHARGING_START_HOUR = 0;
+    private const double NIGHT_CHARGING_END_HOUR = 5.5;
+    private const double NIGHT_CHARGING_PERIOD_LENGTH = 3;
+    private const double DAY_CHARGING_START_HOUR = 10;
+    private const double DAY_CHARGING_END_HOUR = 16.5;
+    private const double DAY_CHARGING_PERIOD_LENGTH = 2;
+    private const int PRICING_SEGMENT_LENGTH_IN_MINUTES = 15;
+
     public async Task Execute(DateTime currentExecution, DateTime? lastExecution, CancellationToken cancellationToken)
     {
         logger.LogInformation("Schedule.BatteryCharging :: starting");
         try
         {
             // prices are estimated to release for tomorrow at 14
-            if (currentExecution.Hour < configuration.GetValue("EnergyCalculation:CalculateAfterHour", 14))
+            if (currentExecution.Hour < CALCULATE_AFTER_HOUR)
                 return;
 
             FetchedPricingRow[]? rows = null;
@@ -88,30 +100,29 @@ public class CalculateBatteryChargingScheduleJob(DefaultContext context, IFusion
             }
 
             // we dont have real data to work with, or its not late enough yet to use not definitive data
-            if (rows == null || rows.Length == 0 || (!rows.All(x => x.Definitive) && currentExecution.Hour < configuration.GetValue("EnergyCalculation:SetChargingAfterHourWhenNotDefinitive", 22)))
+            if (rows == null || rows.Length == 0 || (!rows.All(x => x.Definitive) && currentExecution.Hour < SET_CHARGING_AFTER_HOUR_WHEN_NOT_DEFINITIVE))
             {
                 logger.LogInformation("Schedule.BatteryCharging :: no real pricing data for {tomorrow}, retry at a later time", tomorrow);
                 return;
             }
 
-            if (currentExecution.Hour < configuration.GetValue("EnergyCalculation:SetChargingAfterHour", 18))
+            if (currentExecution.Hour < SET_CHARGING_AFTER_HOUR)
             {
                 logger.LogInformation("Schedule.BatteryCharging :: not late enough to configure battery schedule for {tomorrow}, wait", tomorrow);
                 return;
             }
 
-            int thresholdPrice = configuration.GetValue("EnergyCalculation:ChargingThresholdPrice", 20);
             var night = GetCheapestPeriod([.. rows],
-                TimeSpan.FromHours(configuration.GetValue<double>("EnergyCalculation:NightChargingStartHour", 0)),
-                TimeSpan.FromHours(configuration.GetValue<double>("EnergyCalculation:NightChargingEndHour", 5.5)),
-                TimeSpan.FromHours(configuration.GetValue<double>("EnergyCalculation:NightChargingPeriodLength", 3)),
-                thresholdPrice);
+                TimeSpan.FromHours(NIGHT_CHARGING_START_HOUR),
+                TimeSpan.FromHours(NIGHT_CHARGING_END_HOUR),
+                TimeSpan.FromHours(NIGHT_CHARGING_PERIOD_LENGTH),
+                CHARGING_THRESHOLD_PRICE);
 
             var day = GetCheapestPeriod([.. rows],
-                TimeSpan.FromHours(configuration.GetValue<double>("EnergyCalculation:DayChargingStartHour", 10)),
-                TimeSpan.FromHours(configuration.GetValue<double>("EnergyCalculation:DayChargingEndHour", 16.5)),
-                TimeSpan.FromHours(configuration.GetValue<double>("EnergyCalculation:DayChargingPeriodLength", 2)),
-                thresholdPrice);
+                TimeSpan.FromHours(DAY_CHARGING_START_HOUR),
+                TimeSpan.FromHours(DAY_CHARGING_END_HOUR),
+                TimeSpan.FromHours(DAY_CHARGING_PERIOD_LENGTH),
+                CHARGING_THRESHOLD_PRICE);
 
             string discharge1start = day.End.AddMinutes(1).ToString(HOUR_FORMAT);
             string discharge1end = night.Start.AddMinutes(-1).ToString(HOUR_FORMAT);
@@ -180,7 +191,7 @@ public class CalculateBatteryChargingScheduleJob(DefaultContext context, IFusion
         if (windowPrices.Count == 0)
             throw new ArgumentException("prices does not contain valid values", nameof(prices));
 
-        int segmentLengthMinutes = configuration.GetValue("EnergyCalculation:PricingSegmentLengthInMinutes", 15);
+        int segmentLengthMinutes = PRICING_SEGMENT_LENGTH_IN_MINUTES;
 
         // check if all rows are below threshold value, if so, just get whole intervall
         if (windowPrices.All(p => p.Value <= thresholdPrice))
