@@ -2,21 +2,17 @@
 using HomeAutomation.Core.Services;
 using HomeAutomation.Database;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using System.Net.Http.Headers;
-using System.Net.Http.Json;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace HomeAutomation.Core.ScheduledJobs;
 
 [ScheduledJob(3600)]
-public class CalculateBatteryChargingScheduleJob(DefaultContext context, IFusionSolarService fusionSolarService, INotificationService notificationService, IHttpClientFactory httpClientFactory, IConfiguration configuration, ILogger<CalculateBatteryChargingScheduleJob> logger) : IScheduledJob
+public class CalculateBatteryChargingScheduleJob(DefaultContext context, IFusionSolarService fusionSolarService, INotificationService notificationService, ILogger<CalculateBatteryChargingScheduleJob> logger) : IScheduledJob
 {
     private const string HOUR_FORMAT = "HH:mm";
 
-    private const int CALCULATE_AFTER_HOUR = 14;
     private const int SET_CHARGING_AFTER_HOUR = 18;
     private const int SET_CHARGING_AFTER_HOUR_WHEN_NOT_DEFINITIVE = 22;
     private const int CHARGING_THRESHOLD_PRICE = 20;
@@ -33,83 +29,37 @@ public class CalculateBatteryChargingScheduleJob(DefaultContext context, IFusion
         logger.LogInformation("Schedule.BatteryCharging :: starting");
         try
         {
-            // prices are estimated to release for tomorrow at 14
-            if (currentExecution.Hour < CALCULATE_AFTER_HOUR)
-                return;
-
-            FetchedPricingRow[]? rows = null;
             DateOnly tomorrow = DateOnly.FromDateTime(currentExecution.AddDays(1));
 
-            // check if we already have pricing in the database
             var pricing = await context.EnergyPricing.Where(x => x.Date == tomorrow).FirstOrDefaultAsync(cancellationToken);
-            if (pricing != null)
+            if (pricing == null)
             {
-                if (pricing.IsConfigured)
-                {
-                    logger.LogInformation("Schedule.BatteryCharging :: pricing data for {tomorrow} is already configued", tomorrow);
-                    return;
-                }
-
-                logger.LogInformation("Schedule.BatteryCharging :: pricing data for {tomorrow} fetch from database", tomorrow);
-                rows = JsonSerializer.Deserialize<FetchedPricingRow[]>(pricing.PricingData);
+                if (logger.IsEnabled(LogLevel.Information))
+                    logger.LogInformation("Schedule.BatteryCharging :: no pricing data for {tomorrow}, retry at a later time", tomorrow);
+                return;
             }
 
-            if (rows == null || rows.Length == 0 || !rows.All(x => x.Definitive))
+            if (pricing.IsConfigured)
             {
-                logger.LogInformation("Schedule.BatteryCharging :: fetching pricing data for {tomorrow} from eon", tomorrow);
-
-                // pricing data is not in database or all are not definitive, fetch from api
-                var client = httpClientFactory.CreateClient(nameof(CalculateBatteryChargingScheduleJob));
-                var request = CreateMockedEnergyPricingRequest(tomorrow);
-
-                var response = await client.SendAsync(request, cancellationToken);
-                if (response.IsSuccessStatusCode)
-                {
-                    rows = await response.Content.ReadFromJsonAsync<FetchedPricingRow[]>(cancellationToken);
-                }
-                else
-                {
-                    string message = string.Empty;
-                    try
-                    {
-                        message = await response.Content.ReadAsStringAsync(cancellationToken);
-                    }
-                    catch { }
-                    logger.LogError("Schedule.BatteryCharging :: failed to fetch pricing data for {tomorrow} from eon, with message: {message}", tomorrow, message);
-                }
+                if (logger.IsEnabled(LogLevel.Information))
+                    logger.LogInformation("Schedule.BatteryCharging :: pricing data for {tomorrow} is already configured", tomorrow);
+                return;
             }
 
-            // if we read from api, store to database
-            if (pricing == null && rows != null)
-            {
-                logger.LogInformation("Schedule.BatteryCharging :: fetched new pricing data for {tomorrow} from eon, saving to database", tomorrow);
-
-                pricing = new Database.Entities.EnergyPricingEntity
-                {
-                    Date = tomorrow,
-                    PricingData = JsonSerializer.Serialize(rows)
-                };
-                context.EnergyPricing.Add(pricing);
-                await context.SaveChangesAsync(cancellationToken);
-            }
-            else if (pricing != null)
-            {
-                logger.LogInformation("Schedule.BatteryCharging :: fetched updated pricing data for {tomorrow} from eon, saving to database", tomorrow);
-
-                pricing.PricingData = JsonSerializer.Serialize(rows);
-                await context.SaveChangesAsync(cancellationToken);
-            }
+            var rows = JsonSerializer.Deserialize<FetchedPricingRow[]>(pricing.PricingData);
 
             // we dont have real data to work with, or its not late enough yet to use not definitive data
             if (rows == null || rows.Length == 0 || (!rows.All(x => x.Definitive) && currentExecution.Hour < SET_CHARGING_AFTER_HOUR_WHEN_NOT_DEFINITIVE))
             {
-                logger.LogInformation("Schedule.BatteryCharging :: no real pricing data for {tomorrow}, retry at a later time", tomorrow);
+                if (logger.IsEnabled(LogLevel.Information))
+                    logger.LogInformation("Schedule.BatteryCharging :: no real pricing data for {tomorrow}, retry at a later time", tomorrow);
                 return;
             }
 
             if (currentExecution.Hour < SET_CHARGING_AFTER_HOUR)
             {
-                logger.LogInformation("Schedule.BatteryCharging :: not late enough to configure battery schedule for {tomorrow}, wait", tomorrow);
+                if (logger.IsEnabled(LogLevel.Information))
+                    logger.LogInformation("Schedule.BatteryCharging :: not late enough to configure battery schedule for {tomorrow}, wait", tomorrow);
                 return;
             }
 
@@ -146,7 +96,8 @@ public class CalculateBatteryChargingScheduleJob(DefaultContext context, IFusion
 
                 await notificationService.SendToSlack("event", $"Battery charging schema updated:\n{night}\n{day}", cancellationToken);
 
-                logger.LogInformation("Schedule.BatteryCharging :: configuration for {tomorrow} is now set", tomorrow);
+                if (logger.IsEnabled(LogLevel.Information))
+                    logger.LogInformation("Schedule.BatteryCharging :: configuration for {tomorrow} is now set", tomorrow);
             }
             else
             {
@@ -157,26 +108,6 @@ public class CalculateBatteryChargingScheduleJob(DefaultContext context, IFusion
         {
             logger.LogInformation("Schedule.BatteryCharging :: done");
         }
-    }
-
-    private HttpRequestMessage CreateMockedEnergyPricingRequest(DateOnly date)
-    {
-        var request = new HttpRequestMessage(HttpMethod.Get, configuration.GetValue<string>("EnergyPrices:APIUrl") + date.ToString("yyyy-MM-dd"));
-
-        request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-        request.Headers.Add("Accept-Language", "sv,en;q=0.9,en-GB;q=0.8,en-US;q=0.7");
-        request.Headers.Add("Sec-CH-UA", "\"Chromium\";v=\"142\", \"Microsoft Edge\";v=\"142\", \"Not_A Brand\";v=\"99\"");
-        request.Headers.Add("Sec-CH-UA-Mobile", "?0");
-        request.Headers.Add("Sec-CH-UA-Platform", "\"Windows\"");
-        request.Headers.Add("Sec-Fetch-Dest", "empty");
-        request.Headers.Add("Sec-Fetch-Mode", "cors");
-        request.Headers.Add("Sec-Fetch-Site", "cross-site");
-
-        // real browser-like User-Agent
-        request.Headers.UserAgent.ParseAdd("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36");
-        request.Headers.Referrer = new Uri(configuration.GetValue("EnergyPrices:Referrer", ""));
-
-        return request;
     }
 
     private ChargeWindow GetCheapestPeriod(List<FetchedPricingRow> prices, TimeSpan windowStart, TimeSpan windowEnd, TimeSpan duration, decimal thresholdPrice)
@@ -273,15 +204,4 @@ public class CalculateBatteryChargingScheduleJob(DefaultContext context, IFusion
         public string Value { get; set; } = null!;
     }
 
-    public class FetchedPricingRow
-    {
-        [JsonPropertyName("dateTime")]
-        public DateTime DateTime { get; set; }
-
-        [JsonPropertyName("value")]
-        public decimal Value { get; set; }
-
-        [JsonPropertyName("definitive")]
-        public bool Definitive { get; set; }
-    }
 }
