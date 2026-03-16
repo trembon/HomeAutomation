@@ -43,7 +43,8 @@ public class SummarizeSolarGenerationScheduleJob(DefaultContext context, ILogger
             return;
         }
 
-        logger.LogInformation("Schedule.SummarizeSolarGeneration :: processing {count} missing day(s)", daysToProcess.Count);
+        if (logger.IsEnabled(LogLevel.Information))
+            logger.LogInformation("Schedule.SummarizeSolarGeneration :: processing {count} missing day(s)", daysToProcess.Count);
 
         foreach (var date in daysToProcess)
         {
@@ -61,9 +62,11 @@ public class SummarizeSolarGenerationScheduleJob(DefaultContext context, ILogger
 
             if (readings.Count < 2)
             {
-                logger.LogInformation("Schedule.SummarizeSolarGeneration :: not enough readings for {date}, skipping", date);
+                if (logger.IsEnabled(LogLevel.Information))
+                    logger.LogInformation("Schedule.SummarizeSolarGeneration :: not enough readings for {date}, skipping", date);
                 continue;
             }
+
 
             // Trapezoidal integration: (kW₁ + kW₂) / 2 × Δhours per interval
             decimal totalKwh = 0;
@@ -76,12 +79,13 @@ public class SummarizeSolarGenerationScheduleJob(DefaultContext context, ILogger
             context.SolarGenerationSummaries.Add(new SolarGenerationSummaryEntity
             {
                 Date = date,
-                Started = TimeOnly.FromDateTime(readings.Where(x => x.Value > 0).First().Timestamp.ToLocalTime()),
-                Ended = TimeOnly.FromDateTime(readings.Where(x => x.Value > 0).Last().Timestamp.ToLocalTime()),
+                Started = TimeOnly.FromDateTime(readings.First(x => x.Value > 0).Timestamp.ToLocalTime()),
+                Ended = TimeOnly.FromDateTime(readings.Last(x => x.Value > 0).Timestamp.ToLocalTime()),
                 TotalKwh = totalKwh,
             });
 
-            logger.LogInformation("Schedule.SummarizeSolarGeneration :: {date} → {kwh:F3} kWh ({readings} readings)", date, totalKwh, readings.Count);
+            if (logger.IsEnabled(LogLevel.Information))
+                logger.LogInformation("Schedule.SummarizeSolarGeneration :: {date} → {kwh:F3} kWh ({readings} readings)", date, totalKwh, readings.Count);
         }
 
         await context.SaveChangesAsync(cancellationToken);
