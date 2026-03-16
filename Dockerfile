@@ -1,10 +1,16 @@
 # build with the SDK image
 FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 ARG TARGETARCH
+
 COPY . .
 WORKDIR /
 RUN dotnet restore -a $TARGETARCH
-RUN dotnet publish -a $TARGETARCH --no-restore -o /app/publish
+RUN dotnet publish HomeAutomation/HomeAutomation.csproj \
+    -a $TARGETARCH \
+    --no-restore \
+    -o /app/publish \
+    -p:RunAOTCompilation=false \
+    -p:PublishTrimmed=false
 
 # runtime
 FROM mcr.microsoft.com/dotnet/aspnet:10.0 
