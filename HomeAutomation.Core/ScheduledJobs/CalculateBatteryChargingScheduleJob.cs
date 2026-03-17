@@ -112,8 +112,6 @@ public class CalculateBatteryChargingScheduleJob(DefaultContext context, IFusion
 
     private ChargeWindow GetCheapestPeriod(List<FetchedPricingRow> prices, TimeSpan windowStart, TimeSpan windowEnd, TimeSpan duration, decimal thresholdPrice)
     {
-        // TODO: redo this calculation, find cheapest segment, and then add to intervall on both sides untill threshold value is not there anymore
-
         // grab rows within time range
         var windowPrices = prices
             .Where(p => p.DateTime.TimeOfDay >= windowStart && p.DateTime.TimeOfDay <= windowEnd)
@@ -124,22 +122,9 @@ public class CalculateBatteryChargingScheduleJob(DefaultContext context, IFusion
             throw new ArgumentException("prices does not contain valid values", nameof(prices));
 
         int segmentLengthMinutes = PRICING_SEGMENT_LENGTH_IN_MINUTES;
-
-        // check if all rows are below threshold value, if so, just get whole intervall
-        if (windowPrices.All(p => p.Value <= thresholdPrice))
-        {
-            return new ChargeWindow
-            {
-                Start = windowPrices.First().DateTime,
-                End = windowPrices.Last().DateTime.AddMinutes(segmentLengthMinutes),
-                High = windowPrices.OrderBy(x => x.Value).Last().Value,
-                Low = windowPrices.OrderBy(x => x.Value).First().Value,
-                Average = windowPrices.Average(x => x.Value)
-            };
-        }
-
-        // find the cheapest time segment
         int periods = (int)(duration.TotalMinutes / segmentLengthMinutes);
+
+        // find the cheapest fixed-duration segment
         decimal minAvg = decimal.MaxValue;
         int bestIndex = 0;
 
@@ -155,7 +140,18 @@ public class CalculateBatteryChargingScheduleJob(DefaultContext context, IFusion
             }
         }
 
-        var bestSegment = windowPrices.Skip(bestIndex).Take(periods);
+        int startIndex = bestIndex;
+        int endIndex = bestIndex + periods - 1;
+
+        // extend left while within window and price is at or below threshold
+        while (startIndex > 0 && windowPrices[startIndex - 1].Value <= thresholdPrice)
+            startIndex--;
+
+        // extend right while within window and price is at or below threshold
+        while (endIndex < windowPrices.Count - 1 && windowPrices[endIndex + 1].Value <= thresholdPrice)
+            endIndex++;
+
+        var bestSegment = windowPrices.Skip(startIndex).Take(endIndex - startIndex + 1);
         return new ChargeWindow
         {
             Start = bestSegment.First().DateTime,
