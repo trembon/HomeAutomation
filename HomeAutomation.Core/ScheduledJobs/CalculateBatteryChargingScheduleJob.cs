@@ -15,14 +15,24 @@ public class CalculateBatteryChargingScheduleJob(DefaultContext context, IFusion
 
     private const int SET_CHARGING_AFTER_HOUR = 18;
     private const int SET_CHARGING_AFTER_HOUR_WHEN_NOT_DEFINITIVE = 22;
-    private const int CHARGING_THRESHOLD_PRICE = 20;
+    private const int PRICING_SEGMENT_LENGTH_IN_MINUTES = 15;
+
     private const double NIGHT_CHARGING_START_HOUR = 0;
     private const double NIGHT_CHARGING_END_HOUR = 5.5;
     private const double NIGHT_CHARGING_PERIOD_LENGTH = 3;
     private const double DAY_CHARGING_START_HOUR = 10;
     private const double DAY_CHARGING_END_HOUR = 16.5;
     private const double DAY_CHARGING_PERIOD_LENGTH = 2;
-    private const int PRICING_SEGMENT_LENGTH_IN_MINUTES = 15;
+    private const int WINTER_CHARGING_THRESHOLD_PRICE = 20;
+
+    private const double SUMMER_SOLAR_THRESHOLD_KWH = 18.0;
+    private const int SUMMER_SEASON_LOOKBACK_DAYS = 7;
+    private const double SUMMER_PRE_SPIKE_START_HOUR = 13.5;
+    private const double SUMMER_PRE_SPIKE_END_HOUR = 16.5;
+    private const double SUMMER_CHARGING_PERIOD_LENGTH = 1.5;
+    private const double SUMMER_SOLAR_SUFFICIENT_KWH = 15.0;
+    private const int SUMMER_SOLAR_SUFFICIENCY_LOOKBACK_DAYS = 3;
+    private const int SUMMER_CHARGING_THRESHOLD_PRICE = 50;
 
     public async Task Execute(DateTime currentExecution, DateTime? lastExecution, CancellationToken cancellationToken)
     {
@@ -63,29 +73,20 @@ public class CalculateBatteryChargingScheduleJob(DefaultContext context, IFusion
                 return;
             }
 
-            var night = GetCheapestPeriod([.. rows],
-                TimeSpan.FromHours(NIGHT_CHARGING_START_HOUR),
-                TimeSpan.FromHours(NIGHT_CHARGING_END_HOUR),
-                TimeSpan.FromHours(NIGHT_CHARGING_PERIOD_LENGTH),
-                CHARGING_THRESHOLD_PRICE);
+            DateOnly today = DateOnly.FromDateTime(currentExecution);
+            bool isSummer = await IsSummerMode(today, cancellationToken);
 
-            var day = GetCheapestPeriod([.. rows],
-                TimeSpan.FromHours(DAY_CHARGING_START_HOUR),
-                TimeSpan.FromHours(DAY_CHARGING_END_HOUR),
-                TimeSpan.FromHours(DAY_CHARGING_PERIOD_LENGTH),
-                CHARGING_THRESHOLD_PRICE);
+            if (logger.IsEnabled(LogLevel.Information))
+                logger.LogInformation("Schedule.BatteryCharging :: season mode for {tomorrow} is {mode}", tomorrow, isSummer ? "Summer" : "Winter");
 
-            string discharge1start = day.End.AddMinutes(1).ToString(HOUR_FORMAT);
-            string discharge1end = night.Start.AddMinutes(-1).ToString(HOUR_FORMAT);
-            string discharge2start = night.End.AddMinutes(1).ToString(HOUR_FORMAT);
-            string discharge2end = day.Start.AddMinutes(-1).ToString(HOUR_FORMAT);
+            List<ScheduleItem> schedule;
+            string notificationMessage;
 
-            List<ScheduleItem> schedule = [
-                new ScheduleItem { StartTime = night.Start.ToString(HOUR_FORMAT), EndTime = night.End.ToString(HOUR_FORMAT), OnOff = 0 },
-                new ScheduleItem { StartTime = discharge2start, EndTime = discharge2end, OnOff = 1 },
-                new ScheduleItem { StartTime = day.Start.ToString(HOUR_FORMAT), EndTime = day.End.ToString(HOUR_FORMAT), OnOff = 0 },
-                new ScheduleItem { StartTime = discharge1start, EndTime = discharge1end, OnOff = 1 }
-            ];
+            if (isSummer)
+                (schedule, notificationMessage) = await BuildSummerSchedule([.. rows], today, cancellationToken);
+            else
+                (schedule, notificationMessage) = BuildWinterSchedule([.. rows]);
+
             var payload = new SchedulePayload { Id = "230190101", Value = JsonSerializer.Serialize(schedule) };
 
             bool success = await fusionSolarService.SetConfigSignals(payload, cancellationToken);
@@ -94,7 +95,7 @@ public class CalculateBatteryChargingScheduleJob(DefaultContext context, IFusion
                 pricing!.IsConfigured = true;
                 context.SaveChanges();
 
-                await notificationService.SendToSlack("event", $"Battery charging schema updated:\n{night}\n{day}", cancellationToken);
+                await notificationService.SendToSlack("event", $"Battery charging schema updated:\n{notificationMessage}", cancellationToken);
 
                 if (logger.IsEnabled(LogLevel.Information))
                     logger.LogInformation("Schedule.BatteryCharging :: configuration for {tomorrow} is now set", tomorrow);
@@ -110,7 +111,98 @@ public class CalculateBatteryChargingScheduleJob(DefaultContext context, IFusion
         }
     }
 
-    private ChargeWindow GetCheapestPeriod(List<FetchedPricingRow> prices, TimeSpan windowStart, TimeSpan windowEnd, TimeSpan duration, decimal thresholdPrice)
+    private (List<ScheduleItem> schedule, string notification) BuildWinterSchedule(List<FetchedPricingRow> rows)
+    {
+        var night = GetCheapestPeriod(rows,
+            TimeSpan.FromHours(NIGHT_CHARGING_START_HOUR),
+            TimeSpan.FromHours(NIGHT_CHARGING_END_HOUR),
+            TimeSpan.FromHours(NIGHT_CHARGING_PERIOD_LENGTH),
+            WINTER_CHARGING_THRESHOLD_PRICE);
+
+        var day = GetCheapestPeriod(rows,
+            TimeSpan.FromHours(DAY_CHARGING_START_HOUR),
+            TimeSpan.FromHours(DAY_CHARGING_END_HOUR),
+            TimeSpan.FromHours(DAY_CHARGING_PERIOD_LENGTH),
+            WINTER_CHARGING_THRESHOLD_PRICE);
+
+        string discharge1start = day.End.AddMinutes(1).ToString(HOUR_FORMAT);
+        string discharge1end = night.Start.AddMinutes(-1).ToString(HOUR_FORMAT);
+        string discharge2start = night.End.AddMinutes(1).ToString(HOUR_FORMAT);
+        string discharge2end = day.Start.AddMinutes(-1).ToString(HOUR_FORMAT);
+
+        List<ScheduleItem> schedule = [
+            new ScheduleItem { StartTime = night.Start.ToString(HOUR_FORMAT), EndTime = night.End.ToString(HOUR_FORMAT), OnOff = 0 },
+            new ScheduleItem { StartTime = discharge2start, EndTime = discharge2end, OnOff = 1 },
+            new ScheduleItem { StartTime = day.Start.ToString(HOUR_FORMAT), EndTime = day.End.ToString(HOUR_FORMAT), OnOff = 0 },
+            new ScheduleItem { StartTime = discharge1start, EndTime = discharge1end, OnOff = 1 }
+        ];
+
+        return (schedule, $"[Winter]\n{night}\n{day}");
+    }
+
+    private async Task<(List<ScheduleItem> schedule, string notification)> BuildSummerSchedule(List<FetchedPricingRow> rows, DateOnly today, CancellationToken cancellationToken)
+    {
+        bool solarSufficient = await IsSolarSufficient(today, cancellationToken);
+
+        if (solarSufficient)
+        {
+            List<ScheduleItem> schedule = [new ScheduleItem { StartTime = "00:00", EndTime = "23:59", OnOff = 1 }];
+            return (schedule, "[Summer] Solar sufficient — full discharge, no grid charging");
+        }
+
+        var preSpike = GetCheapestPeriod(rows,
+            TimeSpan.FromHours(SUMMER_PRE_SPIKE_START_HOUR),
+            TimeSpan.FromHours(SUMMER_PRE_SPIKE_END_HOUR),
+            TimeSpan.FromHours(SUMMER_CHARGING_PERIOD_LENGTH),
+            SUMMER_CHARGING_THRESHOLD_PRICE);
+
+        if (preSpike.Average > SUMMER_CHARGING_THRESHOLD_PRICE)
+        {
+            List<ScheduleItem> schedule = [new ScheduleItem { StartTime = "00:00", EndTime = "23:59", OnOff = 1 }];
+            return (schedule, $"[Summer] Pre-spike window too expensive (avg: {preSpike.Average:F2}) — full discharge, no grid charging");
+        }
+
+        string dischargeBeforeEnd = preSpike.Start.AddMinutes(-1).ToString(HOUR_FORMAT);
+        string dischargeAfterStart = preSpike.End.AddMinutes(1).ToString(HOUR_FORMAT);
+
+        List<ScheduleItem> spikeSchedule = [
+            new ScheduleItem { StartTime = "00:00", EndTime = dischargeBeforeEnd, OnOff = 1 },
+            new ScheduleItem { StartTime = preSpike.Start.ToString(HOUR_FORMAT), EndTime = preSpike.End.ToString(HOUR_FORMAT), OnOff = 0 },
+            new ScheduleItem { StartTime = dischargeAfterStart, EndTime = "23:59", OnOff = 1 }
+        ];
+
+        return (spikeSchedule, $"[Summer] Pre-spike charge window:\n{preSpike}");
+    }
+
+    private async Task<bool> IsSummerMode(DateOnly referenceDate, CancellationToken cancellationToken)
+    {
+        var fromDate = referenceDate.AddDays(-SUMMER_SEASON_LOOKBACK_DAYS);
+        var summaries = await context.SolarGenerationSummaries
+            .AsNoTracking()
+            .Where(s => s.Date >= fromDate && s.Date < referenceDate)
+            .ToListAsync(cancellationToken);
+
+        if (summaries.Count < SUMMER_SEASON_LOOKBACK_DAYS / 2)
+            return false;
+
+        return (double)summaries.Average(s => s.TotalKwh) >= SUMMER_SOLAR_THRESHOLD_KWH;
+    }
+
+    private async Task<bool> IsSolarSufficient(DateOnly referenceDate, CancellationToken cancellationToken)
+    {
+        var fromDate = referenceDate.AddDays(-SUMMER_SOLAR_SUFFICIENCY_LOOKBACK_DAYS);
+        var summaries = await context.SolarGenerationSummaries
+            .AsNoTracking()
+            .Where(s => s.Date >= fromDate && s.Date < referenceDate)
+            .ToListAsync(cancellationToken);
+
+        if (summaries.Count == 0)
+            return false;
+
+        return (double)summaries.Average(s => s.TotalKwh) >= SUMMER_SOLAR_SUFFICIENT_KWH;
+    }
+
+    private static ChargeWindow GetCheapestPeriod(List<FetchedPricingRow> prices, TimeSpan windowStart, TimeSpan windowEnd, TimeSpan duration, decimal thresholdPrice)
     {
         // grab rows within time range
         var windowPrices = prices
