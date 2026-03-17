@@ -7,4 +7,6 @@ public class EnergyPricingEntity : BaseEntity
     public string PricingData { get; set; } = null!;
 
     public bool IsConfigured { get; set; }
+
+    public bool AllDefinitive { get; set; }
 }

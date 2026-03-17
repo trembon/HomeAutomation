@@ -1,5 +1,6 @@
 using HomeAutomation.Core.ScheduledJobs.Base;
 using HomeAutomation.Database;
+using HomeAutomation.Database.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -14,79 +15,107 @@ namespace HomeAutomation.Core.ScheduledJobs;
 public class FetchEnergyPricingScheduleJob(DefaultContext context, IHttpClientFactory httpClientFactory, IConfiguration configuration, ILogger<FetchEnergyPricingScheduleJob> logger) : IScheduledJob
 {
     private const int CALCULATE_AFTER_HOUR = 14;
+    private const int BACKFILL_DAYS = 30;
 
     public async Task Execute(DateTime currentExecution, DateTime? lastExecution, CancellationToken cancellationToken)
     {
         logger.LogInformation("Schedule.FetchEnergyPricing :: starting");
         try
         {
-            // prices are estimated to release for tomorrow at 14
+            // re-fetch any historical days within the past 30 days that are not yet fully definitive
+            var thirtyDaysAgo = DateOnly.FromDateTime(currentExecution.AddDays(-BACKFILL_DAYS));
+            var today = DateOnly.FromDateTime(currentExecution);
+
+            var nonDefinitive = await context.EnergyPricing
+                .Where(x => x.Date >= thirtyDaysAgo && x.Date <= today && !x.AllDefinitive)
+                .OrderByDescending(x => x.Date)
+                .FirstOrDefaultAsync(cancellationToken);
+
+            if (nonDefinitive != null)
+            {
+                if (logger.IsEnabled(LogLevel.Information))
+                    logger.LogInformation("Schedule.FetchEnergyPricing :: re-fetching non-definitive pricing data for {date}", nonDefinitive.Date);
+
+                await FetchAndSaveForDate(nonDefinitive.Date, nonDefinitive, cancellationToken);
+            }
+
+            // prices for tomorrow are estimated to release at 14
             if (currentExecution.Hour < CALCULATE_AFTER_HOUR)
                 return;
 
             DateOnly tomorrow = DateOnly.FromDateTime(currentExecution.AddDays(1));
+            var tomorrowPricing = await context.EnergyPricing.Where(x => x.Date == tomorrow).FirstOrDefaultAsync(cancellationToken);
 
-            var pricing = await context.EnergyPricing.Where(x => x.Date == tomorrow).FirstOrDefaultAsync(cancellationToken);
-            if (pricing != null && pricing.IsConfigured)
+            if (tomorrowPricing != null && tomorrowPricing.AllDefinitive)
             {
-                logger.LogInformation("Schedule.FetchEnergyPricing :: pricing data for {tomorrow} is already configured", tomorrow);
+                if (logger.IsEnabled(LogLevel.Information))
+                    logger.LogInformation("Schedule.FetchEnergyPricing :: pricing data for {tomorrow} is already definitive", tomorrow);
                 return;
             }
 
-            FetchedPricingRow[]? rows = null;
-            if (pricing != null)
-            {
-                logger.LogInformation("Schedule.FetchEnergyPricing :: pricing data for {tomorrow} fetch from database", tomorrow);
-                rows = JsonSerializer.Deserialize<FetchedPricingRow[]>(pricing.PricingData);
-            }
-
-            if (rows == null || rows.Length == 0 || !rows.All(x => x.Definitive))
-            {
-                logger.LogInformation("Schedule.FetchEnergyPricing :: fetching pricing data for {tomorrow} from eon", tomorrow);
-
-                var client = httpClientFactory.CreateClient(nameof(FetchEnergyPricingScheduleJob));
-                var request = CreateEnergyPricingRequest(tomorrow);
-
-                var response = await client.SendAsync(request, cancellationToken);
-                if (response.IsSuccessStatusCode)
-                {
-                    rows = await response.Content.ReadFromJsonAsync<FetchedPricingRow[]>(cancellationToken);
-                }
-                else
-                {
-                    string message = string.Empty;
-                    try
-                    {
-                        message = await response.Content.ReadAsStringAsync(cancellationToken);
-                    }
-                    catch { }
-                    logger.LogError("Schedule.FetchEnergyPricing :: failed to fetch pricing data for {tomorrow} from eon, with message: {message}", tomorrow, message);
-                }
-            }
-
-            if (pricing == null && rows != null)
-            {
-                logger.LogInformation("Schedule.FetchEnergyPricing :: fetched new pricing data for {tomorrow} from eon, saving to database", tomorrow);
-
-                pricing = new Database.Entities.EnergyPricingEntity
-                {
-                    Date = tomorrow,
-                    PricingData = JsonSerializer.Serialize(rows)
-                };
-                context.EnergyPricing.Add(pricing);
-                await context.SaveChangesAsync(cancellationToken);
-            }
-            else if (pricing != null && rows != null)
-            {
-                logger.LogInformation("Schedule.FetchEnergyPricing :: fetched updated pricing data for {tomorrow} from eon, saving to database", tomorrow);
-
-                pricing.PricingData = JsonSerializer.Serialize(rows);
-                await context.SaveChangesAsync(cancellationToken);
-            }
+            await FetchAndSaveForDate(tomorrow, tomorrowPricing, cancellationToken);
         }
         finally
         {
             logger.LogInformation("Schedule.FetchEnergyPricing :: done");
+        }
+    }
+
+    private async Task FetchAndSaveForDate(DateOnly date, EnergyPricingEntity? existing, CancellationToken cancellationToken)
+    {
+        FetchedPricingRow[]? rows = null;
+        if (existing != null)
+            rows = JsonSerializer.Deserialize<FetchedPricingRow[]>(existing.PricingData);
+
+        if (rows == null || rows.Length == 0 || !rows.All(x => x.Definitive))
+        {
+            logger.LogInformation("Schedule.FetchEnergyPricing :: fetching pricing data for {date} from eon", date);
+
+            var client = httpClientFactory.CreateClient(nameof(FetchEnergyPricingScheduleJob));
+            var request = CreateEnergyPricingRequest(date);
+
+            var response = await client.SendAsync(request, cancellationToken);
+            if (response.IsSuccessStatusCode)
+            {
+                rows = await response.Content.ReadFromJsonAsync<FetchedPricingRow[]>(cancellationToken);
+            }
+            else
+            {
+                string message = string.Empty;
+                try
+                {
+                    message = await response.Content.ReadAsStringAsync(cancellationToken);
+                }
+                catch { }
+                logger.LogError("Schedule.FetchEnergyPricing :: failed to fetch pricing data for {date} from eon, with message: {message}", date, message);
+                return;
+            }
+        }
+
+        if (rows == null || rows.Length == 0)
+            return;
+
+        bool allDefinitive = rows.All(x => x.Definitive);
+
+        if (existing == null)
+        {
+            logger.LogInformation("Schedule.FetchEnergyPricing :: fetched new pricing data for {date} from eon, saving to database", date);
+
+            context.EnergyPricing.Add(new EnergyPricingEntity
+            {
+                Date = date,
+                PricingData = JsonSerializer.Serialize(rows),
+                AllDefinitive = allDefinitive
+            });
+            await context.SaveChangesAsync(cancellationToken);
+        }
+        else
+        {
+            logger.LogInformation("Schedule.FetchEnergyPricing :: fetched updated pricing data for {date} from eon, saving to database", date);
+
+            existing.PricingData = JsonSerializer.Serialize(rows);
+            existing.AllDefinitive = allDefinitive;
+            await context.SaveChangesAsync(cancellationToken);
         }
     }
 

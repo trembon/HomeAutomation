@@ -49,7 +49,7 @@ public class CalculateBatteryChargingScheduleJob(DefaultContext context, IFusion
             var rows = JsonSerializer.Deserialize<FetchedPricingRow[]>(pricing.PricingData);
 
             // we dont have real data to work with, or its not late enough yet to use not definitive data
-            if (rows == null || rows.Length == 0 || (!rows.All(x => x.Definitive) && currentExecution.Hour < SET_CHARGING_AFTER_HOUR_WHEN_NOT_DEFINITIVE))
+            if (rows == null || rows.Length == 0 || (!pricing.AllDefinitive && currentExecution.Hour < SET_CHARGING_AFTER_HOUR_WHEN_NOT_DEFINITIVE))
             {
                 if (logger.IsEnabled(LogLevel.Information))
                     logger.LogInformation("Schedule.BatteryCharging :: no real pricing data for {tomorrow}, retry at a later time", tomorrow);

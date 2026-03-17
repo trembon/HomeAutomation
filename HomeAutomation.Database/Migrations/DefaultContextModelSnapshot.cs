@@ -184,6 +184,9 @@ namespace HomeAutomation.Database.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
+                    b.Property<bool>("AllDefinitive")
+                        .HasColumnType("boolean");
+
                     b.Property<DateOnly>("Date")
                         .HasColumnType("date");
 
