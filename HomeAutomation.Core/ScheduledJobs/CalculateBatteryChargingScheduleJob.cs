@@ -16,6 +16,7 @@ public class CalculateBatteryChargingScheduleJob(DefaultContext context, IFusion
     private const int SET_CHARGING_AFTER_HOUR = 18;
     private const int SET_CHARGING_AFTER_HOUR_WHEN_NOT_DEFINITIVE = 22;
     private const int PRICING_SEGMENT_LENGTH_IN_MINUTES = 15;
+    private const int EXTEND_CHARGING_THRESHOLD_PRICE = 20;
 
     private const double NIGHT_CHARGING_START_HOUR = 0;
     private const double NIGHT_CHARGING_END_HOUR = 5.5;
@@ -23,7 +24,6 @@ public class CalculateBatteryChargingScheduleJob(DefaultContext context, IFusion
     private const double DAY_CHARGING_START_HOUR = 10;
     private const double DAY_CHARGING_END_HOUR = 16.5;
     private const double DAY_CHARGING_PERIOD_LENGTH = 2;
-    private const int WINTER_CHARGING_THRESHOLD_PRICE = 20;
 
     private const double SUMMER_SOLAR_THRESHOLD_KWH = 18.0;
     private const int SUMMER_SEASON_LOOKBACK_DAYS = 7;
@@ -117,13 +117,13 @@ public class CalculateBatteryChargingScheduleJob(DefaultContext context, IFusion
             TimeSpan.FromHours(NIGHT_CHARGING_START_HOUR),
             TimeSpan.FromHours(NIGHT_CHARGING_END_HOUR),
             TimeSpan.FromHours(NIGHT_CHARGING_PERIOD_LENGTH),
-            WINTER_CHARGING_THRESHOLD_PRICE);
+            EXTEND_CHARGING_THRESHOLD_PRICE);
 
         var day = GetCheapestPeriod(rows,
             TimeSpan.FromHours(DAY_CHARGING_START_HOUR),
             TimeSpan.FromHours(DAY_CHARGING_END_HOUR),
             TimeSpan.FromHours(DAY_CHARGING_PERIOD_LENGTH),
-            WINTER_CHARGING_THRESHOLD_PRICE);
+            EXTEND_CHARGING_THRESHOLD_PRICE);
 
         string discharge1start = day.End.AddMinutes(1).ToString(HOUR_FORMAT);
         string discharge1end = night.Start.AddMinutes(-1).ToString(HOUR_FORMAT);

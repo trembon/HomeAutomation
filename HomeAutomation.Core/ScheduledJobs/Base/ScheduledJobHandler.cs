@@ -42,7 +42,7 @@ public class ScheduledJobHandler<TScheduledJob>(IServiceScopeFactory serviceScop
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Scheduled job threw exception during execution");
+            logger.LogError(ex, "Scheduled job {class} threw exception during execution", typeof(TScheduledJob).Name);
         }
 
         _lastExecution = currentExecution;
