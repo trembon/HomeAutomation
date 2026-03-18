@@ -1,11 +1,27 @@
 ﻿@page "/logs"
 @using HomeAutomation.Database
+@using HomeAutomation.Database.Entities
 @using Microsoft.EntityFrameworkCore
-@inject DefaultContext context
+@using Microsoft.Extensions.Logging
+@inject DefaultContext dbContext
 
 <MudText Typo="Typo.h2" Class="mb-5">Logs - Default</MudText>
 
-<MudTable Items="@rows" Hover="true" Loading="@(rows == null)" LoadingProgressColor="Color.Info">
+<MudStack Row="true" Class="mb-4" AlignItems="AlignItems.Center" Spacing="3">
+    <MudTextField @bind-Value="searchMessage" @bind-Value:after="ReloadTable" Label="Message" Variant="Variant.Outlined"
+                  Clearable="true" Immediate="true" DebounceInterval="500" />
+    <MudTextField @bind-Value="searchCategory" @bind-Value:after="ReloadTable" Label="Category" Variant="Variant.Outlined"
+                  Clearable="true" Immediate="true" DebounceInterval="500" />
+    <MudSelect T="LogLevel?" @bind-Value="filterLevel" @bind-Value:after="ReloadTable"
+               Label="Level" Variant="Variant.Outlined" Clearable="true">
+        @foreach (var level in Enum.GetValues<LogLevel>().Where(l => l != LogLevel.None))
+        {
+            <MudSelectItem Value="@((LogLevel?)level)">@level</MudSelectItem>
+        }
+    </MudSelect>
+</MudStack>
+
+<MudTable ServerData="LoadData" @ref="table" Hover="true" LoadingProgressColor="Color.Info">
     <HeaderContent>
         <MudTh>Timestamp</MudTh>
         <MudTh>Level</MudTh>
@@ -20,13 +36,43 @@
         <MudTd DataLabel="Category">@context.Category</MudTd>
         <MudTd DataLabel="Exception">@context.Exception</MudTd>
     </RowTemplate>
+    <PagerContent>
+        <MudTablePager />
+    </PagerContent>
 </MudTable>
 
 @code {
-    private Database.Entities.LogEntity[]? rows;
+    private MudTable<LogEntity>? table;
+    private string? searchMessage;
+    private string? searchCategory;
+    private LogLevel? filterLevel;
 
-    protected override async Task OnInitializedAsync()
+    private async Task<TableData<LogEntity>> LoadData(TableState state, CancellationToken cancellationToken)
     {
-        rows = await context.Logs.OrderByDescending(x => x.Timestamp).Take(100).ToArrayAsync();
+        var query = dbContext.Logs.AsNoTracking().AsQueryable();
+
+        if (!string.IsNullOrWhiteSpace(searchMessage))
+            query = query.Where(x => x.Message.Contains(searchMessage));
+
+        if (!string.IsNullOrWhiteSpace(searchCategory))
+            query = query.Where(x => x.Category.Contains(searchCategory));
+
+        if (filterLevel.HasValue)
+            query = query.Where(x => x.Level == filterLevel.Value);
+
+        var total = await query.CountAsync(cancellationToken);
+        var items = await query
+            .OrderByDescending(x => x.Timestamp)
+            .Skip(state.Page * state.PageSize)
+            .Take(state.PageSize)
+            .ToArrayAsync(cancellationToken);
+
+        return new TableData<LogEntity> { TotalItems = total, Items = items };
+    }
+
+    private async Task ReloadTable()
+    {
+        if (table != null)
+            await table.ReloadServerData();
     }
 }
