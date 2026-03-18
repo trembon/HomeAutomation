@@ -2,5 +2,6 @@
 
 public enum ConditionKind
 {
-    Time = 0
+    Time = 0,
+    Expression = 1
 }

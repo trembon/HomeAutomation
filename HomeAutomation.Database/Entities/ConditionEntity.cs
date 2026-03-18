@@ -14,6 +14,8 @@ public class ConditionEntity : BaseEntity
 
     public CompareKind TimeCompareKind { get; set; }
 
+    public string? Expression { get; set; }
+
     public List<ActionEntity> Actions { get; set; } = [];
 
     public List<TriggerEntity> Triggers { get; set; } = [];

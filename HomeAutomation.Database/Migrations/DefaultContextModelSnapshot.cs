@@ -119,6 +119,9 @@ namespace HomeAutomation.Database.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
+                    b.Property<string>("Expression")
+                        .HasColumnType("text");
+
                     b.Property<int>("Kind")
                         .HasColumnType("integer");
 

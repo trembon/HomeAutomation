@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 17
-VisualStudioVersion = 17.9.34728.123
+# Visual Studio Version 18
+VisualStudioVersion = 18.4.11612.150 stable
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HomeAutomation", "HomeAutomation\HomeAutomation.csproj", "{E8951FA3-9EB1-43E7-8934-5E009BFF6789}"
 EndProject
@@ -18,6 +18,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "files", "files", "{955611DF
 		.github\workflows\build.yml = .github\workflows\build.yml
 		Dockerfile = Dockerfile
 	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{7D83E5D3-2391-4C2B-873D-509AF34A001B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HomeAutomation.Core.Tests", "HomeAutomation.Core.Tests\HomeAutomation.Core.Tests.csproj", "{84BF5662-0041-4C28-95A7-D929814A0B98}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -41,9 +45,16 @@ Global
 		{7F36A2AF-C2DD-4B9D-81BE-CAC0FB62A1C9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7F36A2AF-C2DD-4B9D-81BE-CAC0FB62A1C9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7F36A2AF-C2DD-4B9D-81BE-CAC0FB62A1C9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{84BF5662-0041-4C28-95A7-D929814A0B98}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{84BF5662-0041-4C28-95A7-D929814A0B98}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{84BF5662-0041-4C28-95A7-D929814A0B98}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{84BF5662-0041-4C28-95A7-D929814A0B98}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{84BF5662-0041-4C28-95A7-D929814A0B98} = {7D83E5D3-2391-4C2B-873D-509AF34A001B}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {6F2B2F2E-6533-4BDC-8323-F756E562ADCB}
