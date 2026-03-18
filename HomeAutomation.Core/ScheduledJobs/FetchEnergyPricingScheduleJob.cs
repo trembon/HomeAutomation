@@ -54,14 +54,12 @@ public class FetchEnergyPricingScheduleJob(DefaultContext context, IHttpClientFa
             }
 
             await FetchAndSaveForDate(tomorrow, tomorrowPricing, cancellationToken);
+
+            logger.LogInformation("Schedule.FetchEnergyPricing :: done");
         }
         catch (Exception ex)
         {
             logger.LogError(ex, "Schedule.FetchEnergyPricing :: error while fetching energy pricing data");
-        }
-        finally
-        {
-            logger.LogInformation("Schedule.FetchEnergyPricing :: done");
         }
     }
 
