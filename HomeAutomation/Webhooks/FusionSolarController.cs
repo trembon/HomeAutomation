@@ -20,7 +20,9 @@ public class FusionSolarController(IRepository<SensorValueEntity> repository, ID
         {
             var sensorType = fusionSolarService.MapTypeToSensorKind(model.Property);
 
-            logger.LogInformation("FusionSolar.SensorUpdate :: {deviceId} :: NodeId:{nodeId}, ValueType:{valueType}: Value:{value}", device.Id, model.Id, sensorType, model?.Value);
+            if (logger.IsEnabled(LogLevel.Information))
+                logger.LogInformation("FusionSolar.SensorUpdate :: {deviceId} :: NodeId:{nodeId}, ValueType:{valueType}: Value:{value}", device.Id, model.Id, sensorType, model?.Value);
+
             await repository.AddAndSave(new()
             {
                 DeviceId = device.Id,

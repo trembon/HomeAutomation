@@ -1,6 +1,6 @@
-﻿using System.Text.RegularExpressions;
-using HomeAutomation.Database.Entities;
+﻿using HomeAutomation.Database.Entities;
 using HomeAutomation.Database.Interfaces;
+using System.Text.RegularExpressions;
 
 namespace HomeAutomation.Core.Services;
 
@@ -11,11 +11,8 @@ public interface IEvaluateConditionService
     bool MeetCondition(ConditionEntity? condition);
 }
 
-public class EvaluateConditionService(ISunDataService sunDataService) : IEvaluateConditionService
+public partial class EvaluateConditionService(ISunDataService sunDataService) : IEvaluateConditionService
 {
-    // Matches: {variable} op value  e.g. {sunrise} < 6:15
-    private static readonly Regex ExpressionAtomPattern = new(@"^\{([^}]+)\}\s*([<>=])\s*(.+)$", RegexOptions.Compiled);
-
     public bool MeetConditions(IConditionedEntity conditionedEntity)
     {
         if (conditionedEntity.Conditions is not null)
@@ -45,6 +42,7 @@ public class EvaluateConditionService(ISunDataService sunDataService) : IEvaluat
         return false;
     }
 
+    #region Time condition
     private bool CheckTimeCondition(ConditionEntity condition)
     {
         DateTime compareDateTime = DateTime.Today;
@@ -82,15 +80,9 @@ public class EvaluateConditionService(ISunDataService sunDataService) : IEvaluat
 
         return result;
     }
+    #endregion
 
-    private bool CheckExpressionCondition(ConditionEntity condition)
-    {
-        if (string.IsNullOrWhiteSpace(condition.Expression))
-            return false;
-
-        return EvaluateExpression(condition.Expression);
-    }
-
+    #region Expression condition
     // Expression format: {variable} op value [AND {variable} op value]* [OR ...]
     //
     // Supported variables:
@@ -103,10 +95,24 @@ public class EvaluateConditionService(ISunDataService sunDataService) : IEvaluat
     // Supported operators: < > =
     // AND binds tighter than OR (standard precedence)
 
+    [GeneratedRegex(@"^\{([^}]+)\}\s*([<>=])\s*(.+)$", RegexOptions.Compiled)]
+    private static partial Regex AtomPatternRegex();
+
+    // Matches: {variable} op value  e.g. {sunrise} < 6:15
+    private static readonly Regex ExpressionAtomPattern = AtomPatternRegex();
+
+    private bool CheckExpressionCondition(ConditionEntity condition)
+    {
+        if (string.IsNullOrWhiteSpace(condition.Expression))
+            return false;
+
+        return EvaluateExpression(condition.Expression);
+    }
+
     private bool EvaluateExpression(string expression)
     {
-        var orGroups = expression.Split([" OR "], StringSplitOptions.TrimEntries);
-        foreach (var orGroup in orGroups)
+        string[] orGroups = expression.Split([" OR "], StringSplitOptions.TrimEntries);
+        foreach (string orGroup in orGroups)
         {
             if (EvaluateAndGroup(orGroup))
                 return true;
@@ -116,8 +122,8 @@ public class EvaluateConditionService(ISunDataService sunDataService) : IEvaluat
 
     private bool EvaluateAndGroup(string andGroup)
     {
-        var atoms = andGroup.Split([" AND "], StringSplitOptions.TrimEntries);
-        foreach (var atom in atoms)
+        string[] atoms = andGroup.Split([" AND "], StringSplitOptions.TrimEntries);
+        foreach (string atom in atoms)
         {
             if (!EvaluateAtom(atom))
                 return false;
@@ -131,11 +137,11 @@ public class EvaluateConditionService(ISunDataService sunDataService) : IEvaluat
         if (!match.Success)
             return false;
 
-        var variableExpr = match.Groups[1].Value;
-        var op = match.Groups[2].Value;
-        var rawValue = match.Groups[3].Value.Trim();
+        string variableExpr = match.Groups[1].Value;
+        string op = match.Groups[2].Value;
+        string rawValue = match.Groups[3].Value.Trim();
 
-        var left = ResolveExpressionVariable(variableExpr);
+        object? left = ResolveExpressionVariable(variableExpr);
         if (left is null)
             return false;
 
@@ -144,7 +150,7 @@ public class EvaluateConditionService(ISunDataService sunDataService) : IEvaluat
 
     private object? ResolveExpressionVariable(string variableExpr)
     {
-        var parts = variableExpr.Split(':');
+        string[] parts = variableExpr.Split(':');
         return parts[0].ToLowerInvariant() switch
         {
             "sunrise" => sunDataService.GetLatest().Sunrise,
@@ -169,4 +175,5 @@ public class EvaluateConditionService(ISunDataService sunDataService) : IEvaluat
 
         return false;
     }
+    #endregion
 }

@@ -16,7 +16,9 @@ public class ScheduledJobHandler<TScheduledJob>(IServiceScopeFactory serviceScop
         if (attribute != null)
         {
             _timer = new Timer(ProcessTimer, cancellationToken, TimeSpan.FromSeconds(attribute.DelayInSeconds), TimeSpan.FromSeconds(attribute.IntervalInSeconds));
-            logger.LogInformation("Starting scheduled job for {class} with interval {interval}s and delay {delay}s", typeof(TScheduledJob).Name, attribute.IntervalInSeconds, attribute.DelayInSeconds);
+
+            if (logger.IsEnabled(LogLevel.Information))
+                logger.LogInformation("Starting scheduled job for {class} with interval {interval}s and delay {delay}s", typeof(TScheduledJob).Name, attribute.IntervalInSeconds, attribute.DelayInSeconds);
         }
         else
         {
@@ -54,5 +56,9 @@ public class ScheduledJobHandler<TScheduledJob>(IServiceScopeFactory serviceScop
         return Task.CompletedTask;
     }
 
-    public void Dispose() => _timer?.Dispose();
+    public void Dispose()
+    {
+        _timer?.Dispose();
+        GC.SuppressFinalize(this);
+    }
 }

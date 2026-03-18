@@ -71,7 +71,8 @@ public class FetchEnergyPricingScheduleJob(DefaultContext context, IHttpClientFa
 
         if (rows == null || rows.Length == 0 || !rows.All(x => x.Definitive))
         {
-            logger.LogInformation("Schedule.FetchEnergyPricing :: fetching pricing data for {date} from eon", date);
+            if (logger.IsEnabled(LogLevel.Information))
+                logger.LogInformation("Schedule.FetchEnergyPricing :: fetching pricing data for {date} from eon", date);
 
             var client = httpClientFactory.CreateClient(nameof(FetchEnergyPricingScheduleJob));
             var request = CreateEnergyPricingRequest(date);
@@ -101,7 +102,8 @@ public class FetchEnergyPricingScheduleJob(DefaultContext context, IHttpClientFa
 
         if (existing == null)
         {
-            logger.LogInformation("Schedule.FetchEnergyPricing :: fetched new pricing data for {date} from eon, saving to database", date);
+            if (logger.IsEnabled(LogLevel.Information))
+                logger.LogInformation("Schedule.FetchEnergyPricing :: fetched new pricing data for {date} from eon, saving to database", date);
 
             context.EnergyPricing.Add(new EnergyPricingEntity
             {
@@ -113,7 +115,8 @@ public class FetchEnergyPricingScheduleJob(DefaultContext context, IHttpClientFa
         }
         else
         {
-            logger.LogInformation("Schedule.FetchEnergyPricing :: fetched updated pricing data for {date} from eon, saving to database", date);
+            if (logger.IsEnabled(LogLevel.Information))
+                logger.LogInformation("Schedule.FetchEnergyPricing :: fetched updated pricing data for {date} from eon, saving to database", date);
 
             existing.PricingData = JsonSerializer.Serialize(rows);
             existing.AllDefinitive = allDefinitive;

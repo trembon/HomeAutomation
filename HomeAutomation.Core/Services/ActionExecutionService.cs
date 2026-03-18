@@ -25,19 +25,23 @@ public class ActionExecutionService(IRepository<ActionEntity> actionRepository, 
 
         if (action.Disabled)
         {
-            logger.LogInformation("Action.Execute :: {action} :: Status:Disabled", action.Name);
+            if (logger.IsEnabled(LogLevel.Information))
+                logger.LogInformation("Action.Execute :: {action} :: Status:Disabled", action.Name);
             return;
         }
 
         bool meetConditions = evaluateConditionService.MeetConditions(action);
         if (!meetConditions)
         {
-            logger.LogInformation("Action.Execute :: {action} :: Status:ConditionsNotMet", action.Name);
+            if (logger.IsEnabled(LogLevel.Information))
+                logger.LogInformation("Action.Execute :: {action} :: Status:ConditionsNotMet", action.Name);
             return;
         }
 
         List<DeviceEntity> devices = await deviceRepository.GetForAction(actionId, cancellationToken);
-        logger.LogInformation("Action.Execute :: {action} :: Source:{source}, Devices:{deviceIds}", action.Name, source, string.Join(',', devices.Select(x => x.Id)));
+
+        if (logger.IsEnabled(LogLevel.Information))
+            logger.LogInformation("Action.Execute :: {action} :: Source:{source}, Devices:{deviceIds}", action.Name, source, string.Join(',', devices.Select(x => x.Id)));
 
         try
         {
@@ -55,7 +59,7 @@ public class ActionExecutionService(IRepository<ActionEntity> actionRepository, 
         {
             case ActionKind.SendMessage: return ExecuteSendMessageAction(action, source, devices, cancellationToken);
             case ActionKind.SendSnapshot: return ExecuteSendSnapshotAction(action, source, devices, cancellationToken);
-            case ActionKind.DeviceEvent: return ExecuteDeviceEventAction(action, source, devices, cancellationToken);
+            case ActionKind.DeviceEvent: return ExecuteDeviceEventAction(action, devices);
 
             default:
                 logger.LogError("No action is defined for action kind {kind}", action.Kind);
@@ -102,9 +106,9 @@ public class ActionExecutionService(IRepository<ActionEntity> actionRepository, 
         }
     }
 
-    private async Task ExecuteDeviceEventAction(ActionEntity action, object? source, List<DeviceEntity> devices, CancellationToken cancellationToken)
+    private async Task ExecuteDeviceEventAction(ActionEntity action, List<DeviceEntity> devices)
     {
-        List<Task> sendCommandTasks = new(devices.Count);
+        List<Task> sendCommandTasks = [];
         foreach (var device in devices)
         {
             if (device.Source == DeviceSource.Telldus)
@@ -134,9 +138,9 @@ public class ActionExecutionService(IRepository<ActionEntity> actionRepository, 
             if (device.Source == DeviceSource.Tuya)
             {
                 var tuyaAPIService = serviceProvider.GetRequiredService<ITuyaAPIService>();
-                var dpsData = tuyaAPIService.ConvertStateToDPS(action.DeviceEventToSend ?? DeviceEvent.Unknown, device.Kind, action.DeviceEventProperties);
+                var dpsData = tuyaAPIService.ConvertStateToDPS(action.DeviceEventToSend ?? DeviceEvent.Unknown, device.Kind, action.DeviceEventProperties ?? []);
 
-                if (dpsData.Any())
+                if (dpsData.Count != 0)
                 {
                     var task = tuyaAPIService.SendCommand(device.SourceId, dpsData);
                     sendCommandTasks.Add(task);
@@ -147,7 +151,7 @@ public class ActionExecutionService(IRepository<ActionEntity> actionRepository, 
         await Task.WhenAll(sendCommandTasks);
     }
 
-    private string GetMessageToSend(ActionEntity action, object? source, List<DeviceEntity> devices)
+    private static string GetMessageToSend(ActionEntity action, object? source, List<DeviceEntity> devices)
     {
         if (string.IsNullOrWhiteSpace(action.MessageToSend))
             return string.Empty;

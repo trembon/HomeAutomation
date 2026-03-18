@@ -111,7 +111,7 @@ public class CalculateBatteryChargingScheduleJob(DefaultContext context, IFusion
         }
     }
 
-    private (List<ScheduleItem> schedule, string notification) BuildWinterSchedule(List<FetchedPricingRow> rows)
+    private static (List<ScheduleItem> schedule, string notification) BuildWinterSchedule(List<FetchedPricingRow> rows)
     {
         var night = GetCheapestPeriod(rows,
             TimeSpan.FromHours(NIGHT_CHARGING_START_HOUR),

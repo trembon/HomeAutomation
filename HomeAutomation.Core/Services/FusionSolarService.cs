@@ -50,10 +50,10 @@ public class FusionSolarService(IConfiguration configuration, IHttpClientFactory
         var content = new StringContent(json, Encoding.UTF8, "application/json");
 
         var httpClient = httpClientFactory.CreateClient(nameof(FusionSolarService));
-        HttpResponseMessage response = await httpClient.PostAsync($"{baseUrl}set-config-signals", content);
+        HttpResponseMessage response = await httpClient.PostAsync($"{baseUrl}set-config-signals", content, cancellationToken);
         response.EnsureSuccessStatusCode();
 
-        var result = await response.Content.ReadFromJsonAsync<SetConfigSignalsResponse>();
+        var result = await response.Content.ReadFromJsonAsync<SetConfigSignalsResponse>(cancellationToken);
         return result?.Result ?? false;
     }
 
