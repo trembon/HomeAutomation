@@ -232,6 +232,8 @@ namespace HomeAutomation.Database.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("Category");
+
                     b.ToTable("Logs");
                 });
 

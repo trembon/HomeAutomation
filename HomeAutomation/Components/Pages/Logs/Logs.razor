@@ -10,8 +10,13 @@
 <MudStack Row="true" Class="mb-4" AlignItems="AlignItems.Center" Spacing="3">
     <MudTextField @bind-Value="searchMessage" @bind-Value:after="ReloadTable" Label="Message" Variant="Variant.Outlined"
                   Clearable="true" Immediate="true" DebounceInterval="500" />
-    <MudTextField @bind-Value="searchCategory" @bind-Value:after="ReloadTable" Label="Category" Variant="Variant.Outlined"
-                  Clearable="true" Immediate="true" DebounceInterval="500" />
+    <MudSelect T="string" @bind-Value="searchCategory" @bind-Value:after="ReloadTable"
+               Label="Category" Variant="Variant.Outlined" Clearable="true">
+        @foreach (var category in categories)
+        {
+            <MudSelectItem Value="@((string?)category)">@category</MudSelectItem>
+        }
+    </MudSelect>
     <MudSelect T="LogLevel?" @bind-Value="filterLevel" @bind-Value:after="ReloadTable"
                Label="Level" Variant="Variant.Outlined" Clearable="true">
         @foreach (var level in Enum.GetValues<LogLevel>().Where(l => l != LogLevel.None))
@@ -46,6 +51,16 @@
     private string? searchMessage;
     private string? searchCategory;
     private LogLevel? filterLevel;
+    private string[] categories = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        categories = await dbContext.Logs.AsNoTracking()
+            .Select(x => x.Category)
+            .Distinct()
+            .OrderBy(x => x)
+            .ToArrayAsync();
+    }
 
     private async Task<TableData<LogEntity>> LoadData(TableState state, CancellationToken cancellationToken)
     {
@@ -55,7 +70,7 @@
             query = query.Where(x => x.Message.Contains(searchMessage));
 
         if (!string.IsNullOrWhiteSpace(searchCategory))
-            query = query.Where(x => x.Category.Contains(searchCategory));
+            query = query.Where(x => x.Category == searchCategory);
 
         if (filterLevel.HasValue)
             query = query.Where(x => x.Level == filterLevel.Value);

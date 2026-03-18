@@ -1,4 +1,6 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using Microsoft.Extensions.Logging;
 
 namespace HomeAutomation.Database.Entities;
 
@@ -15,4 +17,12 @@ public class LogEntity : BaseEntity
     public string Message { get; set; } = null!;
 
     public string? Exception { get; set; }
+}
+
+public class LogEntityConfiguration : IEntityTypeConfiguration<LogEntity>
+{
+    public void Configure(EntityTypeBuilder<LogEntity> builder)
+    {
+        builder.HasIndex(x => x.Category);
+    }
 }
