@@ -14,7 +14,7 @@
     <MudTabPanel Text="Devices">
         <MudGrid>
             <MudItem xs="12" md="5">
-                <MudPaper Class="pa-4">
+                <MudPaper Outlined="true" Elevation="0" Class="pa-4">
                     <MudText Typo="Typo.h6" Class="mb-3">Mapped devices</MudText>
                     <MudTable Items="devices" Dense="true" Hover="true" Loading="isLoading">
                         <HeaderContent>
@@ -34,7 +34,7 @@
             </MudItem>
 
             <MudItem xs="12" md="7">
-                <MudPaper Class="pa-4">
+                <MudPaper Outlined="true" Elevation="0" Class="pa-4">
                     <MudText Typo="Typo.h6" Class="mb-3">Device details</MudText>
                     @if (deviceEditor is null)
                     {
@@ -43,19 +43,19 @@
                     else
                     {
                         <MudGrid>
-                            <MudItem xs="12" md="6"><MudTextField @bind-Value="deviceEditor.Name" Label="Name" /></MudItem>
+                            <MudItem xs="12" md="6"><MudTextField Variant="Variant.Outlined" @bind-Value="deviceEditor.Name" Label="Name" /></MudItem>
                             <MudItem xs="12" md="6">
-                                <MudSelect T="DeviceKind" @bind-Value="deviceEditor.Kind" Label="Device Kind">
+                                <MudSelect T="DeviceKind" Variant="Variant.Outlined" @bind-Value="deviceEditor.Kind" Label="Device Kind">
                                     @foreach (var kind in Enum.GetValues<DeviceKind>())
                                     {
                                         <MudSelectItem T="DeviceKind" Value="@kind">@kind</MudSelectItem>
                                     }
                                 </MudSelect>
                             </MudItem>
-                            <MudItem xs="12" md="6"><MudTextField Value="@deviceEditor.Source.ToString()" Label="Source" ReadOnly="true" /></MudItem>
-                            <MudItem xs="12" md="6"><MudTextField Value="@deviceEditor.SourceId" Label="Source ID" ReadOnly="true" /></MudItem>
-                            <MudItem xs="12" md="6"><MudTextField @bind-Value="deviceEditor.Url" Label="URL" /></MudItem>
-                            <MudItem xs="12" md="6"><MudTextField @bind-Value="deviceEditor.ThumbnailUrl" Label="Thumbnail URL" /></MudItem>
+                            <MudItem xs="12" md="6"><MudTextField Variant="Variant.Outlined" Value="@deviceEditor.Source.ToString()" Label="Source" ReadOnly="true" /></MudItem>
+                            <MudItem xs="12" md="6"><MudTextField Variant="Variant.Outlined" Value="@deviceEditor.SourceId" Label="Source ID" ReadOnly="true" /></MudItem>
+                            <MudItem xs="12" md="6"><MudTextField Variant="Variant.Outlined" @bind-Value="deviceEditor.Url" Label="URL" /></MudItem>
+                            <MudItem xs="12" md="6"><MudTextField Variant="Variant.Outlined" @bind-Value="deviceEditor.ThumbnailUrl" Label="Thumbnail URL" /></MudItem>
                             <MudItem xs="12"><MudSwitch T="bool" @bind-Value="deviceEditor.Disabled" Label="Disabled" /></MudItem>
                             <MudItem xs="12"><MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SaveDeviceAsync">Save device</MudButton></MudItem>
                         </MudGrid>
@@ -122,7 +122,7 @@
     <MudTabPanel Text="Triggers">
         <MudGrid>
             <MudItem xs="12" md="5">
-                <MudPaper Class="pa-4">
+                <MudPaper Outlined="true" Elevation="0" Class="pa-4">
                     <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="mb-3">
                         <MudText Typo="Typo.h6">Triggers</MudText>
                         <MudButton Variant="Variant.Outlined" Size="Size.Small" OnClick="NewTrigger">New trigger</MudButton>
@@ -144,7 +144,7 @@
             </MudItem>
 
             <MudItem xs="12" md="7">
-                <MudPaper Class="pa-4">
+                <MudPaper Outlined="true" Elevation="0" Class="pa-4">
                     <MudText Typo="Typo.h6" Class="mb-3">Trigger details</MudText>
                     @if (triggerEditor is null)
                     {
@@ -153,9 +153,9 @@
                     else
                     {
                         <MudGrid>
-                            <MudItem xs="12"><MudTextField @bind-Value="triggerEditor.Name" Label="Name" /></MudItem>
+                            <MudItem xs="12"><MudTextField Variant="Variant.Outlined" @bind-Value="triggerEditor.Name" Label="Name" /></MudItem>
                             <MudItem xs="12" md="6">
-                                <MudSelect T="TriggerKind" @bind-Value="triggerEditor.Kind" Label="Trigger Kind">
+                                <MudSelect T="TriggerKind" Variant="Variant.Outlined" @bind-Value="triggerEditor.Kind" Label="Trigger Kind">
                                     @foreach (var kind in Enum.GetValues<TriggerKind>())
                                     {
                                         <MudSelectItem T="TriggerKind" Value="@kind">@kind</MudSelectItem>
@@ -167,7 +167,7 @@
                             @if (triggerEditor.Kind == TriggerKind.DeviceState)
                             {
                                 <MudItem xs="12" md="6">
-                                    <MudSelect T="int?" @bind-Value="triggerEditor.ListenOnDeviceId" Label="Listen on device">
+                                    <MudSelect T="int?" Variant="Variant.Outlined" @bind-Value="triggerEditor.ListenOnDeviceId" Label="Listen on device">
                                         <MudSelectItem T="int?" Value="@((int?)null)">None</MudSelectItem>
                                         @foreach (var device in devices)
                                         {
@@ -176,7 +176,7 @@
                                     </MudSelect>
                                 </MudItem>
                                 <MudItem xs="12" md="6">
-                                    <MudSelect T="DeviceEvent?" @bind-Value="triggerEditor.ListenOnDeviceEvent" Label="Device event">
+                                    <MudSelect T="DeviceEvent?" Variant="Variant.Outlined" @bind-Value="triggerEditor.ListenOnDeviceEvent" Label="Device event">
                                         <MudSelectItem T="DeviceEvent?" Value="@((DeviceEvent?)null)">None</MudSelectItem>
                                         @foreach (var evt in Enum.GetValues<DeviceEvent>())
                                         {
@@ -189,7 +189,7 @@
                             @if (triggerEditor.Kind == TriggerKind.Scheduled)
                             {
                                 <MudItem xs="12" md="6">
-                                    <MudSelect T="TimeMode?" @bind-Value="triggerEditor.SchedulingMode" Label="Scheduling mode">
+                                    <MudSelect T="TimeMode?" Variant="Variant.Outlined" @bind-Value="triggerEditor.SchedulingMode" Label="Scheduling mode">
                                         <MudSelectItem T="TimeMode?" Value="@((TimeMode?)null)">None</MudSelectItem>
                                         @foreach (var mode in Enum.GetValues<TimeMode>())
                                         {
@@ -198,7 +198,7 @@
                                     </MudSelect>
                                 </MudItem>
                                 <MudItem xs="12" md="6">
-                                    <MudTextField @bind-Value="triggerEditor.ScheduledAtText" Label="Scheduled at (HH:mm)" />
+                                    <MudTextField Variant="Variant.Outlined" @bind-Value="triggerEditor.ScheduledAtText" Label="Scheduled at (HH:mm)" />
                                 </MudItem>
                             }
 
@@ -241,7 +241,7 @@
     <MudTabPanel Text="Actions">
         <MudGrid>
             <MudItem xs="12" md="5">
-                <MudPaper Class="pa-4">
+                <MudPaper Outlined="true" Elevation="0" Class="pa-4">
                     <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="mb-3">
                         <MudText Typo="Typo.h6">Actions</MudText>
                         <MudButton Variant="Variant.Outlined" Size="Size.Small" OnClick="NewAction">New action</MudButton>
@@ -263,7 +263,7 @@
             </MudItem>
 
             <MudItem xs="12" md="7">
-                <MudPaper Class="pa-4">
+                <MudPaper Outlined="true" Elevation="0" Class="pa-4">
                     <MudText Typo="Typo.h6" Class="mb-3">Action details</MudText>
                     @if (actionEditor is null)
                     {
@@ -272,9 +272,9 @@
                     else
                     {
                         <MudGrid>
-                            <MudItem xs="12"><MudTextField @bind-Value="actionEditor.Name" Label="Name" /></MudItem>
+                            <MudItem xs="12"><MudTextField Variant="Variant.Outlined" @bind-Value="actionEditor.Name" Label="Name" /></MudItem>
                             <MudItem xs="12" md="6">
-                                <MudSelect T="ActionKind" @bind-Value="actionEditor.Kind" Label="Action kind">
+                                <MudSelect T="ActionKind" Variant="Variant.Outlined" @bind-Value="actionEditor.Kind" Label="Action kind">
                                     @foreach (var kind in Enum.GetValues<ActionKind>())
                                     {
                                         <MudSelectItem T="ActionKind" Value="@kind">@kind</MudSelectItem>
@@ -286,7 +286,7 @@
                             @if (actionEditor.Kind == ActionKind.DeviceEvent)
                             {
                                 <MudItem xs="12" md="6">
-                                    <MudSelect T="DeviceEvent?" @bind-Value="actionEditor.DeviceEventToSend" Label="Device event to send">
+                                    <MudSelect T="DeviceEvent?" Variant="Variant.Outlined" @bind-Value="actionEditor.DeviceEventToSend" Label="Device event to send">
                                         <MudSelectItem T="DeviceEvent?" Value="@((DeviceEvent?)null)">None</MudSelectItem>
                                         @foreach (var evt in Enum.GetValues<DeviceEvent>())
                                         {
@@ -295,14 +295,14 @@
                                     </MudSelect>
                                 </MudItem>
                                 <MudItem xs="12" md="6">
-                                    <MudTextField @bind-Value="actionEditor.DeviceEventPropertiesJson" Label="Device event properties (JSON)" Lines="4" />
+                                    <MudTextField Variant="Variant.Outlined" @bind-Value="actionEditor.DeviceEventPropertiesJson" Label="Device event properties (JSON)" Lines="4" />
                                 </MudItem>
                             }
 
                             @if (actionEditor.Kind == ActionKind.SendMessage || actionEditor.Kind == ActionKind.SendSnapshot)
                             {
-                                <MudItem xs="12" md="6"><MudTextField @bind-Value="actionEditor.MessageChannel" Label="Message channel" /></MudItem>
-                                <MudItem xs="12" md="6"><MudTextField @bind-Value="actionEditor.MessageToSend" Label="Message" Lines="3" /></MudItem>
+                                <MudItem xs="12" md="6"><MudTextField Variant="Variant.Outlined" @bind-Value="actionEditor.MessageChannel" Label="Message channel" /></MudItem>
+                                <MudItem xs="12" md="6"><MudTextField Variant="Variant.Outlined" @bind-Value="actionEditor.MessageToSend" Label="Message" Lines="3" /></MudItem>
                             }
 
                             <MudItem xs="12" md="4">
@@ -354,7 +354,7 @@
     <MudTabPanel Text="Conditions">
         <MudGrid>
             <MudItem xs="12" md="5">
-                <MudPaper Class="pa-4">
+                <MudPaper Outlined="true" Elevation="0" Class="pa-4">
                     <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="mb-3">
                         <MudText Typo="Typo.h6">Conditions</MudText>
                         <MudButton Variant="Variant.Outlined" Size="Size.Small" OnClick="NewCondition">New condition</MudButton>
@@ -376,7 +376,7 @@
             </MudItem>
 
             <MudItem xs="12" md="7">
-                <MudPaper Class="pa-4">
+                <MudPaper Outlined="true" Elevation="0" Class="pa-4">
                     <MudText Typo="Typo.h6" Class="mb-3">Condition details</MudText>
                     @if (conditionEditor is null)
                     {
@@ -385,9 +385,9 @@
                     else
                     {
                         <MudGrid>
-                            <MudItem xs="12"><MudTextField @bind-Value="conditionEditor.Name" Label="Name" /></MudItem>
+                            <MudItem xs="12"><MudTextField Variant="Variant.Outlined" @bind-Value="conditionEditor.Name" Label="Name" /></MudItem>
                             <MudItem xs="12" md="6">
-                                <MudSelect T="ConditionKind" @bind-Value="conditionEditor.Kind" Label="Condition kind">
+                                <MudSelect T="ConditionKind" Variant="Variant.Outlined" @bind-Value="conditionEditor.Kind" Label="Condition kind">
                                     @foreach (var kind in Enum.GetValues<ConditionKind>())
                                     {
                                         <MudSelectItem T="ConditionKind" Value="@kind">@kind</MudSelectItem>
@@ -398,7 +398,7 @@
                             @if (conditionEditor.Kind == ConditionKind.Time)
                             {
                                 <MudItem xs="12" md="4">
-                                    <MudSelect T="TimeMode?" @bind-Value="conditionEditor.TimeMode" Label="Time mode">
+                                    <MudSelect T="TimeMode?" Variant="Variant.Outlined" @bind-Value="conditionEditor.TimeMode" Label="Time mode">
                                         <MudSelectItem T="TimeMode?" Value="@((TimeMode?)null)">None</MudSelectItem>
                                         @foreach (var mode in Enum.GetValues<TimeMode>())
                                         {
@@ -406,9 +406,9 @@
                                         }
                                     </MudSelect>
                                 </MudItem>
-                                <MudItem xs="12" md="4"><MudTextField @bind-Value="conditionEditor.TimeSpecifiedText" Label="Time (HH:mm)" /></MudItem>
+                                <MudItem xs="12" md="4"><MudTextField Variant="Variant.Outlined" @bind-Value="conditionEditor.TimeSpecifiedText" Label="Time (HH:mm)" /></MudItem>
                                 <MudItem xs="12" md="4">
-                                    <MudSelect T="CompareKind" @bind-Value="conditionEditor.TimeCompareKind" Label="Compare">
+                                    <MudSelect T="CompareKind" Variant="Variant.Outlined" @bind-Value="conditionEditor.TimeCompareKind" Label="Compare">
                                         @foreach (var compare in Enum.GetValues<CompareKind>())
                                         {
                                             <MudSelectItem T="CompareKind" Value="@compare">@compare</MudSelectItem>
@@ -419,7 +419,7 @@
 
                             @if (conditionEditor.Kind == ConditionKind.Expression)
                             {
-                                <MudItem xs="12"><MudTextField @bind-Value="conditionEditor.Expression" Label="Expression" Lines="5" /></MudItem>
+                                <MudItem xs="12"><MudTextField Variant="Variant.Outlined" @bind-Value="conditionEditor.Expression" Label="Expression" Lines="5" /></MudItem>
                             }
 
                             <MudItem xs="12" md="6">
