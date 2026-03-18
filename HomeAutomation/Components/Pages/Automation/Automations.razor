@@ -1,0 +1,1011 @@
+@page "/automation"
+@using System.Text.Json
+@using HomeAutomation.Database
+@using HomeAutomation.Database.Entities
+@using Microsoft.EntityFrameworkCore
+@inject DefaultContext db
+@inject IRepository<DeviceEntity> deviceRepository
+@inject IJSRuntime jsRuntime
+@inject ISnackbar snackbar
+
+<MudText Typo="Typo.h4" Class="mb-4">Automation Manager</MudText>
+
+<MudTabs Rounded="true" ApplyEffectsToContainer="true">
+    <MudTabPanel Text="Devices">
+        <MudGrid>
+            <MudItem xs="12" md="5">
+                <MudPaper Class="pa-4">
+                    <MudText Typo="Typo.h6" Class="mb-3">Mapped devices</MudText>
+                    <MudTable Items="devices" Dense="true" Hover="true" Loading="isLoading">
+                        <HeaderContent>
+                            <MudTh>ID</MudTh>
+                            <MudTh>Name</MudTh>
+                            <MudTh>Kind</MudTh>
+                            <MudTh></MudTh>
+                        </HeaderContent>
+                        <RowTemplate>
+                            <MudTd DataLabel="ID">@context.Id</MudTd>
+                            <MudTd DataLabel="Name">@context.Name</MudTd>
+                            <MudTd DataLabel="Kind">@context.Kind</MudTd>
+                            <MudTd><MudButton Variant="Variant.Text" Size="Size.Small" OnClick="() => EditDevice(context.Id)">Edit</MudButton></MudTd>
+                        </RowTemplate>
+                    </MudTable>
+                </MudPaper>
+            </MudItem>
+
+            <MudItem xs="12" md="7">
+                <MudPaper Class="pa-4">
+                    <MudText Typo="Typo.h6" Class="mb-3">Device details</MudText>
+                    @if (deviceEditor is null)
+                    {
+                        <MudAlert Severity="Severity.Info">Select a device to edit and inspect connected automations.</MudAlert>
+                    }
+                    else
+                    {
+                        <MudGrid>
+                            <MudItem xs="12" md="6"><MudTextField @bind-Value="deviceEditor.Name" Label="Name" /></MudItem>
+                            <MudItem xs="12" md="6">
+                                <MudSelect T="DeviceKind" @bind-Value="deviceEditor.Kind" Label="Device Kind">
+                                    @foreach (var kind in Enum.GetValues<DeviceKind>())
+                                    {
+                                        <MudSelectItem T="DeviceKind" Value="@kind">@kind</MudSelectItem>
+                                    }
+                                </MudSelect>
+                            </MudItem>
+                            <MudItem xs="12" md="6"><MudTextField Value="@deviceEditor.Source.ToString()" Label="Source" ReadOnly="true" /></MudItem>
+                            <MudItem xs="12" md="6"><MudTextField Value="@deviceEditor.SourceId" Label="Source ID" ReadOnly="true" /></MudItem>
+                            <MudItem xs="12" md="6"><MudTextField @bind-Value="deviceEditor.Url" Label="URL" /></MudItem>
+                            <MudItem xs="12" md="6"><MudTextField @bind-Value="deviceEditor.ThumbnailUrl" Label="Thumbnail URL" /></MudItem>
+                            <MudItem xs="12"><MudSwitch T="bool" @bind-Value="deviceEditor.Disabled" Label="Disabled" /></MudItem>
+                            <MudItem xs="12"><MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SaveDeviceAsync">Save device</MudButton></MudItem>
+                        </MudGrid>
+
+                        <MudDivider Class="my-4" />
+
+                        <MudText Typo="Typo.subtitle1" Class="mb-2">Automation overview for this device</MudText>
+
+                        <MudExpansionPanels MultiExpansion="true">
+                            <MudExpansionPanel Text="Triggers listening on this device">
+                                @if (!ListeningTriggers.Any())
+                                {
+                                    <MudText Typo="Typo.body2">No triggers use this device as source.</MudText>
+                                }
+                                else
+                                {
+                                    <MudList T="string" Dense="true">
+                                        @foreach (var trigger in ListeningTriggers)
+                                        {
+                                            <MudListItem T="string">@trigger.Name (@trigger.Kind)</MudListItem>
+                                        }
+                                    </MudList>
+                                }
+                            </MudExpansionPanel>
+
+                            <MudExpansionPanel Text="Actions targeting this device">
+                                @if (!TargetingActions.Any())
+                                {
+                                    <MudText Typo="Typo.body2">No actions target this device.</MudText>
+                                }
+                                else
+                                {
+                                    <MudList T="string" Dense="true">
+                                        @foreach (var action in TargetingActions)
+                                        {
+                                            <MudListItem T="string">@action.Name (@action.Kind)</MudListItem>
+                                        }
+                                    </MudList>
+                                }
+                            </MudExpansionPanel>
+
+                            <MudExpansionPanel Text="Triggers that eventually affect this device">
+                                @if (!AffectingTriggers.Any())
+                                {
+                                    <MudText Typo="Typo.body2">No trigger chain currently affects this device.</MudText>
+                                }
+                                else
+                                {
+                                    <MudList T="string" Dense="true">
+                                        @foreach (var trigger in AffectingTriggers)
+                                        {
+                                            <MudListItem T="string">@trigger.Name (@trigger.Kind)</MudListItem>
+                                        }
+                                    </MudList>
+                                }
+                            </MudExpansionPanel>
+                        </MudExpansionPanels>
+                    }
+                </MudPaper>
+            </MudItem>
+        </MudGrid>
+    </MudTabPanel>
+
+    <MudTabPanel Text="Triggers">
+        <MudGrid>
+            <MudItem xs="12" md="5">
+                <MudPaper Class="pa-4">
+                    <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="mb-3">
+                        <MudText Typo="Typo.h6">Triggers</MudText>
+                        <MudButton Variant="Variant.Outlined" Size="Size.Small" OnClick="NewTrigger">New trigger</MudButton>
+                    </MudStack>
+
+                    <MudTable Items="triggers" Dense="true" Hover="true" Loading="isLoading">
+                        <HeaderContent>
+                            <MudTh>Name</MudTh>
+                            <MudTh>Kind</MudTh>
+                            <MudTh></MudTh>
+                        </HeaderContent>
+                        <RowTemplate>
+                            <MudTd>@context.Name</MudTd>
+                            <MudTd>@context.Kind</MudTd>
+                            <MudTd><MudButton Variant="Variant.Text" Size="Size.Small" OnClick="() => EditTrigger(context.Id)">Edit</MudButton></MudTd>
+                        </RowTemplate>
+                    </MudTable>
+                </MudPaper>
+            </MudItem>
+
+            <MudItem xs="12" md="7">
+                <MudPaper Class="pa-4">
+                    <MudText Typo="Typo.h6" Class="mb-3">Trigger details</MudText>
+                    @if (triggerEditor is null)
+                    {
+                        <MudAlert Severity="Severity.Info">Select a trigger to edit or create a new trigger.</MudAlert>
+                    }
+                    else
+                    {
+                        <MudGrid>
+                            <MudItem xs="12"><MudTextField @bind-Value="triggerEditor.Name" Label="Name" /></MudItem>
+                            <MudItem xs="12" md="6">
+                                <MudSelect T="TriggerKind" @bind-Value="triggerEditor.Kind" Label="Trigger Kind">
+                                    @foreach (var kind in Enum.GetValues<TriggerKind>())
+                                    {
+                                        <MudSelectItem T="TriggerKind" Value="@kind">@kind</MudSelectItem>
+                                    }
+                                </MudSelect>
+                            </MudItem>
+                            <MudItem xs="12" md="6"><MudSwitch T="bool" @bind-Value="triggerEditor.Disabled" Label="Disabled" /></MudItem>
+
+                            @if (triggerEditor.Kind == TriggerKind.DeviceState)
+                            {
+                                <MudItem xs="12" md="6">
+                                    <MudSelect T="int?" @bind-Value="triggerEditor.ListenOnDeviceId" Label="Listen on device">
+                                        <MudSelectItem T="int?" Value="@((int?)null)">None</MudSelectItem>
+                                        @foreach (var device in devices)
+                                        {
+                                            <MudSelectItem T="int?" Value="@device.Id">@device.Name (@device.Source/@device.SourceId)</MudSelectItem>
+                                        }
+                                    </MudSelect>
+                                </MudItem>
+                                <MudItem xs="12" md="6">
+                                    <MudSelect T="DeviceEvent?" @bind-Value="triggerEditor.ListenOnDeviceEvent" Label="Device event">
+                                        <MudSelectItem T="DeviceEvent?" Value="@((DeviceEvent?)null)">None</MudSelectItem>
+                                        @foreach (var evt in Enum.GetValues<DeviceEvent>())
+                                        {
+                                            <MudSelectItem T="DeviceEvent?" Value="@evt">@evt</MudSelectItem>
+                                        }
+                                    </MudSelect>
+                                </MudItem>
+                            }
+
+                            @if (triggerEditor.Kind == TriggerKind.Scheduled)
+                            {
+                                <MudItem xs="12" md="6">
+                                    <MudSelect T="TimeMode?" @bind-Value="triggerEditor.SchedulingMode" Label="Scheduling mode">
+                                        <MudSelectItem T="TimeMode?" Value="@((TimeMode?)null)">None</MudSelectItem>
+                                        @foreach (var mode in Enum.GetValues<TimeMode>())
+                                        {
+                                            <MudSelectItem T="TimeMode?" Value="@mode">@mode</MudSelectItem>
+                                        }
+                                    </MudSelect>
+                                </MudItem>
+                                <MudItem xs="12" md="6">
+                                    <MudTextField @bind-Value="triggerEditor.ScheduledAtText" Label="Scheduled at (HH:mm)" />
+                                </MudItem>
+                            }
+
+                            <MudItem xs="12" md="6">
+                                <MudText Typo="Typo.subtitle2" Class="mb-1">Actions</MudText>
+                                <MudPaper Outlined="true" Class="pa-2" Style="max-height:260px; overflow:auto;">
+                                    @foreach (var action in actions)
+                                    {
+                                        <MudCheckBox T="bool" Value="@triggerEditor.ActionIds.Contains(action.Id)" Label="@action.Name" ValueChanged="@((bool value) => ToggleSetValue(triggerEditor.ActionIds, action.Id, value))" />
+                                    }
+                                </MudPaper>
+                            </MudItem>
+
+                            <MudItem xs="12" md="6">
+                                <MudText Typo="Typo.subtitle2" Class="mb-1">Conditions</MudText>
+                                <MudPaper Outlined="true" Class="pa-2" Style="max-height:260px; overflow:auto;">
+                                    @foreach (var condition in conditions)
+                                    {
+                                        <MudCheckBox T="bool" Value="@triggerEditor.ConditionIds.Contains(condition.Id)" Label="@condition.Name" ValueChanged="@((bool value) => ToggleSetValue(triggerEditor.ConditionIds, condition.Id, value))" />
+                                    }
+                                </MudPaper>
+                            </MudItem>
+
+                            <MudItem xs="12">
+                                <MudStack Row="true" Spacing="2">
+                                    <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SaveTriggerAsync">Save trigger</MudButton>
+                                    @if (triggerEditor.Id > 0)
+                                    {
+                                        <MudButton Variant="Variant.Outlined" Color="Color.Error" OnClick="DeleteTriggerAsync">Delete</MudButton>
+                                    }
+                                </MudStack>
+                            </MudItem>
+                        </MudGrid>
+                    }
+                </MudPaper>
+            </MudItem>
+        </MudGrid>
+    </MudTabPanel>
+
+    <MudTabPanel Text="Actions">
+        <MudGrid>
+            <MudItem xs="12" md="5">
+                <MudPaper Class="pa-4">
+                    <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="mb-3">
+                        <MudText Typo="Typo.h6">Actions</MudText>
+                        <MudButton Variant="Variant.Outlined" Size="Size.Small" OnClick="NewAction">New action</MudButton>
+                    </MudStack>
+
+                    <MudTable Items="actions" Dense="true" Hover="true" Loading="isLoading">
+                        <HeaderContent>
+                            <MudTh>Name</MudTh>
+                            <MudTh>Kind</MudTh>
+                            <MudTh></MudTh>
+                        </HeaderContent>
+                        <RowTemplate>
+                            <MudTd>@context.Name</MudTd>
+                            <MudTd>@context.Kind</MudTd>
+                            <MudTd><MudButton Variant="Variant.Text" Size="Size.Small" OnClick="() => EditAction(context.Id)">Edit</MudButton></MudTd>
+                        </RowTemplate>
+                    </MudTable>
+                </MudPaper>
+            </MudItem>
+
+            <MudItem xs="12" md="7">
+                <MudPaper Class="pa-4">
+                    <MudText Typo="Typo.h6" Class="mb-3">Action details</MudText>
+                    @if (actionEditor is null)
+                    {
+                        <MudAlert Severity="Severity.Info">Select an action to edit or create a new action.</MudAlert>
+                    }
+                    else
+                    {
+                        <MudGrid>
+                            <MudItem xs="12"><MudTextField @bind-Value="actionEditor.Name" Label="Name" /></MudItem>
+                            <MudItem xs="12" md="6">
+                                <MudSelect T="ActionKind" @bind-Value="actionEditor.Kind" Label="Action kind">
+                                    @foreach (var kind in Enum.GetValues<ActionKind>())
+                                    {
+                                        <MudSelectItem T="ActionKind" Value="@kind">@kind</MudSelectItem>
+                                    }
+                                </MudSelect>
+                            </MudItem>
+                            <MudItem xs="12" md="6"><MudSwitch T="bool" @bind-Value="actionEditor.Disabled" Label="Disabled" /></MudItem>
+
+                            @if (actionEditor.Kind == ActionKind.DeviceEvent)
+                            {
+                                <MudItem xs="12" md="6">
+                                    <MudSelect T="DeviceEvent?" @bind-Value="actionEditor.DeviceEventToSend" Label="Device event to send">
+                                        <MudSelectItem T="DeviceEvent?" Value="@((DeviceEvent?)null)">None</MudSelectItem>
+                                        @foreach (var evt in Enum.GetValues<DeviceEvent>())
+                                        {
+                                            <MudSelectItem T="DeviceEvent?" Value="@evt">@evt</MudSelectItem>
+                                        }
+                                    </MudSelect>
+                                </MudItem>
+                                <MudItem xs="12" md="6">
+                                    <MudTextField @bind-Value="actionEditor.DeviceEventPropertiesJson" Label="Device event properties (JSON)" Lines="4" />
+                                </MudItem>
+                            }
+
+                            @if (actionEditor.Kind == ActionKind.SendMessage || actionEditor.Kind == ActionKind.SendSnapshot)
+                            {
+                                <MudItem xs="12" md="6"><MudTextField @bind-Value="actionEditor.MessageChannel" Label="Message channel" /></MudItem>
+                                <MudItem xs="12" md="6"><MudTextField @bind-Value="actionEditor.MessageToSend" Label="Message" Lines="3" /></MudItem>
+                            }
+
+                            <MudItem xs="12" md="4">
+                                <MudText Typo="Typo.subtitle2" Class="mb-1">Target devices</MudText>
+                                <MudPaper Outlined="true" Class="pa-2" Style="max-height:260px; overflow:auto;">
+                                    @foreach (var device in devices)
+                                    {
+                                        <MudCheckBox T="bool" Value="@actionEditor.DeviceIds.Contains(device.Id)" Label="@device.Name" ValueChanged="@((bool value) => ToggleSetValue(actionEditor.DeviceIds, device.Id, value))" />
+                                    }
+                                </MudPaper>
+                            </MudItem>
+
+                            <MudItem xs="12" md="4">
+                                <MudText Typo="Typo.subtitle2" Class="mb-1">Linked triggers</MudText>
+                                <MudPaper Outlined="true" Class="pa-2" Style="max-height:260px; overflow:auto;">
+                                    @foreach (var trigger in triggers)
+                                    {
+                                        <MudCheckBox T="bool" Value="@actionEditor.TriggerIds.Contains(trigger.Id)" Label="@trigger.Name" ValueChanged="@((bool value) => ToggleSetValue(actionEditor.TriggerIds, trigger.Id, value))" />
+                                    }
+                                </MudPaper>
+                            </MudItem>
+
+                            <MudItem xs="12" md="4">
+                                <MudText Typo="Typo.subtitle2" Class="mb-1">Conditions</MudText>
+                                <MudPaper Outlined="true" Class="pa-2" Style="max-height:260px; overflow:auto;">
+                                    @foreach (var condition in conditions)
+                                    {
+                                        <MudCheckBox T="bool" Value="@actionEditor.ConditionIds.Contains(condition.Id)" Label="@condition.Name" ValueChanged="@((bool value) => ToggleSetValue(actionEditor.ConditionIds, condition.Id, value))" />
+                                    }
+                                </MudPaper>
+                            </MudItem>
+
+                            <MudItem xs="12">
+                                <MudStack Row="true" Spacing="2">
+                                    <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SaveActionAsync">Save action</MudButton>
+                                    @if (actionEditor.Id > 0)
+                                    {
+                                        <MudButton Variant="Variant.Outlined" Color="Color.Error" OnClick="DeleteActionAsync">Delete</MudButton>
+                                    }
+                                </MudStack>
+                            </MudItem>
+                        </MudGrid>
+                    }
+                </MudPaper>
+            </MudItem>
+        </MudGrid>
+    </MudTabPanel>
+
+    <MudTabPanel Text="Conditions">
+        <MudGrid>
+            <MudItem xs="12" md="5">
+                <MudPaper Class="pa-4">
+                    <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="mb-3">
+                        <MudText Typo="Typo.h6">Conditions</MudText>
+                        <MudButton Variant="Variant.Outlined" Size="Size.Small" OnClick="NewCondition">New condition</MudButton>
+                    </MudStack>
+
+                    <MudTable Items="conditions" Dense="true" Hover="true" Loading="isLoading">
+                        <HeaderContent>
+                            <MudTh>Name</MudTh>
+                            <MudTh>Kind</MudTh>
+                            <MudTh></MudTh>
+                        </HeaderContent>
+                        <RowTemplate>
+                            <MudTd>@context.Name</MudTd>
+                            <MudTd>@context.Kind</MudTd>
+                            <MudTd><MudButton Variant="Variant.Text" Size="Size.Small" OnClick="() => EditCondition(context.Id)">Edit</MudButton></MudTd>
+                        </RowTemplate>
+                    </MudTable>
+                </MudPaper>
+            </MudItem>
+
+            <MudItem xs="12" md="7">
+                <MudPaper Class="pa-4">
+                    <MudText Typo="Typo.h6" Class="mb-3">Condition details</MudText>
+                    @if (conditionEditor is null)
+                    {
+                        <MudAlert Severity="Severity.Info">Select a condition to edit or create a new condition.</MudAlert>
+                    }
+                    else
+                    {
+                        <MudGrid>
+                            <MudItem xs="12"><MudTextField @bind-Value="conditionEditor.Name" Label="Name" /></MudItem>
+                            <MudItem xs="12" md="6">
+                                <MudSelect T="ConditionKind" @bind-Value="conditionEditor.Kind" Label="Condition kind">
+                                    @foreach (var kind in Enum.GetValues<ConditionKind>())
+                                    {
+                                        <MudSelectItem T="ConditionKind" Value="@kind">@kind</MudSelectItem>
+                                    }
+                                </MudSelect>
+                            </MudItem>
+
+                            @if (conditionEditor.Kind == ConditionKind.Time)
+                            {
+                                <MudItem xs="12" md="4">
+                                    <MudSelect T="TimeMode?" @bind-Value="conditionEditor.TimeMode" Label="Time mode">
+                                        <MudSelectItem T="TimeMode?" Value="@((TimeMode?)null)">None</MudSelectItem>
+                                        @foreach (var mode in Enum.GetValues<TimeMode>())
+                                        {
+                                            <MudSelectItem T="TimeMode?" Value="@mode">@mode</MudSelectItem>
+                                        }
+                                    </MudSelect>
+                                </MudItem>
+                                <MudItem xs="12" md="4"><MudTextField @bind-Value="conditionEditor.TimeSpecifiedText" Label="Time (HH:mm)" /></MudItem>
+                                <MudItem xs="12" md="4">
+                                    <MudSelect T="CompareKind" @bind-Value="conditionEditor.TimeCompareKind" Label="Compare">
+                                        @foreach (var compare in Enum.GetValues<CompareKind>())
+                                        {
+                                            <MudSelectItem T="CompareKind" Value="@compare">@compare</MudSelectItem>
+                                        }
+                                    </MudSelect>
+                                </MudItem>
+                            }
+
+                            @if (conditionEditor.Kind == ConditionKind.Expression)
+                            {
+                                <MudItem xs="12"><MudTextField @bind-Value="conditionEditor.Expression" Label="Expression" Lines="5" /></MudItem>
+                            }
+
+                            <MudItem xs="12" md="6">
+                                <MudText Typo="Typo.subtitle2" Class="mb-1">Linked triggers</MudText>
+                                <MudPaper Outlined="true" Class="pa-2" Style="max-height:260px; overflow:auto;">
+                                    @foreach (var trigger in triggers)
+                                    {
+                                        <MudCheckBox T="bool" Value="@conditionEditor.TriggerIds.Contains(trigger.Id)" Label="@trigger.Name" ValueChanged="@((bool value) => ToggleSetValue(conditionEditor.TriggerIds, trigger.Id, value))" />
+                                    }
+                                </MudPaper>
+                            </MudItem>
+
+                            <MudItem xs="12" md="6">
+                                <MudText Typo="Typo.subtitle2" Class="mb-1">Linked actions</MudText>
+                                <MudPaper Outlined="true" Class="pa-2" Style="max-height:260px; overflow:auto;">
+                                    @foreach (var action in actions)
+                                    {
+                                        <MudCheckBox T="bool" Value="@conditionEditor.ActionIds.Contains(action.Id)" Label="@action.Name" ValueChanged="@((bool value) => ToggleSetValue(conditionEditor.ActionIds, action.Id, value))" />
+                                    }
+                                </MudPaper>
+                            </MudItem>
+
+                            <MudItem xs="12">
+                                <MudStack Row="true" Spacing="2">
+                                    <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SaveConditionAsync">Save condition</MudButton>
+                                    @if (conditionEditor.Id > 0)
+                                    {
+                                        <MudButton Variant="Variant.Outlined" Color="Color.Error" OnClick="DeleteConditionAsync">Delete</MudButton>
+                                    }
+                                </MudStack>
+                            </MudItem>
+                        </MudGrid>
+                    }
+                </MudPaper>
+            </MudItem>
+        </MudGrid>
+    </MudTabPanel>
+</MudTabs>
+
+@code {
+    private bool isLoading = true;
+
+    private List<DeviceEntity> devices = [];
+    private List<TriggerEntity> triggers = [];
+    private List<ActionEntity> actions = [];
+    private List<ConditionEntity> conditions = [];
+
+    private DeviceEditorModel? deviceEditor;
+    private TriggerEditorModel? triggerEditor;
+    private ActionEditorModel? actionEditor;
+    private ConditionEditorModel? conditionEditor;
+
+    private IEnumerable<TriggerEntity> ListeningTriggers => deviceEditor is null
+        ? []
+        : triggers.Where(x => x.ListenOnDeviceId == deviceEditor.Id);
+
+    private IEnumerable<ActionEntity> TargetingActions => deviceEditor is null
+        ? []
+        : actions.Where(x => x.Devices.Any(y => y.DeviceId == deviceEditor.Id));
+
+    private IEnumerable<TriggerEntity> AffectingTriggers
+    {
+        get
+        {
+            if (deviceEditor is null)
+                return [];
+
+            var actionIds = TargetingActions.Select(x => x.Id).ToHashSet();
+
+            return triggers
+                .Where(x => x.Actions.Any(y => actionIds.Contains(y.ActionId)))
+                .DistinctBy(x => x.Id);
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadDataAsync();
+    }
+
+    private async Task LoadDataAsync()
+    {
+        isLoading = true;
+
+        devices = await deviceRepository
+            .Table
+            .AsNoTracking()
+            .OrderBy(x => x.Name)
+            .ToListAsync();
+
+        triggers = await db
+            .Triggers
+            .AsNoTracking()
+            .Include(x => x.ListenOnDevice)
+            .Include(x => x.Actions)
+                .ThenInclude(x => x.Action)
+            .Include(x => x.Conditions)
+            .OrderBy(x => x.Name)
+            .ToListAsync();
+
+        actions = await db
+            .Actions
+            .AsNoTracking()
+            .Include(x => x.Devices)
+                .ThenInclude(x => x.Device)
+            .Include(x => x.Triggers)
+                .ThenInclude(x => x.Trigger)
+            .Include(x => x.Conditions)
+            .OrderBy(x => x.Name)
+            .ToListAsync();
+
+        conditions = await db
+            .Conditions
+            .AsNoTracking()
+            .Include(x => x.Actions)
+            .Include(x => x.Triggers)
+            .OrderBy(x => x.Name)
+            .ToListAsync();
+
+        isLoading = false;
+    }
+
+    private void EditDevice(int id)
+    {
+        var device = devices.Single(x => x.Id == id);
+        deviceEditor = new DeviceEditorModel
+        {
+            Id = device.Id,
+            Name = device.Name,
+            Kind = device.Kind,
+            Source = device.Source,
+            SourceId = device.SourceId,
+            Url = device.Url,
+            ThumbnailUrl = device.ThumbnailUrl,
+            Disabled = device.Disabled
+        };
+    }
+
+    private async Task SaveDeviceAsync()
+    {
+        if (deviceEditor is null)
+            return;
+
+        var entity = await db.Devices.SingleOrDefaultAsync(x => x.Id == deviceEditor.Id);
+        if (entity is null)
+        {
+            snackbar.Add("Device no longer exists.", Severity.Error);
+            return;
+        }
+
+        entity.Name = deviceEditor.Name.Trim();
+        entity.Kind = deviceEditor.Kind;
+        entity.Url = NormalizeNullable(deviceEditor.Url);
+        entity.ThumbnailUrl = NormalizeNullable(deviceEditor.ThumbnailUrl);
+        entity.Disabled = deviceEditor.Disabled;
+
+        await db.SaveChangesAsync();
+        await LoadDataAsync();
+        EditDevice(entity.Id);
+        snackbar.Add("Device saved.", Severity.Success);
+    }
+
+    private void NewTrigger()
+    {
+        triggerEditor = new TriggerEditorModel
+        {
+            Kind = TriggerKind.DeviceState,
+            Name = "New trigger"
+        };
+    }
+
+    private void EditTrigger(int id)
+    {
+        var trigger = triggers.Single(x => x.Id == id);
+        triggerEditor = new TriggerEditorModel
+        {
+            Id = trigger.Id,
+            Name = trigger.Name,
+            Kind = trigger.Kind,
+            Disabled = trigger.Disabled,
+            ListenOnDeviceEvent = trigger.ListenOnDeviceEvent,
+            ListenOnDeviceId = trigger.ListenOnDeviceId,
+            SchedulingMode = trigger.SchedulingMode,
+            ScheduledAtText = trigger.ScheduledAt?.ToString("HH:mm"),
+            ActionIds = trigger.Actions.Select(x => x.ActionId).ToHashSet(),
+            ConditionIds = trigger.Conditions.Select(x => x.Id).ToHashSet()
+        };
+    }
+
+    private async Task SaveTriggerAsync()
+    {
+        if (triggerEditor is null)
+            return;
+
+        TriggerEntity entity;
+        if (triggerEditor.Id == 0)
+        {
+            entity = new TriggerEntity();
+            db.Triggers.Add(entity);
+        }
+        else
+        {
+            entity = await db.Triggers
+                .Include(x => x.Actions)
+                .Include(x => x.Conditions)
+                .SingleAsync(x => x.Id == triggerEditor.Id);
+        }
+
+        if (!TryParseTime(triggerEditor.ScheduledAtText, out var scheduledAt))
+            return;
+
+        entity.Name = triggerEditor.Name.Trim();
+        entity.Kind = triggerEditor.Kind;
+        entity.Disabled = triggerEditor.Disabled;
+        entity.ListenOnDeviceId = triggerEditor.Kind == TriggerKind.DeviceState ? triggerEditor.ListenOnDeviceId : null;
+        entity.ListenOnDeviceEvent = triggerEditor.Kind == TriggerKind.DeviceState ? triggerEditor.ListenOnDeviceEvent : null;
+        entity.SchedulingMode = triggerEditor.Kind == TriggerKind.Scheduled ? triggerEditor.SchedulingMode : null;
+        entity.ScheduledAt = triggerEditor.Kind == TriggerKind.Scheduled ? scheduledAt : null;
+
+        entity.Actions.Clear();
+        foreach (var actionId in triggerEditor.ActionIds.Order())
+            entity.Actions.Add(new TriggerActionEntity { ActionId = actionId });
+
+        entity.Conditions = await db.Conditions
+            .Where(x => triggerEditor.ConditionIds.Contains(x.Id))
+            .ToListAsync();
+
+        await db.SaveChangesAsync();
+        await LoadDataAsync();
+        EditTrigger(entity.Id);
+        snackbar.Add("Trigger saved.", Severity.Success);
+    }
+
+    private async Task DeleteTriggerAsync()
+    {
+        if (triggerEditor is null || triggerEditor.Id == 0)
+            return;
+
+        var confirmed = await ConfirmDeleteAsync($"Delete trigger '{triggerEditor.Name}'?");
+        if (!confirmed)
+            return;
+
+        var entity = await db.Triggers.SingleOrDefaultAsync(x => x.Id == triggerEditor.Id);
+        if (entity is null)
+            return;
+
+        db.Triggers.Remove(entity);
+        await db.SaveChangesAsync();
+        triggerEditor = null;
+        await LoadDataAsync();
+        snackbar.Add("Trigger deleted.", Severity.Success);
+    }
+
+    private void NewAction()
+    {
+        actionEditor = new ActionEditorModel
+        {
+            Kind = ActionKind.DeviceEvent,
+            Name = "New action"
+        };
+    }
+
+    private void EditAction(int id)
+    {
+        var action = actions.Single(x => x.Id == id);
+        actionEditor = new ActionEditorModel
+        {
+            Id = action.Id,
+            Name = action.Name,
+            Kind = action.Kind,
+            Disabled = action.Disabled,
+            DeviceEventToSend = action.DeviceEventToSend,
+            DeviceEventPropertiesJson = action.DeviceEventProperties is null
+                ? string.Empty
+                : JsonSerializer.Serialize(action.DeviceEventProperties, new JsonSerializerOptions { WriteIndented = true }),
+            MessageChannel = action.MessageChannel,
+            MessageToSend = action.MessageToSend,
+            DeviceIds = action.Devices.Select(x => x.DeviceId).ToHashSet(),
+            TriggerIds = action.Triggers.Select(x => x.TriggerId).ToHashSet(),
+            ConditionIds = action.Conditions.Select(x => x.Id).ToHashSet()
+        };
+    }
+
+    private async Task SaveActionAsync()
+    {
+        if (actionEditor is null)
+            return;
+
+        if (!TryParseJsonDictionary(actionEditor.DeviceEventPropertiesJson, out var eventProperties))
+            return;
+
+        ActionEntity entity;
+        if (actionEditor.Id == 0)
+        {
+            entity = new ActionEntity();
+            db.Actions.Add(entity);
+        }
+        else
+        {
+            entity = await db.Actions
+                .Include(x => x.Devices)
+                .Include(x => x.Triggers)
+                .Include(x => x.Conditions)
+                .SingleAsync(x => x.Id == actionEditor.Id);
+        }
+
+        entity.Name = actionEditor.Name.Trim();
+        entity.Kind = actionEditor.Kind;
+        entity.Disabled = actionEditor.Disabled;
+        entity.DeviceEventToSend = actionEditor.Kind == ActionKind.DeviceEvent ? actionEditor.DeviceEventToSend : null;
+        entity.DeviceEventProperties = actionEditor.Kind == ActionKind.DeviceEvent ? eventProperties : null;
+        entity.MessageChannel = (actionEditor.Kind == ActionKind.SendMessage || actionEditor.Kind == ActionKind.SendSnapshot) ? NormalizeNullable(actionEditor.MessageChannel) : null;
+        entity.MessageToSend = (actionEditor.Kind == ActionKind.SendMessage || actionEditor.Kind == ActionKind.SendSnapshot) ? NormalizeNullable(actionEditor.MessageToSend) : null;
+
+        entity.Devices.Clear();
+        foreach (var deviceId in actionEditor.DeviceIds.Order())
+            entity.Devices.Add(new ActionDeviceEntity { DeviceId = deviceId });
+
+        entity.Triggers.Clear();
+        foreach (var triggerId in actionEditor.TriggerIds.Order())
+            entity.Triggers.Add(new TriggerActionEntity { TriggerId = triggerId });
+
+        entity.Conditions = await db.Conditions
+            .Where(x => actionEditor.ConditionIds.Contains(x.Id))
+            .ToListAsync();
+
+        await db.SaveChangesAsync();
+        await LoadDataAsync();
+        EditAction(entity.Id);
+        snackbar.Add("Action saved.", Severity.Success);
+    }
+
+    private async Task DeleteActionAsync()
+    {
+        if (actionEditor is null || actionEditor.Id == 0)
+            return;
+
+        var confirmed = await ConfirmDeleteAsync($"Delete action '{actionEditor.Name}'?");
+        if (!confirmed)
+            return;
+
+        var entity = await db.Actions.SingleOrDefaultAsync(x => x.Id == actionEditor.Id);
+        if (entity is null)
+            return;
+
+        db.Actions.Remove(entity);
+        await db.SaveChangesAsync();
+        actionEditor = null;
+        await LoadDataAsync();
+        snackbar.Add("Action deleted.", Severity.Success);
+    }
+
+    private void NewCondition()
+    {
+        conditionEditor = new ConditionEditorModel
+        {
+            Kind = ConditionKind.Time,
+            Name = "New condition",
+            TimeCompareKind = CompareKind.Equals
+        };
+    }
+
+    private void EditCondition(int id)
+    {
+        var condition = conditions.Single(x => x.Id == id);
+        conditionEditor = new ConditionEditorModel
+        {
+            Id = condition.Id,
+            Name = condition.Name,
+            Kind = condition.Kind,
+            TimeMode = condition.TimeMode,
+            TimeSpecifiedText = condition.TimeSpecified?.ToString("HH:mm"),
+            TimeCompareKind = condition.TimeCompareKind,
+            Expression = condition.Expression,
+            ActionIds = condition.Actions.Select(x => x.Id).ToHashSet(),
+            TriggerIds = condition.Triggers.Select(x => x.Id).ToHashSet()
+        };
+    }
+
+    private async Task SaveConditionAsync()
+    {
+        if (conditionEditor is null)
+            return;
+
+        if (!TryParseTime(conditionEditor.TimeSpecifiedText, out var timeSpecified))
+            return;
+
+        ConditionEntity entity;
+        if (conditionEditor.Id == 0)
+        {
+            entity = new ConditionEntity();
+            db.Conditions.Add(entity);
+        }
+        else
+        {
+            entity = await db.Conditions
+                .Include(x => x.Actions)
+                .Include(x => x.Triggers)
+                .SingleAsync(x => x.Id == conditionEditor.Id);
+        }
+
+        entity.Name = conditionEditor.Name.Trim();
+        entity.Kind = conditionEditor.Kind;
+        entity.TimeMode = conditionEditor.Kind == ConditionKind.Time ? conditionEditor.TimeMode : null;
+        entity.TimeSpecified = conditionEditor.Kind == ConditionKind.Time ? timeSpecified : null;
+        entity.TimeCompareKind = conditionEditor.TimeCompareKind;
+        entity.Expression = conditionEditor.Kind == ConditionKind.Expression ? NormalizeNullable(conditionEditor.Expression) : null;
+
+        entity.Actions = await db.Actions
+            .Where(x => conditionEditor.ActionIds.Contains(x.Id))
+            .ToListAsync();
+
+        entity.Triggers = await db.Triggers
+            .Where(x => conditionEditor.TriggerIds.Contains(x.Id))
+            .ToListAsync();
+
+        await db.SaveChangesAsync();
+        await LoadDataAsync();
+        EditCondition(entity.Id);
+        snackbar.Add("Condition saved.", Severity.Success);
+    }
+
+    private async Task DeleteConditionAsync()
+    {
+        if (conditionEditor is null || conditionEditor.Id == 0)
+            return;
+
+        var confirmed = await ConfirmDeleteAsync($"Delete condition '{conditionEditor.Name}'?");
+        if (!confirmed)
+            return;
+
+        var entity = await db.Conditions.SingleOrDefaultAsync(x => x.Id == conditionEditor.Id);
+        if (entity is null)
+            return;
+
+        db.Conditions.Remove(entity);
+        await db.SaveChangesAsync();
+        conditionEditor = null;
+        await LoadDataAsync();
+        snackbar.Add("Condition deleted.", Severity.Success);
+    }
+
+    private void ToggleSetValue(HashSet<int> ids, int id, bool selected)
+    {
+        if (selected)
+            ids.Add(id);
+        else
+            ids.Remove(id);
+    }
+
+    private bool TryParseTime(string? value, out TimeOnly? time)
+    {
+        time = null;
+        if (string.IsNullOrWhiteSpace(value))
+            return true;
+
+        if (TimeOnly.TryParse(value, out var parsed))
+        {
+            time = parsed;
+            return true;
+        }
+
+        snackbar.Add($"Invalid time value '{value}'. Use HH:mm.", Severity.Error);
+        return false;
+    }
+
+    private bool TryParseJsonDictionary(string? json, out Dictionary<string, string>? result)
+    {
+        result = null;
+        if (string.IsNullOrWhiteSpace(json))
+            return true;
+
+        try
+        {
+            result = JsonSerializer.Deserialize<Dictionary<string, string>>(json);
+            return result is not null;
+        }
+        catch (JsonException)
+        {
+            snackbar.Add("Device event properties must be valid JSON object (string->string).", Severity.Error);
+            return false;
+        }
+    }
+
+    private async Task<bool> ConfirmDeleteAsync(string message)
+    {
+        try
+        {
+            return await jsRuntime.InvokeAsync<bool>("confirm", message);
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    private static string? NormalizeNullable(string? value)
+    {
+        return string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+    }
+
+    private sealed class DeviceEditorModel
+    {
+        public int Id { get; set; }
+
+        public string Name { get; set; } = string.Empty;
+
+        public DeviceKind Kind { get; set; }
+
+        public DeviceSource Source { get; set; }
+
+        public string SourceId { get; set; } = string.Empty;
+
+        public string? Url { get; set; }
+
+        public string? ThumbnailUrl { get; set; }
+
+        public bool Disabled { get; set; }
+    }
+
+    private sealed class TriggerEditorModel
+    {
+        public int Id { get; set; }
+
+        public string Name { get; set; } = string.Empty;
+
+        public TriggerKind Kind { get; set; }
+
+        public bool Disabled { get; set; }
+
+        public DeviceEvent? ListenOnDeviceEvent { get; set; }
+
+        public int? ListenOnDeviceId { get; set; }
+
+        public TimeMode? SchedulingMode { get; set; }
+
+        public string? ScheduledAtText { get; set; }
+
+        public HashSet<int> ActionIds { get; set; } = [];
+
+        public HashSet<int> ConditionIds { get; set; } = [];
+    }
+
+    private sealed class ActionEditorModel
+    {
+        public int Id { get; set; }
+
+        public string Name { get; set; } = string.Empty;
+
+        public ActionKind Kind { get; set; }
+
+        public bool Disabled { get; set; }
+
+        public DeviceEvent? DeviceEventToSend { get; set; }
+
+        public string? DeviceEventPropertiesJson { get; set; }
+
+        public string? MessageChannel { get; set; }
+
+        public string? MessageToSend { get; set; }
+
+        public HashSet<int> DeviceIds { get; set; } = [];
+
+        public HashSet<int> TriggerIds { get; set; } = [];
+
+        public HashSet<int> ConditionIds { get; set; } = [];
+    }
+
+    private sealed class ConditionEditorModel
+    {
+        public int Id { get; set; }
+
+        public string Name { get; set; } = string.Empty;
+
+        public ConditionKind Kind { get; set; }
+
+        public TimeMode? TimeMode { get; set; }
+
+        public string? TimeSpecifiedText { get; set; }
+
+        public CompareKind TimeCompareKind { get; set; }
+
+        public string? Expression { get; set; }
+
+        public HashSet<int> ActionIds { get; set; } = [];
+
+        public HashSet<int> TriggerIds { get; set; } = [];
+    }
+}
