@@ -30,11 +30,11 @@ public class ActionExecutionService(IRepository<ActionEntity> actionRepository, 
             return;
         }
 
-        bool meetConditions = evaluateConditionService.MeetConditions(action);
-        if (!meetConditions)
+        var (conditionIsMet, conditionName) = evaluateConditionService.MeetConditions(action);
+        if (!conditionIsMet)
         {
             if (logger.IsEnabled(LogLevel.Information))
-                logger.LogInformation("Action.Execute :: {action} :: Status:ConditionsNotMet", action.Name);
+                logger.LogInformation("Action.Execute :: {action} :: Status:ConditionsNotMet :: Condition:{condition}", action.Name, conditionName);
             return;
         }
 

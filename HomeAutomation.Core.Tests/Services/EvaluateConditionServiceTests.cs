@@ -23,7 +23,7 @@ public class EvaluateConditionServiceTests
     {
         var trigger = new TriggerEntity { Conditions = [] };
 
-        Assert.True(_sut.MeetConditions(trigger));
+        Assert.True(_sut.MeetConditions(trigger).isMet);
     }
 
     [Fact]
@@ -34,12 +34,12 @@ public class EvaluateConditionServiceTests
         {
             Conditions =
             [
-                new ConditionEntity { Kind = ConditionKind.Expression, Expression = "{sunrise} < 6:00" },
-                new ConditionEntity { Kind = ConditionKind.Expression, Expression = "{sunset} > 20:00" }
+                ExpressionCondition("{sunrise} < 6:00"),
+                ExpressionCondition("{sunset} > 20:00")
             ]
         };
 
-        Assert.True(_sut.MeetConditions(trigger));
+        Assert.True(_sut.MeetConditions(trigger).isMet);
     }
 
     [Fact]
@@ -50,12 +50,12 @@ public class EvaluateConditionServiceTests
         {
             Conditions =
             [
-                new ConditionEntity { Kind = ConditionKind.Expression, Expression = "{sunrise} < 6:00" },
-                new ConditionEntity { Kind = ConditionKind.Expression, Expression = "{sunset} > 20:00" }
+                ExpressionCondition("{sunrise} < 6:00"),
+                ExpressionCondition("{sunset} > 20:00")
             ]
         };
 
-        Assert.False(_sut.MeetConditions(trigger));
+        Assert.False(_sut.MeetConditions(trigger).isMet);
     }
 
     #endregion
@@ -65,7 +65,7 @@ public class EvaluateConditionServiceTests
     [Fact]
     public void MeetCondition_NullCondition_ReturnsTrue()
     {
-        Assert.True(_sut.MeetCondition(null));
+        Assert.True(_sut.MeetCondition(null).isMet);
     }
 
     [Fact]
@@ -73,7 +73,7 @@ public class EvaluateConditionServiceTests
     {
         var condition = new ConditionEntity { Kind = (ConditionKind)99 };
 
-        Assert.False(_sut.MeetCondition(condition));
+        Assert.False(_sut.MeetCondition(condition).isMet);
     }
 
     #endregion
@@ -86,7 +86,7 @@ public class EvaluateConditionServiceTests
         SetupSunData(sunrise: new TimeOnly(5, 0));
         var condition = ExpressionCondition("{sunrise} < 6:15");
 
-        Assert.True(_sut.MeetCondition(condition));
+        Assert.True(_sut.MeetCondition(condition).isMet);
     }
 
     [Fact]
@@ -95,7 +95,7 @@ public class EvaluateConditionServiceTests
         SetupSunData(sunrise: new TimeOnly(7, 0));
         var condition = ExpressionCondition("{sunrise} < 6:15");
 
-        Assert.False(_sut.MeetCondition(condition));
+        Assert.False(_sut.MeetCondition(condition).isMet);
     }
 
     [Fact]
@@ -105,7 +105,7 @@ public class EvaluateConditionServiceTests
         SetupSunData(sunrise: new TimeOnly(6, 15));
         var condition = ExpressionCondition("{sunrise} < 6:15");
 
-        Assert.False(_sut.MeetCondition(condition));
+        Assert.False(_sut.MeetCondition(condition).isMet);
     }
 
     [Fact]
@@ -114,7 +114,7 @@ public class EvaluateConditionServiceTests
         SetupSunData(sunset: new TimeOnly(21, 0));
         var condition = ExpressionCondition("{sunset} > 20:00");
 
-        Assert.True(_sut.MeetCondition(condition));
+        Assert.True(_sut.MeetCondition(condition).isMet);
     }
 
     [Fact]
@@ -123,7 +123,7 @@ public class EvaluateConditionServiceTests
         SetupSunData(sunset: new TimeOnly(19, 0));
         var condition = ExpressionCondition("{sunset} > 20:00");
 
-        Assert.False(_sut.MeetCondition(condition));
+        Assert.False(_sut.MeetCondition(condition).isMet);
     }
 
     [Fact]
@@ -132,7 +132,7 @@ public class EvaluateConditionServiceTests
         SetupSunData(sunrise: new TimeOnly(6, 0));
         var condition = ExpressionCondition("{sunrise} = 6:00");
 
-        Assert.True(_sut.MeetCondition(condition));
+        Assert.True(_sut.MeetCondition(condition).isMet);
     }
 
     [Fact]
@@ -141,7 +141,7 @@ public class EvaluateConditionServiceTests
         SetupSunData(sunrise: new TimeOnly(6, 30));
         var condition = ExpressionCondition("{sunrise} = 6:00");
 
-        Assert.False(_sut.MeetCondition(condition));
+        Assert.False(_sut.MeetCondition(condition).isMet);
     }
 
     #endregion
@@ -154,7 +154,7 @@ public class EvaluateConditionServiceTests
         SetupSunData(sunrise: new TimeOnly(5, 0), sunset: new TimeOnly(21, 0));
         var condition = ExpressionCondition("{sunrise} < 6:00 AND {sunset} > 20:00");
 
-        Assert.True(_sut.MeetCondition(condition));
+        Assert.True(_sut.MeetCondition(condition).isMet);
     }
 
     [Fact]
@@ -163,7 +163,7 @@ public class EvaluateConditionServiceTests
         SetupSunData(sunrise: new TimeOnly(7, 0), sunset: new TimeOnly(21, 0));
         var condition = ExpressionCondition("{sunrise} < 6:00 AND {sunset} > 20:00");
 
-        Assert.False(_sut.MeetCondition(condition));
+        Assert.False(_sut.MeetCondition(condition).isMet);
     }
 
     [Fact]
@@ -172,7 +172,7 @@ public class EvaluateConditionServiceTests
         SetupSunData(sunrise: new TimeOnly(5, 0), sunset: new TimeOnly(19, 0));
         var condition = ExpressionCondition("{sunrise} < 6:00 AND {sunset} > 20:00");
 
-        Assert.False(_sut.MeetCondition(condition));
+        Assert.False(_sut.MeetCondition(condition).isMet);
     }
 
     [Fact]
@@ -181,7 +181,7 @@ public class EvaluateConditionServiceTests
         SetupSunData(sunrise: new TimeOnly(5, 0), sunset: new TimeOnly(19, 0));
         var condition = ExpressionCondition("{sunrise} < 6:00 OR {sunset} > 20:00");
 
-        Assert.True(_sut.MeetCondition(condition));
+        Assert.True(_sut.MeetCondition(condition).isMet);
     }
 
     [Fact]
@@ -190,7 +190,7 @@ public class EvaluateConditionServiceTests
         SetupSunData(sunrise: new TimeOnly(7, 0), sunset: new TimeOnly(21, 0));
         var condition = ExpressionCondition("{sunrise} < 6:00 OR {sunset} > 20:00");
 
-        Assert.True(_sut.MeetCondition(condition));
+        Assert.True(_sut.MeetCondition(condition).isMet);
     }
 
     [Fact]
@@ -199,7 +199,7 @@ public class EvaluateConditionServiceTests
         SetupSunData(sunrise: new TimeOnly(7, 0), sunset: new TimeOnly(19, 0));
         var condition = ExpressionCondition("{sunrise} < 6:00 OR {sunset} > 20:00");
 
-        Assert.False(_sut.MeetCondition(condition));
+        Assert.False(_sut.MeetCondition(condition).isMet);
     }
 
     [Fact]
@@ -210,7 +210,7 @@ public class EvaluateConditionServiceTests
         SetupSunData(sunrise: new TimeOnly(7, 0), sunset: new TimeOnly(21, 0));
         var condition = ExpressionCondition("{sunrise} < 6:00 AND {sunset} > 20:00 OR {sunrise} < 8:00");
 
-        Assert.True(_sut.MeetCondition(condition));
+        Assert.True(_sut.MeetCondition(condition).isMet);
     }
 
     #endregion
@@ -222,7 +222,7 @@ public class EvaluateConditionServiceTests
     {
         var condition = new ConditionEntity { Kind = ConditionKind.Expression, Expression = null };
 
-        Assert.False(_sut.MeetCondition(condition));
+        Assert.False(_sut.MeetCondition(condition).isMet);
     }
 
     [Fact]
@@ -230,7 +230,7 @@ public class EvaluateConditionServiceTests
     {
         var condition = ExpressionCondition("");
 
-        Assert.False(_sut.MeetCondition(condition));
+        Assert.False(_sut.MeetCondition(condition).isMet);
     }
 
     [Fact]
@@ -238,7 +238,7 @@ public class EvaluateConditionServiceTests
     {
         var condition = ExpressionCondition("{unknown} < 6:00");
 
-        Assert.False(_sut.MeetCondition(condition));
+        Assert.False(_sut.MeetCondition(condition).isMet);
     }
 
     [Fact]
@@ -246,7 +246,7 @@ public class EvaluateConditionServiceTests
     {
         var condition = ExpressionCondition("not a valid expression");
 
-        Assert.False(_sut.MeetCondition(condition));
+        Assert.False(_sut.MeetCondition(condition).isMet);
     }
 
     #endregion

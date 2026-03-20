@@ -31,12 +31,15 @@ public class TriggerService(ITriggerRepository repository, IActionExecutionServi
 
         if (triggers.Count > 0)
         {
-            logger.LogInformation("Triggers.FireAll :: {triggers} :: Device:{deviceId}, Event:{deviceEvent}", string.Join(',', triggers.Select(x => x.Id)), device.Id, deviceEvent);
+            if (logger.IsEnabled(LogLevel.Information))
+                logger.LogInformation("Triggers.FireAll :: {triggers} :: Device:{deviceId}, Event:{deviceEvent}", string.Join(',', triggers.Select(x => x.Id)), device.Id, deviceEvent);
+
             await ExecuteTriggerActions(triggers, device, cancellationToken);
         }
         else
         {
-            logger.LogInformation("Triggers.FireAll :: None :: Device:{deviceId}, Event:{deviceEvent}", device.Id, deviceEvent);
+            if (logger.IsEnabled(LogLevel.Information))
+                logger.LogInformation("Triggers.FireAll :: None :: Device:{deviceId}, Event:{deviceEvent}", device.Id, deviceEvent);
         }
     }
 
@@ -44,7 +47,9 @@ public class TriggerService(ITriggerRepository repository, IActionExecutionServi
     {
         if (triggers != null && triggers.Any())
         {
-            logger.LogInformation("Triggers.FireAll :: {triggers}", string.Join(',', triggers.Select(x => x.Id)));
+            if (logger.IsEnabled(LogLevel.Information))
+                logger.LogInformation("Triggers.FireAll :: {triggers}", string.Join(',', triggers.Select(x => x.Id)));
+
             await ExecuteTriggerActions(triggers, null, cancellationToken);
         }
         else
@@ -57,12 +62,15 @@ public class TriggerService(ITriggerRepository repository, IActionExecutionServi
     {
         if (triggers != null && triggers.Any())
         {
-            logger.LogInformation("Triggers.FireAll :: {triggers} :: Source:{source}", string.Join(',', triggers.Select(x => x.Id)), source);
+            if (logger.IsEnabled(LogLevel.Information))
+                logger.LogInformation("Triggers.FireAll :: {triggers} :: Source:{source}", string.Join(',', triggers.Select(x => x.Id)), source);
+
             await ExecuteTriggerActions(triggers, source, cancellationToken);
         }
         else
         {
-            logger.LogInformation("Triggers.FireAll :: None :: Source:{source}", source);
+            if (logger.IsEnabled(LogLevel.Information))
+                logger.LogInformation("Triggers.FireAll :: None :: Source:{source}", source);
         }
     }
 
@@ -72,14 +80,16 @@ public class TriggerService(ITriggerRepository repository, IActionExecutionServi
         {
             if (trigger.Disabled)
             {
-                logger.LogInformation("Trigger.Fire :: {trigger} :: Status:Disabled", trigger.Name);
+                if (logger.IsEnabled(LogLevel.Information))
+                    logger.LogInformation("Trigger.Fire :: {trigger} :: Status:Disabled", trigger.Name);
                 continue;
             }
 
-            bool meetConditions = evaluateConditionService.MeetConditions(trigger);
-            if (!meetConditions)
+            var condition = evaluateConditionService.MeetConditions(trigger);
+            if (!condition.isMet)
             {
-                logger.LogInformation("Trigger.Fire :: {trigger} :: Status:ConditionsNotMet", trigger.Name);
+                if (logger.IsEnabled(LogLevel.Information))
+                    logger.LogInformation("Trigger.Fire :: {trigger} :: Status:ConditionsNotMet :: Condition:{condition}", trigger.Name, condition.name);
                 continue;
             }
 

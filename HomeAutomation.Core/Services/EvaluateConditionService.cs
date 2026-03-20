@@ -6,40 +6,44 @@ namespace HomeAutomation.Core.Services;
 
 public interface IEvaluateConditionService
 {
-    bool MeetConditions(IConditionedEntity conditionedEntity);
+    (bool isMet, string name) MeetConditions(IConditionedEntity conditionedEntity);
 
-    bool MeetCondition(ConditionEntity? condition);
+    (bool isMet, string name) MeetCondition(ConditionEntity? condition);
 }
 
 public partial class EvaluateConditionService(ISunDataService sunDataService) : IEvaluateConditionService
 {
-    public bool MeetConditions(IConditionedEntity conditionedEntity)
+    public (bool isMet, string name) MeetConditions(IConditionedEntity conditionedEntity)
     {
         if (conditionedEntity.Conditions is not null)
             foreach (var condition in conditionedEntity.Conditions)
-                if (!MeetCondition(condition))
-                    return false;
+            {
+                var status = MeetCondition(condition);
+                if (!status.isMet)
+                    return status;
+            }
 
-        return true;
+        return (true, string.Empty);
     }
 
-    public bool MeetCondition(ConditionEntity? condition)
+    public (bool isMet, string name) MeetCondition(ConditionEntity? condition)
     {
         // if there are no conditions to match, conditions are "meet"
         if (condition is null)
-            return true;
+            return (true, string.Empty);
 
+        bool isMet = false;
         if (condition.Kind == Database.Enums.ConditionKind.Time)
         {
-            return CheckTimeCondition(condition);
+            isMet = CheckTimeCondition(condition);
         }
 
         if (condition.Kind == Database.Enums.ConditionKind.Expression)
         {
-            return CheckExpressionCondition(condition);
+            isMet = CheckExpressionCondition(condition);
         }
 
-        return false;
+        return (isMet, condition.Name);
     }
 
     #region Time condition
