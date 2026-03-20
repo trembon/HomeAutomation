@@ -68,23 +68,35 @@
 
                             @if (ListeningTriggers.Any())
                             {
-                                <MudText Typo="Typo.body2" Class="mb-1">
-                                    Trigger source in: @string.Join(", ", ListeningTriggers.Select(x => $"{x.Name} ({x.Kind})"))
-                                </MudText>
+                                <MudText Typo="Typo.body2" Class="mb-1">Trigger source in:</MudText>
+                                <ul class="mb-2 ml-6">
+                                    @foreach (var trigger in ListeningTriggers)
+                                    {
+                                        <li>@trigger.Name (@trigger.Kind)</li>
+                                    }
+                                </ul>
                             }
 
                             @if (TargetingActions.Any())
                             {
-                                <MudText Typo="Typo.body2" Class="mb-1">
-                                    Targeted by actions: @string.Join(", ", TargetingActions.Select(x => $"{x.Name} ({x.Kind})"))
-                                </MudText>
+                                <MudText Typo="Typo.body2" Class="mb-1">Targeted by actions:</MudText>
+                                <ul class="mb-2 ml-6">
+                                    @foreach (var action in TargetingActions)
+                                    {
+                                        <li>@action.Name (@action.Kind)</li>
+                                    }
+                                </ul>
                             }
 
                             @if (AffectingTriggers.Any())
                             {
-                                <MudText Typo="Typo.body2" Class="mb-1">
-                                    Affected by trigger chain: @string.Join(", ", AffectingTriggers.Select(x => $"{x.Name} ({x.Kind})"))
-                                </MudText>
+                                <MudText Typo="Typo.body2" Class="mb-1">Affected by trigger chain:</MudText>
+                                <ul class="mb-2 ml-6">
+                                    @foreach (var trigger in AffectingTriggers)
+                                    {
+                                        <li>@trigger.Name (@trigger.Kind)</li>
+                                    }
+                                </ul>
                             }
                         }
                     }
