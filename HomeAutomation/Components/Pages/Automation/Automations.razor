@@ -56,63 +56,37 @@
                             <MudItem xs="12" md="6"><MudTextField Variant="Variant.Outlined" Value="@deviceEditor.SourceId" Label="Source ID" ReadOnly="true" /></MudItem>
                             <MudItem xs="12" md="6"><MudTextField Variant="Variant.Outlined" @bind-Value="deviceEditor.Url" Label="URL" /></MudItem>
                             <MudItem xs="12" md="6"><MudTextField Variant="Variant.Outlined" @bind-Value="deviceEditor.ThumbnailUrl" Label="Thumbnail URL" /></MudItem>
-                            <MudItem xs="12"><MudSwitch T="bool" @bind-Value="deviceEditor.Disabled" Label="Disabled" /></MudItem>
+                            <MudItem xs="12" md="6" Class="d-flex align-center"><MudSwitch T="bool" @bind-Value="deviceEditor.Disabled" Label="Disabled" Color="Color.Error" /></MudItem>
                             <MudItem xs="12"><MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SaveDeviceAsync">Save device</MudButton></MudItem>
                         </MudGrid>
 
                         <MudDivider Class="my-4" />
 
-                        <MudText Typo="Typo.subtitle1" Class="mb-2">Automation overview for this device</MudText>
+                        @if (ListeningTriggers.Any() || TargetingActions.Any() || AffectingTriggers.Any())
+                        {
+                            <MudText Typo="Typo.subtitle1" Class="mb-2">Automation overview for this device</MudText>
 
-                        <MudExpansionPanels MultiExpansion="true">
-                            <MudExpansionPanel Text="Triggers listening on this device">
-                                @if (!ListeningTriggers.Any())
-                                {
-                                    <MudText Typo="Typo.body2">No triggers use this device as source.</MudText>
-                                }
-                                else
-                                {
-                                    <MudList T="string" Dense="true">
-                                        @foreach (var trigger in ListeningTriggers)
-                                        {
-                                            <MudListItem T="string">@trigger.Name (@trigger.Kind)</MudListItem>
-                                        }
-                                    </MudList>
-                                }
-                            </MudExpansionPanel>
+                            @if (ListeningTriggers.Any())
+                            {
+                                <MudText Typo="Typo.body2" Class="mb-1">
+                                    Trigger source in: @string.Join(", ", ListeningTriggers.Select(x => $"{x.Name} ({x.Kind})"))
+                                </MudText>
+                            }
 
-                            <MudExpansionPanel Text="Actions targeting this device">
-                                @if (!TargetingActions.Any())
-                                {
-                                    <MudText Typo="Typo.body2">No actions target this device.</MudText>
-                                }
-                                else
-                                {
-                                    <MudList T="string" Dense="true">
-                                        @foreach (var action in TargetingActions)
-                                        {
-                                            <MudListItem T="string">@action.Name (@action.Kind)</MudListItem>
-                                        }
-                                    </MudList>
-                                }
-                            </MudExpansionPanel>
+                            @if (TargetingActions.Any())
+                            {
+                                <MudText Typo="Typo.body2" Class="mb-1">
+                                    Targeted by actions: @string.Join(", ", TargetingActions.Select(x => $"{x.Name} ({x.Kind})"))
+                                </MudText>
+                            }
 
-                            <MudExpansionPanel Text="Triggers that eventually affect this device">
-                                @if (!AffectingTriggers.Any())
-                                {
-                                    <MudText Typo="Typo.body2">No trigger chain currently affects this device.</MudText>
-                                }
-                                else
-                                {
-                                    <MudList T="string" Dense="true">
-                                        @foreach (var trigger in AffectingTriggers)
-                                        {
-                                            <MudListItem T="string">@trigger.Name (@trigger.Kind)</MudListItem>
-                                        }
-                                    </MudList>
-                                }
-                            </MudExpansionPanel>
-                        </MudExpansionPanels>
+                            @if (AffectingTriggers.Any())
+                            {
+                                <MudText Typo="Typo.body2" Class="mb-1">
+                                    Affected by trigger chain: @string.Join(", ", AffectingTriggers.Select(x => $"{x.Name} ({x.Kind})"))
+                                </MudText>
+                            }
+                        }
                     }
                 </MudPaper>
             </MudItem>
@@ -162,7 +136,7 @@
                                     }
                                 </MudSelect>
                             </MudItem>
-                            <MudItem xs="12" md="6"><MudSwitch T="bool" @bind-Value="triggerEditor.Disabled" Label="Disabled" /></MudItem>
+                            <MudItem xs="12" md="6" Class="d-flex align-center"><MudSwitch T="bool" @bind-Value="triggerEditor.Disabled" Label="Disabled" Color="Color.Error" /></MudItem>
 
                             @if (triggerEditor.Kind == TriggerKind.DeviceState)
                             {
@@ -207,7 +181,7 @@
                                 <MudPaper Outlined="true" Class="pa-2" Style="max-height:260px; overflow:auto;">
                                     @foreach (var action in actions)
                                     {
-                                        <MudCheckBox T="bool" Value="@triggerEditor.ActionIds.Contains(action.Id)" Label="@action.Name" ValueChanged="@((bool value) => ToggleSetValue(triggerEditor.ActionIds, action.Id, value))" />
+                                        <MudCheckBox T="bool" Color="Color.Success" Value="@triggerEditor.ActionIds.Contains(action.Id)" Label="@action.Name" ValueChanged="@((bool value) => ToggleSetValue(triggerEditor.ActionIds, action.Id, value))" />
                                     }
                                 </MudPaper>
                             </MudItem>
@@ -217,7 +191,7 @@
                                 <MudPaper Outlined="true" Class="pa-2" Style="max-height:260px; overflow:auto;">
                                     @foreach (var condition in conditions)
                                     {
-                                        <MudCheckBox T="bool" Value="@triggerEditor.ConditionIds.Contains(condition.Id)" Label="@condition.Name" ValueChanged="@((bool value) => ToggleSetValue(triggerEditor.ConditionIds, condition.Id, value))" />
+                                        <MudCheckBox T="bool" Color="Color.Success" Value="@triggerEditor.ConditionIds.Contains(condition.Id)" Label="@condition.Name" ValueChanged="@((bool value) => ToggleSetValue(triggerEditor.ConditionIds, condition.Id, value))" />
                                     }
                                 </MudPaper>
                             </MudItem>
@@ -281,7 +255,7 @@
                                     }
                                 </MudSelect>
                             </MudItem>
-                            <MudItem xs="12" md="6"><MudSwitch T="bool" @bind-Value="actionEditor.Disabled" Label="Disabled" /></MudItem>
+                            <MudItem xs="12" md="6" Class="d-flex align-center"><MudSwitch T="bool" @bind-Value="actionEditor.Disabled" Label="Disabled" Color="Color.Error" /></MudItem>
 
                             @if (actionEditor.Kind == ActionKind.DeviceEvent)
                             {
@@ -310,7 +284,7 @@
                                 <MudPaper Outlined="true" Class="pa-2" Style="max-height:260px; overflow:auto;">
                                     @foreach (var device in devices)
                                     {
-                                        <MudCheckBox T="bool" Value="@actionEditor.DeviceIds.Contains(device.Id)" Label="@device.Name" ValueChanged="@((bool value) => ToggleSetValue(actionEditor.DeviceIds, device.Id, value))" />
+                                        <MudCheckBox T="bool" Color="Color.Success" Value="@actionEditor.DeviceIds.Contains(device.Id)" Label="@device.Name" ValueChanged="@((bool value) => ToggleSetValue(actionEditor.DeviceIds, device.Id, value))" />
                                     }
                                 </MudPaper>
                             </MudItem>
@@ -320,7 +294,7 @@
                                 <MudPaper Outlined="true" Class="pa-2" Style="max-height:260px; overflow:auto;">
                                     @foreach (var trigger in triggers)
                                     {
-                                        <MudCheckBox T="bool" Value="@actionEditor.TriggerIds.Contains(trigger.Id)" Label="@trigger.Name" ValueChanged="@((bool value) => ToggleSetValue(actionEditor.TriggerIds, trigger.Id, value))" />
+                                        <MudCheckBox T="bool" Color="Color.Success" Value="@actionEditor.TriggerIds.Contains(trigger.Id)" Label="@trigger.Name" ValueChanged="@((bool value) => ToggleSetValue(actionEditor.TriggerIds, trigger.Id, value))" />
                                     }
                                 </MudPaper>
                             </MudItem>
@@ -330,7 +304,7 @@
                                 <MudPaper Outlined="true" Class="pa-2" Style="max-height:260px; overflow:auto;">
                                     @foreach (var condition in conditions)
                                     {
-                                        <MudCheckBox T="bool" Value="@actionEditor.ConditionIds.Contains(condition.Id)" Label="@condition.Name" ValueChanged="@((bool value) => ToggleSetValue(actionEditor.ConditionIds, condition.Id, value))" />
+                                        <MudCheckBox T="bool" Color="Color.Success" Value="@actionEditor.ConditionIds.Contains(condition.Id)" Label="@condition.Name" ValueChanged="@((bool value) => ToggleSetValue(actionEditor.ConditionIds, condition.Id, value))" />
                                     }
                                 </MudPaper>
                             </MudItem>
@@ -427,7 +401,7 @@
                                 <MudPaper Outlined="true" Class="pa-2" Style="max-height:260px; overflow:auto;">
                                     @foreach (var trigger in triggers)
                                     {
-                                        <MudCheckBox T="bool" Value="@conditionEditor.TriggerIds.Contains(trigger.Id)" Label="@trigger.Name" ValueChanged="@((bool value) => ToggleSetValue(conditionEditor.TriggerIds, trigger.Id, value))" />
+                                        <MudCheckBox T="bool" Color="Color.Success" Value="@conditionEditor.TriggerIds.Contains(trigger.Id)" Label="@trigger.Name" ValueChanged="@((bool value) => ToggleSetValue(conditionEditor.TriggerIds, trigger.Id, value))" />
                                     }
                                 </MudPaper>
                             </MudItem>
@@ -437,7 +411,7 @@
                                 <MudPaper Outlined="true" Class="pa-2" Style="max-height:260px; overflow:auto;">
                                     @foreach (var action in actions)
                                     {
-                                        <MudCheckBox T="bool" Value="@conditionEditor.ActionIds.Contains(action.Id)" Label="@action.Name" ValueChanged="@((bool value) => ToggleSetValue(conditionEditor.ActionIds, action.Id, value))" />
+                                        <MudCheckBox T="bool" Color="Color.Success" Value="@conditionEditor.ActionIds.Contains(action.Id)" Label="@action.Name" ValueChanged="@((bool value) => ToggleSetValue(conditionEditor.ActionIds, action.Id, value))" />
                                     }
                                 </MudPaper>
                             </MudItem>
