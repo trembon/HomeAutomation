@@ -25,6 +25,7 @@ public class TriggerRepository(DefaultContext context) : Repository<TriggerEntit
     public async Task<List<TriggerEntity>> GetScheduledTriggers(CancellationToken cancellationToken)
     {
         return await Table
+            .Include(x => x.Conditions)
             .Where(x => x.Kind == Enums.TriggerKind.Scheduled)
             .AsNoTracking()
             .ToListAsync(cancellationToken);
