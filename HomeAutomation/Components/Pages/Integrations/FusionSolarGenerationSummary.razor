@@ -1,0 +1,57 @@
+@page "/fusion-solar/generation-summary"
+@using HomeAutomation.Database
+@using HomeAutomation.Database.Entities
+@using Microsoft.EntityFrameworkCore
+@inject DefaultContext db
+
+<MudText Typo="Typo.h2" Class="mb-5">FusionSolar - Generation Summary (Last 30 Days)</MudText>
+
+@if (generationData is not null)
+{
+    <MudPaper Outlined="true" Elevation="0" Class="pa-4 mb-4">
+        <MudText Typo="Typo.subtitle2" Color="Color.Secondary">Last 30 days totals</MudText>
+        <MudText Typo="Typo.h5" Class="mt-1">@totalKwh.ToString("0.###") kWh</MudText>
+        <MudText Typo="Typo.body2">Average: @averageKwh.ToString("0.###") kWh/day</MudText>
+    </MudPaper>
+}
+
+<MudTable Items="@generationData" Hover="true" Loading="@(generationData == null)" LoadingProgressColor="Color.Info">
+    <HeaderContent>
+        <MudTh>Date</MudTh>
+        <MudTh>Started</MudTh>
+        <MudTh>Ended</MudTh>
+        <MudTh>Total (kWh)</MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd DataLabel="Date">@context.Date.ToString("yyyy-MM-dd")</MudTd>
+        <MudTd DataLabel="Started">@context.Started.ToString("HH:mm")</MudTd>
+        <MudTd DataLabel="Ended">@context.Ended.ToString("HH:mm")</MudTd>
+        <MudTd DataLabel="Total (kWh)">@context.TotalKwh.ToString("0.###")</MudTd>
+    </RowTemplate>
+    <NoRecordsContent>
+        <MudText Class="pa-4">No generation summaries available for the last 30 days.</MudText>
+    </NoRecordsContent>
+</MudTable>
+
+@code {
+    private List<SolarGenerationSummaryEntity>? generationData;
+    private decimal totalKwh;
+    private decimal averageKwh;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var fromDate = DateOnly.FromDateTime(DateTime.UtcNow.Date.AddDays(-29));
+
+        generationData = await db.SolarGenerationSummaries
+            .AsNoTracking()
+            .Where(x => x.Date >= fromDate)
+            .OrderByDescending(x => x.Date)
+            .Take(30)
+            .ToListAsync();
+
+        totalKwh = generationData.Sum(x => x.TotalKwh);
+        averageKwh = generationData.Count > 0
+            ? totalKwh / generationData.Count
+            : 0;
+    }
+}

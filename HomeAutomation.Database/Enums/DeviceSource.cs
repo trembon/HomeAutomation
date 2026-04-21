@@ -7,5 +7,6 @@ public enum DeviceSource
     ZWave = 2,
     Tuya = 3,
     Verisure = 4,
-    FusionSolar = 5
+    FusionSolar = 5,
+    IkeaDirigera = 6
 }

@@ -1,5 +1,4 @@
 ﻿using HomeAutomation.Core.Services;
-using HomeAutomation.Database.Entities;
 using HomeAutomation.Database.Enums;
 using HomeAutomation.Database.Repositories;
 using HomeAutomation.Webhooks.Models.FusionSolar;
@@ -9,7 +8,7 @@ namespace HomeAutomation.Webhooks;
 
 [ApiController]
 [Route("webhooks/fusionsolar")]
-public class FusionSolarController(IRepository<SensorValueEntity> repository, IDeviceRepository deviceRepository, IFusionSolarService fusionSolarService, ILogger<FusionSolarController> logger) : ControllerBase
+public class FusionSolarController(IDeviceRepository deviceRepository, IFusionSolarService fusionSolarService, ISensorValueService sensorValueService, ILogger<FusionSolarController> logger) : ControllerBase
 {
     [HttpPost("sensorupdate")]
     public async Task<ActionResult> SensorUpdate(SensorUpdateModel model, CancellationToken cancellationToken)
@@ -23,13 +22,7 @@ public class FusionSolarController(IRepository<SensorValueEntity> repository, ID
             if (logger.IsEnabled(LogLevel.Information))
                 logger.LogInformation("FusionSolar.SensorUpdate :: {deviceId} :: NodeId:{nodeId}, ValueType:{valueType}: Value:{value}", device.Id, model.Id, sensorType, model?.Value);
 
-            await repository.AddAndSave(new()
-            {
-                DeviceId = device.Id,
-                Type = sensorType,
-                Value = model?.Value.ToString() ?? "",
-                Timestamp = model?.Timestamp ?? DateTime.UtcNow,
-            }, cancellationToken);
+            await sensorValueService.AddValue(device.Id, sensorType, model?.Value.ToString() ?? "", model?.Timestamp, cancellationToken);
         }
         else
         {

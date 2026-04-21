@@ -1,6 +1,5 @@
 ﻿using HomeAutomation.Core.Enums;
 using HomeAutomation.Core.Services;
-using HomeAutomation.Database.Entities;
 using HomeAutomation.Database.Enums;
 using HomeAutomation.Database.Repositories;
 using HomeAutomation.Webhooks.Models.Telldus;
@@ -10,7 +9,7 @@ namespace HomeAutomation.Webhooks;
 
 [ApiController]
 [Route("webhooks/telldus")]
-public class TelldusController(IRepository<SensorValueEntity> repository, IDeviceRepository deviceRepository, ITelldusAPIService telldusAPIService, ITriggerService triggerService, IConfiguration configuration, ILogger<TelldusController> logger) : ControllerBase
+public class TelldusController(ISensorValueService sensorValueService, IDeviceRepository deviceRepository, ITelldusAPIService telldusAPIService, ITriggerService triggerService, IConfiguration configuration, ILogger<TelldusController> logger) : ControllerBase
 {
     private static readonly Lock duplicationRequestLock = new();
     private static readonly List<DuplicateRecord> duplicationRequestLog = [];
@@ -30,13 +29,7 @@ public class TelldusController(IRepository<SensorValueEntity> repository, IDevic
         if (model is not null && sensor is not null)
         {
             logger.LogInformation("Telldus.Sensor :: Received sensor update from device '{sensor}', type {type}, value {value}.", sensor, model.Type, model.Value);
-            await repository.AddAndSave(new()
-            {
-                DeviceId = sensor.Id,
-                Type = model.Type,
-                Value = model.Value,
-                Timestamp = model.Timestamp
-            }, cancellationToken);
+            await sensorValueService.AddValue(sensor.Id, model.Type, model.Value, model.Timestamp, cancellationToken);
         }
         else
         {

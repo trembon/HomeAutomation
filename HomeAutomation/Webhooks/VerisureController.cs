@@ -1,5 +1,4 @@
 ﻿using HomeAutomation.Core.Services;
-using HomeAutomation.Database.Entities;
 using HomeAutomation.Database.Enums;
 using HomeAutomation.Database.Repositories;
 using HomeAutomation.Webhooks.Models.Verisure;
@@ -9,7 +8,7 @@ namespace HomeAutomation.Webhooks;
 
 [ApiController]
 [Route("webhooks/verisure")]
-public class VerisureController(IRepository<SensorValueEntity> repository, IDeviceRepository deviceRepository, IVerisureAPIService verisureAPIService, ITriggerService triggerService, ILogger<VerisureController> logger) : ControllerBase
+public class VerisureController(ISensorValueService sensorValueService, IDeviceRepository deviceRepository, IVerisureAPIService verisureAPIService, ITriggerService triggerService, ILogger<VerisureController> logger) : ControllerBase
 {
     [HttpPost("deviceupdate")]
     public async Task<ActionResult> DeviceUpdate(DeviceUpdateModel model, CancellationToken cancellationToken)
@@ -41,13 +40,7 @@ public class VerisureController(IRepository<SensorValueEntity> repository, IDevi
             var sensorType = verisureAPIService.MapTypeToSensorKind(model.Type);
 
             logger.LogInformation("Verisure.SensorUpdate :: {deviceId} :: NodeId:{nodeId}, ValueType:{valueType}: Value:{value}", device.Id, model.Id, sensorType, model?.Value);
-            await repository.AddAndSave(new()
-            {
-                DeviceId = device.Id,
-                Type = sensorType,
-                Value = model?.Value.ToString() ?? "",
-                Timestamp = model?.Timestamp ?? DateTime.UtcNow,
-            }, cancellationToken);
+            await sensorValueService.AddValue(device.Id, sensorType, model?.Value.ToString() ?? "", model?.Timestamp, cancellationToken);
         }
         else
         {

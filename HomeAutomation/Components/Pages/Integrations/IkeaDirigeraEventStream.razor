@@ -1,0 +1,33 @@
+﻿@page "/ikea-dirigera/event-stream"
+@inject IIkeaDirigeraService ikeaDirigeraAPIService
+
+<MudText Typo="Typo.h2" Class="mb-5">Ikea Dirigera - Event Stream</MudText>
+
+<MudTable Items="@events" Hover="true" LoadingProgressColor="Color.Info">
+    <HeaderContent>
+        <MudTh>Timestamp</MudTh>
+        <MudTh>Message</MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd DataLabel="Timestamp">@context.Timestamp</MudTd>
+        <MudTd DataLabel="Message">@context.RawPayload</MudTd>
+    </RowTemplate>
+</MudTable>
+
+@code {
+    private List<Core.Models.IkeaDirigeraEventModel> events = [];
+
+    protected override Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+            ikeaDirigeraAPIService.EventReceived += OnEventReceived;
+
+        return base.OnAfterRenderAsync(firstRender);
+    }
+
+    private async void OnEventReceived(Core.Models.IkeaDirigeraEventModel eventModel)
+    {
+        events.Add(eventModel);
+        await InvokeAsync(StateHasChanged);
+    }
+}

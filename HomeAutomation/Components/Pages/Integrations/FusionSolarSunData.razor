@@ -1,0 +1,47 @@
+@page "/fusion-solar/sun-data"
+@using HomeAutomation.Database
+@using HomeAutomation.Database.Entities
+@using Microsoft.EntityFrameworkCore
+@inject DefaultContext db
+
+<MudText Typo="Typo.h2" Class="mb-5">FusionSolar - Sun Data (Last 30 Days)</MudText>
+
+<MudTable Items="@sunData" Hover="true" Loading="@(sunData == null)" LoadingProgressColor="Color.Info">
+    <HeaderContent>
+        <MudTh>Date</MudTh>
+        <MudTh>Sunrise</MudTh>
+        <MudTh>Sunset</MudTh>
+        <MudTh>Daylight</MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd DataLabel="Date">@context.Date.ToString("yyyy-MM-dd")</MudTd>
+        <MudTd DataLabel="Sunrise">@context.Sunrise.ToString("HH:mm")</MudTd>
+        <MudTd DataLabel="Sunset">@context.Sunset.ToString("HH:mm")</MudTd>
+        <MudTd DataLabel="Daylight">@GetDaylightDuration(context)</MudTd>
+    </RowTemplate>
+    <NoRecordsContent>
+        <MudText Class="pa-4">No sun data available for the last 30 days.</MudText>
+    </NoRecordsContent>
+</MudTable>
+
+@code {
+    private List<SunDataEntity>? sunData;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var fromDate = DateOnly.FromDateTime(DateTime.UtcNow.Date.AddDays(-29));
+
+        sunData = await db.SunData
+            .AsNoTracking()
+            .Where(x => x.Date >= fromDate)
+            .OrderByDescending(x => x.Date)
+            .Take(30)
+            .ToListAsync();
+    }
+
+    private static string GetDaylightDuration(SunDataEntity row)
+    {
+        var daylight = row.Sunset.ToTimeSpan() - row.Sunrise.ToTimeSpan();
+        return $"{(int)daylight.TotalHours:D2}:{daylight.Minutes:D2}";
+    }
+}

@@ -1,0 +1,47 @@
+@page "/ikea-dirigera"
+@inject IIkeaDirigeraService ikeaDirigeraService
+@inject IDeviceRepository deviceRepository
+
+<MudText Typo="Typo.h2" Class="mb-5">IKEA DIRIGERA - Devices</MudText>
+
+<MudTable Items="@devices" Hover="true" Loading="@(devices == null)" LoadingProgressColor="Color.Info">
+    <HeaderContent>
+        <MudTh>Id</MudTh>
+        <MudTh>Name</MudTh>
+        <MudTh>Type</MudTh>
+        <MudTh>Reachable</MudTh>
+        <MudTh>Mapped</MudTh>
+        <MudTh></MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd DataLabel="Id">@context.Id</MudTd>
+        <MudTd DataLabel="Name">@context.Name</MudTd>
+        <MudTd DataLabel="Type">@context.Type</MudTd>
+        <MudTd DataLabel="Reachable">@context.IsReachable</MudTd>
+        <MudTd>
+            @if (mappedDevices.Contains(context.Id))
+            {
+                <MudIcon Icon="@Icons.Material.Filled.Check" Title="Yes" />
+            }
+            else
+            {
+                <MudIcon Icon="@Icons.Material.Filled.Clear" Title="Not yet" />
+            }
+        </MudTd>
+        <MudTd style="width: 60px;"><HomeAutomation.Components.Components.Devices.MapToDeviceDialogAction Source="DeviceSource.IkeaDirigera" SourceId="@context.Id" Name="@context.Name" Disabled="@mappedDevices.Contains(context.Id)" /></MudTd>
+    </RowTemplate>
+</MudTable>
+
+@code {
+    private Core.Models.IkeaDirigeraDeviceModel[]? devices;
+    private HashSet<string> mappedDevices = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        var result = await ikeaDirigeraService.GetDevices();
+        devices = result.ToArray();
+
+        var ikeaDevices = await deviceRepository.GetOfSource(DeviceSource.IkeaDirigera, CancellationToken.None);
+        ikeaDevices?.ForEach(x => mappedDevices.Add(x.SourceId));
+    }
+}

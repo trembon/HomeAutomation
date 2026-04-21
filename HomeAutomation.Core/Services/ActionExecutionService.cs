@@ -146,6 +146,18 @@ public class ActionExecutionService(IRepository<ActionEntity> actionRepository, 
                     sendCommandTasks.Add(task);
                 }
             }
+
+            if (device.Source == DeviceSource.IkeaDirigera)
+            {
+                var ikeaDirigeraService = serviceProvider.GetRequiredService<IIkeaDirigeraService>();
+                var payload = ikeaDirigeraService.ConvertStateToAction(action.DeviceEventToSend ?? DeviceEvent.Unknown);
+
+                if (payload.Count != 0)
+                {
+                    var task = ikeaDirigeraService.SendAction(device.SourceId, payload);
+                    sendCommandTasks.Add(task);
+                }
+            }
         }
 
         await Task.WhenAll(sendCommandTasks);

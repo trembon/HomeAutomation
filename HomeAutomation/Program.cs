@@ -1,5 +1,6 @@
 using HomeAutomation.Components;
 using HomeAutomation.Core;
+using HomeAutomation.Core.BackgroundJobs;
 using HomeAutomation.Core.Extensions;
 using HomeAutomation.Core.Logging;
 using HomeAutomation.Core.Services;
@@ -19,6 +20,11 @@ builder.Services.AddControllers();
 builder.Services.AddMudServices();
 builder.Services.AddHttpClient();
 
+builder.Services.AddHttpClient(nameof(IkeaDirigeraService)).ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
+{
+    ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
+});
+
 builder.Services.AddDefaultDatabaseContext(builder.Configuration.GetConnectionString("Default")!);
 builder.Services.AddRepositories();
 
@@ -31,6 +37,9 @@ builder.Services.AddSingleton<IZWaveAPIService, ZWaveAPIService>();
 builder.Services.AddSingleton<ITelldusAPIService, TelldusAPIService>();
 builder.Services.AddSingleton<IVerisureAPIService, VerisureAPIService>();
 builder.Services.AddSingleton<IFusionSolarService, FusionSolarService>();
+builder.Services.AddSingleton<IIkeaDirigeraService, IkeaDirigeraService>();
+
+builder.Services.AddHostedService<IkeaDirigeraEventBackgroundService>();
 
 builder.Services.AddTransient<ISunDataService, SunDataService>();
 builder.Services.AddTransient<ITriggerService, TriggerService>();
