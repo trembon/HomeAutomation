@@ -16,9 +16,9 @@ public interface IIkeaDirigeraService
 
     Task<IEnumerable<IkeaDirigeraDeviceModel>> GetDevices(CancellationToken cancellationToken = default);
 
-    Task<bool> SendAction(string deviceId, Dictionary<string, object?> payload, CancellationToken cancellationToken = default);
+    Task<bool> SendAction(string deviceId, object payload, CancellationToken cancellationToken = default);
 
-    Dictionary<string, object?> ConvertStateToAction(DeviceEvent state);
+    object? ConvertStateToAction(DeviceEvent state);
 
     IAsyncEnumerable<IkeaDirigeraEventModel> ListenToEvents(CancellationToken cancellationToken = default);
 }
@@ -75,7 +75,7 @@ public class IkeaDirigeraService(IConfiguration configuration, IHttpClientFactor
         return devices;
     }
 
-    public async Task<bool> SendAction(string deviceId, Dictionary<string, object?> payload, CancellationToken cancellationToken = default)
+    public async Task<bool> SendAction(string deviceId, object payload, CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(deviceId);
 
@@ -89,35 +89,35 @@ public class IkeaDirigeraService(IConfiguration configuration, IHttpClientFactor
         request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
 
         var response = await httpClient.SendAsync(request, cancellationToken);
+        string responseContent = await response.Content.ReadAsStringAsync(cancellationToken);
         response.EnsureSuccessStatusCode();
         return true;
     }
 
-    public Dictionary<string, object?> ConvertStateToAction(DeviceEvent state)
+    public object? ConvertStateToAction(DeviceEvent state)
     {
+        // different light types have different attributes
+        // keeps last known color in memory and reuses it when turning on the light again, so only isOn attribute is needed to be sent when turning on/off
+        // white in different shades: "colorMode":"temperature","colorTemperature":2202
+
         if (state == DeviceEvent.On)
         {
-            return new Dictionary<string, object?>
+            return new[]
             {
-                ["attributes"] = new Dictionary<string, object?>
-                {
-                    ["isOn"] = true
-                }
+                new { attributes = new { isOn = true } }
             };
         }
 
         if (state == DeviceEvent.Off)
         {
-            return new Dictionary<string, object?>
+            return new[]
             {
-                ["attributes"] = new Dictionary<string, object?>
-                {
-                    ["isOn"] = false
-                }
+                new { attributes = new { isOn = false } }
             };
         }
 
-        return [];
+        return null;
+        ;
     }
 
     public async IAsyncEnumerable<IkeaDirigeraEventModel> ListenToEvents([EnumeratorCancellation] CancellationToken cancellationToken = default)
@@ -170,12 +170,26 @@ public class IkeaDirigeraService(IConfiguration configuration, IHttpClientFactor
                 ?? TryGetNestedString(root, ["attributes", "id"])
                 ?? TryGetString(root, "id");
 
-            Dictionary<string, string?> attributeDictionary = [];
+            Dictionary<string, object> attributeDictionary = [];
             if (root.TryGetProperty("data", out JsonElement data) && data.TryGetProperty("attributes", out JsonElement attributes) && attributes.ValueKind == JsonValueKind.Object)
             {
-                attributeDictionary = attributes
-                    .EnumerateObject()
-                    .ToDictionary(x => x.Name, x => x.Value.GetString());
+                foreach (var attribute in attributes.EnumerateObject())
+                {
+                    string key = attribute.Name;
+                    if (attribute.Value.ValueKind == JsonValueKind.String)
+                    {
+                        string? value = attribute.Value.GetString();
+                        attributeDictionary[key] = value ?? "";
+                    }
+                    else if (attribute.Value.ValueKind == JsonValueKind.Number)
+                    {
+                        attributeDictionary[key] = attribute.Value.GetDecimal();
+                    }
+                    else if (attribute.Value.ValueKind == JsonValueKind.True || attribute.Value.ValueKind == JsonValueKind.False)
+                    {
+                        attributeDictionary[key] = attribute.Value.GetBoolean();
+                    }
+                }
             }
 
             DateTime timestamp = DateTime.UtcNow;

@@ -44,7 +44,7 @@ public class VerisureController(ISensorValueService sensorValueService, IDeviceR
         }
         else
         {
-            logger.LogError("Verisure.SensorUpdate :: Sensor update from {sourceId}, but device is not mapped in database. (Value: {value}, Type: {})", model?.Id, model?.Value, model?.Type);
+            logger.LogInformation("Verisure.SensorUpdate :: Sensor update from {sourceId}, but device is not mapped in database. (Value: {value}, Type: {})", model?.Id, model?.Value, model?.Type);
         }
 
         return Ok();

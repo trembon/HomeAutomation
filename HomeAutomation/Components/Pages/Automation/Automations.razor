@@ -5,6 +5,7 @@
 @using Microsoft.EntityFrameworkCore
 @inject DefaultContext db
 @inject IRepository<DeviceEntity> deviceRepository
+@inject IActionExecutionService actionExecutionService
 @inject IJSRuntime jsRuntime
 @inject ISnackbar snackbar
 
@@ -326,6 +327,7 @@
                                     <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SaveActionAsync">Save action</MudButton>
                                     @if (actionEditor.Id > 0)
                                     {
+                                        <MudButton Variant="Variant.Outlined" Color="Color.Info" OnClick="ExecuteActionAsync">Run action</MudButton>
                                         <MudButton Variant="Variant.Outlined" Color="Color.Error" OnClick="DeleteActionAsync">Delete</MudButton>
                                     }
                                 </MudStack>
@@ -756,6 +758,22 @@
         actionEditor = null;
         await LoadDataAsync();
         snackbar.Add("Action deleted.", Severity.Success);
+    }
+
+    private async Task ExecuteActionAsync()
+    {
+        if (actionEditor is null || actionEditor.Id == 0)
+            return;
+
+        try
+        {
+            await actionExecutionService.ExecuteManual(actionEditor.Id, CancellationToken.None);
+            snackbar.Add($"Action '{actionEditor.Name}' executed.", Severity.Success);
+        }
+        catch
+        {
+            snackbar.Add($"Failed to execute action '{actionEditor.Name}'.", Severity.Error);
+        }
     }
 
     private void NewCondition()

@@ -32,7 +32,7 @@ public class TuyaController(IDeviceRepository deviceRepository, ITuyaAPIService 
         }
         else
         {
-            logger.LogError("Tuya.DeviceUpdate :: Event from {sourceId}, but device is not mapped in database", model?.DeviceId);
+            logger.LogInformation("Tuya.DeviceUpdate :: Event from {sourceId}, but device is not mapped in database", model?.DeviceId);
         }
 
         return Ok();

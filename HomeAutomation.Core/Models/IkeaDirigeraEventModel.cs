@@ -4,7 +4,7 @@ public class IkeaDirigeraEventModel
 {
     public string? DeviceId { get; set; }
 
-    public Dictionary<string, string?> Attributes { get; set; } = [];
+    public Dictionary<string, object> Attributes { get; set; } = [];
 
     public DateTime Timestamp { get; set; }
 

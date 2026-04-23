@@ -10,6 +10,8 @@ namespace HomeAutomation.Core.Services;
 public interface IActionExecutionService
 {
     Task Execute(int actionId, object? source, CancellationToken cancellationToken);
+
+    Task ExecuteManual(int actionId, CancellationToken cancellationToken);
 }
 
 public class ActionExecutionService(IRepository<ActionEntity> actionRepository, IDeviceRepository deviceRepository, IEvaluateConditionService evaluateConditionService, IServiceProvider serviceProvider, ILogger<ActionExecutionService> logger) : IActionExecutionService
@@ -50,6 +52,31 @@ public class ActionExecutionService(IRepository<ActionEntity> actionRepository, 
         catch (Exception ex)
         {
             logger.LogError(ex, "Action.Execute :: {actionId} :: Error:{message}", actionId, ex.Message);
+        }
+    }
+
+    public async Task ExecuteManual(int actionId, CancellationToken cancellationToken)
+    {
+        var action = await actionRepository.Get(actionId, cancellationToken);
+        if (action == null)
+        {
+            logger.LogError("Action.ExecuteManual :: {actionId} :: Status:NotFound", actionId);
+            return;
+        }
+
+        List<DeviceEntity> devices = await deviceRepository.GetForAction(actionId, cancellationToken);
+
+        if (logger.IsEnabled(LogLevel.Information))
+            logger.LogInformation("Action.ExecuteManual :: {action} :: Devices:{deviceIds}", action.Name, string.Join(',', devices.Select(x => x.Id)));
+
+        try
+        {
+            await ExecuteAction(action, "Manual trigger", devices, cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Action.ExecuteManual :: {actionId} :: Error:{message}", actionId, ex.Message);
+            throw;
         }
     }
 
@@ -152,7 +179,7 @@ public class ActionExecutionService(IRepository<ActionEntity> actionRepository, 
                 var ikeaDirigeraService = serviceProvider.GetRequiredService<IIkeaDirigeraService>();
                 var payload = ikeaDirigeraService.ConvertStateToAction(action.DeviceEventToSend ?? DeviceEvent.Unknown);
 
-                if (payload.Count != 0)
+                if (payload is not null)
                 {
                     var task = ikeaDirigeraService.SendAction(device.SourceId, payload);
                     sendCommandTasks.Add(task);

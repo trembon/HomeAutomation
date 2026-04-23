@@ -50,10 +50,10 @@ public class IkeaDirigeraEventBackgroundService(IServiceScopeFactory serviceScop
         }
 
         DeviceEvent deviceEvent = DeviceEvent.Unknown;
-        if (eventItem.Attributes.TryGetValue("isOn", out string? isOnValue) && bool.TryParse(isOnValue, out bool isOn))
+        if (eventItem.Attributes.TryGetValue("isOn", out object? isOnValue) && isOnValue is bool isOn)
             deviceEvent = isOn ? DeviceEvent.On : DeviceEvent.Off;
 
-        if (eventItem.Attributes.TryGetValue("isOpen", out string? isOpenValue) && bool.TryParse(isOpenValue, out bool isOpen))
+        if (eventItem.Attributes.TryGetValue("isOpen", out object? isOpenValue) && isOpenValue is bool isOpen)
             deviceEvent = isOpen ? DeviceEvent.On : DeviceEvent.Off;
 
         if (deviceEvent != DeviceEvent.Unknown)
@@ -67,10 +67,22 @@ public class IkeaDirigeraEventBackgroundService(IServiceScopeFactory serviceScop
 
         SensorValueKind sensorValueKind = SensorValueKind.Unknown;
         decimal? sensorValueDecimals = null;
-        if (eventItem.Attributes.TryGetValue("currentActivePower", out string? currentActivePowerValue) && decimal.TryParse(currentActivePowerValue, out decimal currentActivePower))
+        if (eventItem.Attributes.TryGetValue("currentActivePower", out object? currentActivePowerValue) && currentActivePowerValue is decimal currentActivePower)
         {
             sensorValueKind = SensorValueKind.EnergyFlow;
             sensorValueDecimals = currentActivePower;
+        }
+
+        if (eventItem.Attributes.TryGetValue("totalEnergyConsumedLastUpdated", out object? totalEnergyConsumedLastUpdatedValue) && totalEnergyConsumedLastUpdatedValue is decimal totalEnergyConsumedLastUpdated)
+        {
+            // skip for now, as this is not used
+            return;
+        }
+
+        if (eventItem.Attributes.TryGetValue("currentVoltage", out object? currentVoltageValue) && currentVoltageValue is decimal currentVoltage)
+        {
+            // skip for now, as this is not used
+            return;
         }
 
         if (sensorValueKind != SensorValueKind.Unknown && sensorValueDecimals is not null)
@@ -80,6 +92,10 @@ public class IkeaDirigeraEventBackgroundService(IServiceScopeFactory serviceScop
 
             var sensorValueService = scope.ServiceProvider.GetRequiredService<ISensorValueService>();
             await sensorValueService.AddValue(device.Id, sensorValueKind, sensorValueDecimals?.ToString() ?? "", eventItem.Timestamp, stoppingToken);
+            return;
         }
+
+        if (logger.IsEnabled(LogLevel.Information))
+            logger.LogInformation("IkeaDirigera.Event :: {deviceId} :: Unknown event, sourceId: {sourceId}, rawData: {rawData}", device.Id, eventItem.DeviceId, eventItem.RawPayload);
     }
 }
