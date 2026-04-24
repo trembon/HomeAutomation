@@ -7,6 +7,8 @@ namespace HomeAutomation.Database;
 
 public class DefaultContext(DbContextOptions<DefaultContext> options) : DbContext(options)
 {
+    public DbSet<HouseListingEntity> HouseListings { get; set; }
+
     public DbSet<ActionEntity> Actions { get; set; }
 
     public DbSet<ActionDeviceEntity> ActionDevices { get; set; }

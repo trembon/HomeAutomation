@@ -205,6 +205,59 @@ namespace HomeAutomation.Database.Migrations
                     b.ToTable("EnergyPricing");
                 });
 
+            modelBuilder.Entity("HomeAutomation.Database.Entities.HouseListingEntity", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Address")
+                        .IsRequired()
+                        .HasMaxLength(512)
+                        .HasColumnType("character varying(512)");
+
+                    b.Property<string>("ExternalId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("FirstSeen")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Info")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("LastChanged")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("LastSeen")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Price")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)");
+
+                    b.Property<string>("Url")
+                        .IsRequired()
+                        .HasMaxLength(1024)
+                        .HasColumnType("character varying(1024)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ExternalId")
+                        .IsUnique();
+
+                    b.ToTable("HouseListings");
+                });
+
             modelBuilder.Entity("HomeAutomation.Database.Entities.LogEntity", b =>
                 {
                     b.Property<int>("Id")
