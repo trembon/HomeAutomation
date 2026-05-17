@@ -40,8 +40,6 @@ public class FetchBoneoListingsScheduleJob(DefaultContext context, IConfiguratio
         {
             var scrapedListings = await FetchListingsAsync(url, cancellationToken);
             var existingListings = await context.HouseListings.ToDictionaryAsync(x => x.ExternalId, cancellationToken);
-            existingListings.Remove(existingListings.First().Key);
-            existingListings.Remove(existingListings.Last().Key);
 
             var notifications = new List<string>();
             foreach (var listing in scrapedListings)
