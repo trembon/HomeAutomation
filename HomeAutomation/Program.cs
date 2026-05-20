@@ -38,11 +38,13 @@ builder.Services.AddSingleton<ITelldusAPIService, TelldusAPIService>();
 builder.Services.AddSingleton<IVerisureAPIService, VerisureAPIService>();
 builder.Services.AddSingleton<IFusionSolarService, FusionSolarService>();
 builder.Services.AddSingleton<IIkeaDirigeraService, IkeaDirigeraService>();
+builder.Services.AddSingleton<IStateStoreService, StateStoreService>();
 
 builder.Services.AddHostedService<IkeaDirigeraEventBackgroundService>();
 
 builder.Services.AddTransient<ISunDataService, SunDataService>();
 builder.Services.AddTransient<ITriggerService, TriggerService>();
+builder.Services.AddTransient<ISensorValueService, SensorValueService>();
 builder.Services.AddTransient<INotificationService, NotificationService>();
 builder.Services.AddTransient<IActionExecutionService, ActionExecutionService>();
 builder.Services.AddTransient<IEvaluateConditionService, EvaluateConditionService>();
@@ -67,6 +69,7 @@ app.UseStaticFiles();
 app.UseAntiforgery();
 
 app.ApplyDatabaseMigrations();
+await app.Services.GetRequiredService<IStateStoreService>().EnsureInitialized(CancellationToken.None);
 
 app.MapStaticAssets();
 app.MapRazorComponents<App>()

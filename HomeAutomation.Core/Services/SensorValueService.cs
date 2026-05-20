@@ -9,7 +9,7 @@ public interface ISensorValueService
     Task AddValue(int deviceId, SensorValueKind valueKind, string value, DateTime? timestamp, CancellationToken cancellationToken);
 }
 
-public class SensorValueService(IRepository<SensorValueEntity> repository) : ISensorValueService
+public class SensorValueService(IRepository<SensorValueEntity> repository, IStateStoreService stateStoreService) : ISensorValueService
 {
     public async Task AddValue(int deviceId, SensorValueKind valueKind, string value, DateTime? timestamp, CancellationToken cancellationToken)
     {
@@ -20,5 +20,7 @@ public class SensorValueService(IRepository<SensorValueEntity> repository) : ISe
             Value = value,
             Timestamp = timestamp ?? DateTime.UtcNow
         }, cancellationToken);
+
+        await stateStoreService.SetSensorValue(deviceId, valueKind, value, cancellationToken);
     }
 }

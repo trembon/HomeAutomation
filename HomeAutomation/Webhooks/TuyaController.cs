@@ -9,7 +9,7 @@ namespace HomeAutomation.Webhooks;
 
 [ApiController]
 [Route("webhooks/tuya")]
-public class TuyaController(IDeviceRepository deviceRepository, ITuyaAPIService tuyaAPIService, ITriggerService triggerService, ILogger<TuyaController> logger) : ControllerBase
+public class TuyaController(IDeviceRepository deviceRepository, ITuyaAPIService tuyaAPIService, ITriggerService triggerService, IStateStoreService stateStoreService, ILogger<TuyaController> logger) : ControllerBase
 {
     [HttpPost("deviceupdate")]
     public async Task<ActionResult> DeviceUpdate(DeviceUpdateModel model, CancellationToken cancellationToken)
@@ -28,6 +28,7 @@ public class TuyaController(IDeviceRepository deviceRepository, ITuyaAPIService 
             var state = tuyaAPIService.ConvertPropertyToEvent(device.Kind, model?.Data);
 
             logger.LogInformation("Tuya.DeviceUpdate :: {deviceId} :: DeviceId:{sourceId}, DPS:{json} MappedState:{state}", device.Id, model?.DeviceId, JsonSerializer.Serialize(model?.Data), state);
+            await stateStoreService.SetDeviceState(device.Id, state, cancellationToken);
             await triggerService.FireTriggersFromDevice(device, state, cancellationToken);
         }
         else

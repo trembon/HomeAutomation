@@ -1,5 +1,8 @@
-﻿using HomeAutomation.Database.Entities;
+﻿using HomeAutomation.Core.Constants;
+using HomeAutomation.Database.Entities;
+using HomeAutomation.Database.Enums;
 using HomeAutomation.Database.Interfaces;
+using System.Globalization;
 using System.Text.RegularExpressions;
 
 namespace HomeAutomation.Core.Services;
@@ -11,7 +14,7 @@ public interface IEvaluateConditionService
     (bool isMet, string name) MeetCondition(ConditionEntity? condition);
 }
 
-public partial class EvaluateConditionService(ISunDataService sunDataService) : IEvaluateConditionService
+public partial class EvaluateConditionService(ISunDataService sunDataService, IStateStoreService stateStoreService) : IEvaluateConditionService
 {
     public (bool isMet, string name) MeetConditions(IConditionedEntity conditionedEntity)
     {
@@ -160,8 +163,36 @@ public partial class EvaluateConditionService(ISunDataService sunDataService) : 
             "sunrise" => sunDataService.GetLatest().Sunrise,
             "sunset" => sunDataService.GetLatest().Sunset,
             "time" => TimeOnly.FromTimeSpan(DateTime.Now.TimeOfDay),
+            "device" => ResolveDeviceState(parts),
+            "sensor" => ResolveSensorValue(parts),
+            "state" => ResolveCustomState(parts),
             _ => null
         };
+    }
+
+    private string? ResolveDeviceState(string[] parts)
+    {
+        if (parts.Length != 3 || !int.TryParse(parts[1], out int deviceId) || !parts[2].Equals("state", StringComparison.InvariantCultureIgnoreCase))
+            return null;
+
+        return stateStoreService.Get(StateKeys.DeviceState(deviceId));
+    }
+
+    private string? ResolveSensorValue(string[] parts)
+    {
+        if (parts.Length != 3 || !int.TryParse(parts[1], out int deviceId) || !Enum.TryParse<SensorValueKind>(parts[2], true, out var valueKind))
+            return null;
+
+        return stateStoreService.Get(StateKeys.SensorValue(deviceId, valueKind));
+    }
+
+    private string? ResolveCustomState(string[] parts)
+    {
+        if (parts.Length < 2)
+            return null;
+
+        string stateName = string.Join(':', parts[1..]);
+        return stateStoreService.Get(StateKeys.CustomState(stateName));
     }
 
     private static bool CompareExpressionValues(object left, string op, string rawRight)
@@ -176,6 +207,21 @@ public partial class EvaluateConditionService(ISunDataService sunDataService) : 
                 _ => false
             };
         }
+
+        if (left is string leftString && decimal.TryParse(leftString, NumberStyles.Float, CultureInfo.InvariantCulture, out var leftDecimal)
+            && decimal.TryParse(rawRight, NumberStyles.Float, CultureInfo.InvariantCulture, out var rightDecimal))
+        {
+            return op switch
+            {
+                "<" => leftDecimal < rightDecimal,
+                ">" => leftDecimal > rightDecimal,
+                "=" => leftDecimal == rightDecimal,
+                _ => false
+            };
+        }
+
+        if (left is string leftValue && op == "=")
+            return string.Equals(leftValue, rawRight, StringComparison.InvariantCultureIgnoreCase);
 
         return false;
     }

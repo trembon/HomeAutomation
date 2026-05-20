@@ -9,7 +9,7 @@ namespace HomeAutomation.Webhooks;
 
 [ApiController]
 [Route("webhooks/telldus")]
-public class TelldusController(ISensorValueService sensorValueService, IDeviceRepository deviceRepository, ITelldusAPIService telldusAPIService, ITriggerService triggerService, IConfiguration configuration, ILogger<TelldusController> logger) : ControllerBase
+public class TelldusController(ISensorValueService sensorValueService, IDeviceRepository deviceRepository, ITelldusAPIService telldusAPIService, ITriggerService triggerService, IStateStoreService stateStoreService, IConfiguration configuration, ILogger<TelldusController> logger) : ControllerBase
 {
     private static readonly Lock duplicationRequestLock = new();
     private static readonly List<DuplicateRecord> duplicationRequestLog = [];
@@ -56,6 +56,7 @@ public class TelldusController(ISensorValueService sensorValueService, IDeviceRe
             var state = telldusAPIService.ConvertCommandToEvent(model.Command);
 
             logger.LogInformation("Telldus.DeviceEvent :: {deviceId} :: DeviceId:{requestDeviceID}, Command:{command}, Parameter:{parameters}, MappedState:{state}", device.Id, model?.DeviceID, model?.Command, model?.Parameter, state);
+            await stateStoreService.SetDeviceState(device.Id, state, cancellationToken);
             await triggerService.FireTriggersFromDevice(device, state, cancellationToken);
         }
 

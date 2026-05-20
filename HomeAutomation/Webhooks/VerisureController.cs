@@ -8,7 +8,7 @@ namespace HomeAutomation.Webhooks;
 
 [ApiController]
 [Route("webhooks/verisure")]
-public class VerisureController(ISensorValueService sensorValueService, IDeviceRepository deviceRepository, IVerisureAPIService verisureAPIService, ITriggerService triggerService, ILogger<VerisureController> logger) : ControllerBase
+public class VerisureController(ISensorValueService sensorValueService, IDeviceRepository deviceRepository, IVerisureAPIService verisureAPIService, ITriggerService triggerService, IStateStoreService stateStoreService, ILogger<VerisureController> logger) : ControllerBase
 {
     [HttpPost("deviceupdate")]
     public async Task<ActionResult> DeviceUpdate(DeviceUpdateModel model, CancellationToken cancellationToken)
@@ -19,6 +19,7 @@ public class VerisureController(ISensorValueService sensorValueService, IDeviceR
             var state = verisureAPIService.MapStateToDeviceEvent(model.State);
 
             logger.LogInformation("Verisure.DeviceUpdate :: {deviceId} :: DeviceId:{sourceId}, MappedState:{state}", device.Id, model?.Id, state);
+            await stateStoreService.SetDeviceState(device.Id, state, cancellationToken);
             await triggerService.FireTriggersFromDevice(device, state, cancellationToken);
         }
         else

@@ -378,6 +378,40 @@ namespace HomeAutomation.Database.Migrations
                     b.ToTable("SolarGenerationSummaries");
                 });
 
+            modelBuilder.Entity("HomeAutomation.Database.Entities.StateValueEntity", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int?>("DeviceId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Key")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Value")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DeviceId");
+
+                    b.HasIndex("Key")
+                        .IsUnique();
+
+                    b.ToTable("StateValues");
+                });
+
             modelBuilder.Entity("HomeAutomation.Database.Entities.SunDataEntity", b =>
                 {
                     b.Property<int>("Id")
@@ -566,6 +600,15 @@ namespace HomeAutomation.Database.Migrations
                     b.Navigation("Device");
                 });
 
+            modelBuilder.Entity("HomeAutomation.Database.Entities.StateValueEntity", b =>
+                {
+                    b.HasOne("HomeAutomation.Database.Entities.DeviceEntity", "Device")
+                        .WithMany("StateValues")
+                        .HasForeignKey("DeviceId");
+
+                    b.Navigation("Device");
+                });
+
             modelBuilder.Entity("HomeAutomation.Database.Entities.TriggerActionEntity", b =>
                 {
                     b.HasOne("HomeAutomation.Database.Entities.ActionEntity", "Action")
@@ -608,6 +651,8 @@ namespace HomeAutomation.Database.Migrations
                     b.Navigation("SensorValues");
 
                     b.Navigation("StateTriggers");
+
+                    b.Navigation("StateValues");
                 });
 
             modelBuilder.Entity("HomeAutomation.Database.Entities.TriggerEntity", b =>

@@ -40,6 +40,7 @@ public class IkeaDirigeraEventBackgroundService(IServiceScopeFactory serviceScop
         using var scope = serviceScopeFactory.CreateScope();
         var deviceRepository = scope.ServiceProvider.GetRequiredService<IDeviceRepository>();
         var triggerService = scope.ServiceProvider.GetRequiredService<ITriggerService>();
+        var stateStoreService = scope.ServiceProvider.GetRequiredService<IStateStoreService>();
 
         var device = await deviceRepository.Get(DeviceSource.IkeaDirigera, eventItem.DeviceId, stoppingToken);
         if (device == null)
@@ -61,6 +62,7 @@ public class IkeaDirigeraEventBackgroundService(IServiceScopeFactory serviceScop
             if (logger.IsEnabled(LogLevel.Information))
                 logger.LogInformation("IkeaDirigera.Event :: {deviceId} :: SourceId:{sourceId}, Mapped event: {deviceEvent}", device.Id, eventItem.DeviceId, deviceEvent);
 
+            await stateStoreService.SetDeviceState(device.Id, deviceEvent, stoppingToken);
             await triggerService.FireTriggersFromDevice(device, deviceEvent, stoppingToken);
             return;
         }

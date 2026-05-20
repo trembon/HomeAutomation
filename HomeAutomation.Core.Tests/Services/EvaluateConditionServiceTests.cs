@@ -1,3 +1,4 @@
+using HomeAutomation.Core.Constants;
 using HomeAutomation.Core.Services;
 using HomeAutomation.Database.Entities;
 using HomeAutomation.Database.Enums;
@@ -8,12 +9,14 @@ namespace HomeAutomation.Core.Tests.Services;
 public class EvaluateConditionServiceTests
 {
     private readonly ISunDataService _sunDataService;
+    private readonly IStateStoreService _stateStoreService;
     private readonly EvaluateConditionService _sut;
 
     public EvaluateConditionServiceTests()
     {
         _sunDataService = Substitute.For<ISunDataService>();
-        _sut = new EvaluateConditionService(_sunDataService);
+        _stateStoreService = Substitute.For<IStateStoreService>();
+        _sut = new EvaluateConditionService(_sunDataService, _stateStoreService);
     }
 
     #region MeetConditions
@@ -237,6 +240,51 @@ public class EvaluateConditionServiceTests
     public void MeetCondition_Expression_UnknownVariable_ReturnsFalse()
     {
         var condition = ExpressionCondition("{unknown} < 6:00");
+
+        Assert.False(_sut.MeetCondition(condition).isMet);
+    }
+
+    [Fact]
+    public void MeetCondition_Expression_DeviceStateEqualsOn_ReturnsTrue()
+    {
+        _stateStoreService.Get(StateKeys.DeviceState(12)).Returns("On");
+        var condition = ExpressionCondition("{device:12:state} = on");
+
+        Assert.True(_sut.MeetCondition(condition).isMet);
+    }
+
+    [Fact]
+    public void MeetCondition_Expression_DeviceStateEqualsPartial_ReturnsTrue()
+    {
+        _stateStoreService.Get(StateKeys.DeviceState(42)).Returns("Partial");
+        var condition = ExpressionCondition("{device:42:state} = partial");
+
+        Assert.True(_sut.MeetCondition(condition).isMet);
+    }
+
+    [Fact]
+    public void MeetCondition_Expression_DeviceStateFullOrPartial_ReturnsTrueWhenPartial()
+    {
+        _stateStoreService.Get(StateKeys.DeviceState(100)).Returns("Partial");
+        var condition = ExpressionCondition("{device:100:state} = on OR {device:100:state} = partial");
+
+        Assert.True(_sut.MeetCondition(condition).isMet);
+    }
+
+    [Fact]
+    public void MeetCondition_Expression_SensorValueGreaterThanThreshold_ReturnsTrue()
+    {
+        _stateStoreService.Get(StateKeys.SensorValue(77, SensorValueKind.EnergyFlow)).Returns("0.42");
+        var condition = ExpressionCondition("{sensor:77:EnergyFlow} > 0.3");
+
+        Assert.True(_sut.MeetCondition(condition).isMet);
+    }
+
+    [Fact]
+    public void MeetCondition_Expression_MissingState_ReturnsFalse()
+    {
+        _stateStoreService.Get(StateKeys.DeviceState(11)).Returns((string?)null);
+        var condition = ExpressionCondition("{device:11:state} = on");
 
         Assert.False(_sut.MeetCondition(condition).isMet);
     }
