@@ -18,6 +18,7 @@ public class TriggerRepository(DefaultContext context) : Repository<TriggerEntit
             .TriggerActions
             .Where(x => x.TriggerId == triggerId)
             .Select(x => x.Action)
+            .Include(x => x.Conditions)
             .AsNoTracking()
             .ToListAsync(cancellationToken);
     }
