@@ -14,14 +14,12 @@ public class TriggerRepository(DefaultContext context) : Repository<TriggerEntit
 {
     public async Task<List<ActionEntity>> GetActionsForTrigger(int triggerId, CancellationToken cancellationToken)
     {
-        var actions = await Context
-            .Actions
-            .Include(x => x.Conditions)
-            .Where(x => x.Triggers.Any(t => t.TriggerId == triggerId))
+        return await Context
+            .TriggerActions
+            .Where(x => x.TriggerId == triggerId)
+            .Select(x => x.Action)
             .AsNoTracking()
             .ToListAsync(cancellationToken);
-
-        return actions;
     }
 
     public async Task<List<TriggerEntity>> GetScheduledTriggers(CancellationToken cancellationToken)

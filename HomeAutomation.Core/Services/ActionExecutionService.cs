@@ -1,7 +1,9 @@
 ﻿using HomeAutomation.Base.Enums;
+using HomeAutomation.Database;
 using HomeAutomation.Database.Entities;
 using HomeAutomation.Database.Enums;
 using HomeAutomation.Database.Repositories;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
@@ -14,11 +16,16 @@ public interface IActionExecutionService
     Task ExecuteManual(int actionId, CancellationToken cancellationToken);
 }
 
-public class ActionExecutionService(IRepository<ActionEntity> actionRepository, IDeviceRepository deviceRepository, IEvaluateConditionService evaluateConditionService, IServiceProvider serviceProvider, ILogger<ActionExecutionService> logger) : IActionExecutionService
+public class ActionExecutionService(DefaultContext database, IDeviceRepository deviceRepository, IEvaluateConditionService evaluateConditionService, IServiceProvider serviceProvider, ILogger<ActionExecutionService> logger) : IActionExecutionService
 {
     public async Task Execute(int actionId, object? source, CancellationToken cancellationToken)
     {
-        var action = await actionRepository.Get(actionId, cancellationToken);
+        var action = await database
+            .Actions
+            .Include(x => x.Conditions)
+            .Where(x => x.Id == actionId)
+            .FirstOrDefaultAsync(cancellationToken);
+
         if (action == null)
         {
             logger.LogError("Action.Execute :: {actionId} :: Status:NotFound", actionId);
@@ -57,7 +64,11 @@ public class ActionExecutionService(IRepository<ActionEntity> actionRepository, 
 
     public async Task ExecuteManual(int actionId, CancellationToken cancellationToken)
     {
-        var action = await actionRepository.Get(actionId, cancellationToken);
+        var action = await database
+            .Actions
+            .Where(x => x.Id == actionId)
+            .FirstOrDefaultAsync(cancellationToken);
+
         if (action == null)
         {
             logger.LogError("Action.ExecuteManual :: {actionId} :: Status:NotFound", actionId);
