@@ -1,0 +1,57 @@
+@page "/automation/current-states"
+@using HomeAutomation.Database.Entities
+@inject IStateValueRepository stateValueRepository
+
+<MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="mb-4">
+    <MudText Typo="Typo.h4">Current States</MudText>
+    <MudButton Variant="Variant.Outlined" OnClick="ReloadAsync">Refresh</MudButton>
+</MudStack>
+
+<MudPaper Outlined="true" Elevation="0" Class="pa-4">
+    @if (isLoading)
+    {
+        <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+    }
+    else if (stateValues.Count == 0)
+    {
+        <MudAlert Severity="Severity.Info">No current states have been stored yet.</MudAlert>
+    }
+    else
+    {
+        <MudTable Items="stateValues" Dense="true" Hover="true">
+            <HeaderContent>
+                <MudTh>Key</MudTh>
+                <MudTh>Value</MudTh>
+                <MudTh>Device ID</MudTh>
+                <MudTh>Updated</MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd DataLabel="Key">@context.Key</MudTd>
+                <MudTd DataLabel="Value">@context.Value</MudTd>
+                <MudTd DataLabel="Device ID">@context.DeviceId</MudTd>
+                <MudTd DataLabel="Updated">@context.UpdatedAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss")</MudTd>
+            </RowTemplate>
+        </MudTable>
+    }
+</MudPaper>
+
+@code {
+    private bool isLoading = true;
+    private List<StateValueEntity> stateValues = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        await ReloadAsync();
+    }
+
+    private async Task ReloadAsync()
+    {
+        isLoading = true;
+        stateValues = await stateValueRepository.GetAll(CancellationToken.None);
+        stateValues = stateValues
+            .OrderBy(x => x.Key)
+            .ThenByDescending(x => x.UpdatedAt)
+            .ToList();
+        isLoading = false;
+    }
+}
