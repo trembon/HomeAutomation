@@ -49,7 +49,7 @@ builder.Services.AddTransient<INotificationService, NotificationService>();
 builder.Services.AddTransient<IActionExecutionService, ActionExecutionService>();
 builder.Services.AddTransient<IEvaluateConditionService, EvaluateConditionService>();
 
-builder.Services.AddScheduleJobs();
+builder.Services.AddScheduleJobs(builder.Configuration);
 
 builder.Services.AddSlackClient(builder.Configuration);
 
