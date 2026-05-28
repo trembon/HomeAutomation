@@ -24,6 +24,7 @@ public class VerisureAPIService(IConfiguration configuration, IHttpClientFactory
             case "close": return DeviceEvent.Off;
             case "disarmed": return DeviceEvent.Off;
             case "armed": return DeviceEvent.On;
+            case "armed_away": return DeviceEvent.On;
             case "armed_home": return DeviceEvent.Partial;
 
             default: return DeviceEvent.Unknown;
