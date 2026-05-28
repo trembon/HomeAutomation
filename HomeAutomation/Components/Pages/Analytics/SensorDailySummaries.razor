@@ -1,0 +1,154 @@
+@page "/analytics/sensor-daily-summaries"
+@using HomeAutomation.Database
+@using Microsoft.EntityFrameworkCore
+@inject DefaultContext db
+
+<MudText Typo="Typo.h4" Class="mb-4">Sensor Daily Summaries</MudText>
+
+<MudPaper Outlined="true" Elevation="0" Class="pa-4 mb-4">
+    <MudGrid>
+        <MudItem xs="12" md="4">
+            <MudSelect T="int?" Label="Device" Variant="Variant.Outlined" @bind-Value="selectedDeviceId">
+                <MudSelectItem T="int?" Value="@((int?)null)">All devices</MudSelectItem>
+                @foreach (var device in devices)
+                {
+                    <MudSelectItem T="int?" Value="@device.Id">@device.Name (@device.Id)</MudSelectItem>
+                }
+            </MudSelect>
+        </MudItem>
+        <MudItem xs="12" md="4">
+            <MudSelect T="SensorValueKind?" Label="Sensor Type" Variant="Variant.Outlined" @bind-Value="selectedType">
+                <MudSelectItem T="SensorValueKind?" Value="@((SensorValueKind?)null)">All sensor types</MudSelectItem>
+                @foreach (var type in supportedTypes)
+                {
+                    <MudSelectItem T="SensorValueKind?" Value="@type">@type</MudSelectItem>
+                }
+            </MudSelect>
+        </MudItem>
+        <MudItem xs="12" md="2">
+            <MudDatePicker Label="From" Variant="Variant.Outlined" Editable="true" Date="@fromDateValue" DateChanged="OnFromDateChanged" />
+        </MudItem>
+        <MudItem xs="12" md="2">
+            <MudDatePicker Label="To" Variant="Variant.Outlined" Editable="true" Date="@toDateValue" DateChanged="OnToDateChanged" />
+        </MudItem>
+        <MudItem xs="12">
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="ReloadAsync">Refresh</MudButton>
+        </MudItem>
+    </MudGrid>
+</MudPaper>
+
+<MudPaper Outlined="true" Elevation="0" Class="pa-4 mb-4">
+    <MudText Typo="Typo.subtitle2" Color="Color.Secondary">Visible rows</MudText>
+    <MudText Typo="Typo.h6">@summaries.Count</MudText>
+</MudPaper>
+
+<MudTable Items="summaries" Dense="true" Hover="true" Loading="isLoading">
+    <HeaderContent>
+        <MudTh>Date</MudTh>
+        <MudTh>Device</MudTh>
+        <MudTh>Type</MudTh>
+        <MudTh>Low</MudTh>
+        <MudTh>High</MudTh>
+        <MudTh>Avg</MudTh>
+        <MudTh>First</MudTh>
+        <MudTh>Last</MudTh>
+        <MudTh>Readings</MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd DataLabel="Date">@context.Date.ToString("yyyy-MM-dd")</MudTd>
+        <MudTd DataLabel="Device">@context.Device.Name (@context.DeviceId)</MudTd>
+        <MudTd DataLabel="Type">@context.Type</MudTd>
+        <MudTd DataLabel="Low">@context.MinValue.ToString("0.###")</MudTd>
+        <MudTd DataLabel="High">@context.MaxValue.ToString("0.###")</MudTd>
+        <MudTd DataLabel="Avg">@context.AvgValue.ToString("0.###")</MudTd>
+        <MudTd DataLabel="First">@context.FirstValue.ToString("0.###")</MudTd>
+        <MudTd DataLabel="Last">@context.LastValue.ToString("0.###")</MudTd>
+        <MudTd DataLabel="Readings">@context.ReadingCount</MudTd>
+    </RowTemplate>
+    <NoRecordsContent>
+        <MudText Class="pa-4">No summaries found for the selected filters.</MudText>
+    </NoRecordsContent>
+</MudTable>
+
+@code {
+    private static readonly SensorValueKind[] supportedTypes =
+    [
+        SensorValueKind.Temperature,
+        SensorValueKind.Humidity,
+        SensorValueKind.RainRate,
+        SensorValueKind.RainTotal,
+        SensorValueKind.WindAverage,
+        SensorValueKind.WindGust,
+        SensorValueKind.EnergyFlow,
+        SensorValueKind.ChargeLevel,
+    ];
+
+    private bool isLoading = true;
+    private int? selectedDeviceId;
+    private SensorValueKind? selectedType;
+    private DateOnly fromDate = DateOnly.FromDateTime(DateTime.Today.AddDays(-30));
+    private DateOnly toDate = DateOnly.FromDateTime(DateTime.Today);
+    private List<DeviceEntity> devices = [];
+    private List<SensorDailySummaryEntity> summaries = [];
+
+    private DateTime? fromDateValue
+    {
+        get => fromDate.ToDateTime(TimeOnly.MinValue);
+        set => fromDate = value is null ? fromDate : DateOnly.FromDateTime(value.Value);
+    }
+
+    private DateTime? toDateValue
+    {
+        get => toDate.ToDateTime(TimeOnly.MinValue);
+        set => toDate = value is null ? toDate : DateOnly.FromDateTime(value.Value);
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        devices = await db.Devices
+            .AsNoTracking()
+            .OrderBy(x => x.Name)
+            .ToListAsync();
+
+        await ReloadAsync();
+    }
+
+    private Task OnFromDateChanged(DateTime? value)
+    {
+        fromDateValue = value;
+        return Task.CompletedTask;
+    }
+
+    private Task OnToDateChanged(DateTime? value)
+    {
+        toDateValue = value;
+        return Task.CompletedTask;
+    }
+
+    private async Task ReloadAsync()
+    {
+        isLoading = true;
+
+        if (fromDate > toDate)
+            (fromDate, toDate) = (toDate, fromDate);
+
+        var query = db.SensorDailySummaries
+            .AsNoTracking()
+            .Include(x => x.Device)
+            .Where(x => x.Date >= fromDate && x.Date <= toDate);
+
+        if (selectedDeviceId.HasValue)
+            query = query.Where(x => x.DeviceId == selectedDeviceId.Value);
+
+        if (selectedType.HasValue)
+            query = query.Where(x => x.Type == selectedType.Value);
+
+        summaries = await query
+            .OrderByDescending(x => x.Date)
+            .ThenBy(x => x.Device.Name)
+            .ThenBy(x => x.Type)
+            .ToListAsync();
+
+        isLoading = false;
+    }
+}

@@ -22,6 +22,8 @@ public class DeviceEntity : BaseEntity
 
     public List<SensorValueEntity> SensorValues { get; set; } = [];
 
+    public List<SensorDailySummaryEntity> SensorDailySummaries { get; set; } = [];
+
     public List<StateValueEntity> StateValues { get; set; } = [];
 
     public List<ActionDeviceEntity> Actions { get; set; } = [];

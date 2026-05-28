@@ -322,6 +322,51 @@ namespace HomeAutomation.Database.Migrations
                     b.ToTable("MailMessages");
                 });
 
+            modelBuilder.Entity("HomeAutomation.Database.Entities.SensorDailySummaryEntity", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<decimal>("AvgValue")
+                        .HasColumnType("numeric");
+
+                    b.Property<DateOnly>("Date")
+                        .HasColumnType("date");
+
+                    b.Property<int>("DeviceId")
+                        .HasColumnType("integer");
+
+                    b.Property<decimal>("FirstValue")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal>("LastValue")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal>("MaxValue")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal>("MinValue")
+                        .HasColumnType("numeric");
+
+                    b.Property<int>("ReadingCount")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Date");
+
+                    b.HasIndex("DeviceId", "Type", "Date")
+                        .IsUnique();
+
+                    b.ToTable("SensorDailySummaries");
+                });
+
             modelBuilder.Entity("HomeAutomation.Database.Entities.SensorValueEntity", b =>
                 {
                     b.Property<int>("Id")
@@ -346,6 +391,8 @@ namespace HomeAutomation.Database.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("DeviceId");
+
+                    b.HasIndex("DeviceId", "Type", "Timestamp");
 
                     b.ToTable("SensorValues");
                 });
@@ -589,6 +636,17 @@ namespace HomeAutomation.Database.Migrations
                     b.Navigation("Device");
                 });
 
+            modelBuilder.Entity("HomeAutomation.Database.Entities.SensorDailySummaryEntity", b =>
+                {
+                    b.HasOne("HomeAutomation.Database.Entities.DeviceEntity", "Device")
+                        .WithMany("SensorDailySummaries")
+                        .HasForeignKey("DeviceId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Device");
+                });
+
             modelBuilder.Entity("HomeAutomation.Database.Entities.SensorValueEntity", b =>
                 {
                     b.HasOne("HomeAutomation.Database.Entities.DeviceEntity", "Device")
@@ -647,6 +705,8 @@ namespace HomeAutomation.Database.Migrations
             modelBuilder.Entity("HomeAutomation.Database.Entities.DeviceEntity", b =>
                 {
                     b.Navigation("Actions");
+
+                    b.Navigation("SensorDailySummaries");
 
                     b.Navigation("SensorValues");
 
