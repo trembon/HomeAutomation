@@ -5,4 +5,5 @@ public sealed class ScheduledJobAttribute(int intervalInSeconds) : Attribute
 {
     public int IntervalInSeconds { get; } = intervalInSeconds;
     public int DelayInSeconds { get; init; } = 30;
+    public bool SupportsParallelism { get; init; } = false;
 }

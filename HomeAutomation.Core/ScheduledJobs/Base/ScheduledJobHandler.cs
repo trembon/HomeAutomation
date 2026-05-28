@@ -9,6 +9,7 @@ public class ScheduledJobHandler<TScheduledJob>(IServiceScopeFactory serviceScop
 {
     private Timer? _timer = null;
     private DateTime? _lastExecution = null;
+    private int _isRunning = 0;
 
     public Task StartAsync(CancellationToken cancellationToken)
     {
@@ -34,20 +35,34 @@ public class ScheduledJobHandler<TScheduledJob>(IServiceScopeFactory serviceScop
         if (cancellationToken.IsCancellationRequested)
             return;
 
+        var attribute = typeof(TScheduledJob).GetCustomAttribute<ScheduledJobAttribute>();
+        if (attribute is null)
+            return;
+
+        if (!attribute.SupportsParallelism && Interlocked.CompareExchange(ref _isRunning, 1, 0) != 0)
+        {
+            logger.LogInformation("Skipping scheduled job {class}, previous execution is still running", typeof(TScheduledJob).Name);
+            return;
+        }
+
         DateTime currentExecution = DateTime.Now;
 
-        using var scope = serviceScopeFactory.CreateScope();
         try
         {
+            using var scope = serviceScopeFactory.CreateScope();
             var scheduledJob = scope.ServiceProvider.GetRequiredService<TScheduledJob>();
             scheduledJob.Execute(currentExecution, _lastExecution, cancellationToken).Wait();
+            _lastExecution = currentExecution;
         }
         catch (Exception ex)
         {
             logger.LogError(ex, "Scheduled job {class} threw exception during execution", typeof(TScheduledJob).Name);
         }
-
-        _lastExecution = currentExecution;
+        finally
+        {
+            if (!attribute.SupportsParallelism)
+                Interlocked.Exchange(ref _isRunning, 0);
+        }
     }
 
     public Task StopAsync(CancellationToken cancellationToken)
