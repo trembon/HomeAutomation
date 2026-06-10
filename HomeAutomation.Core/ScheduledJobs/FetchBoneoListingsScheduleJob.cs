@@ -41,6 +41,10 @@ public class FetchBoneoListingsScheduleJob(DefaultContext context, IConfiguratio
             var scrapedListings = await FetchListingsAsync(url, cancellationToken);
             var existingListings = await context.HouseListings.ToDictionaryAsync(x => x.ExternalId, cancellationToken);
 
+            // for debugging: limit to 1 listing and start with empty existing listings
+            //scrapedListings = scrapedListings.Take(1).ToList();
+            //existingListings = new Dictionary<string, HouseListingEntity>();
+
             var notifications = new List<string>();
             foreach (var listing in scrapedListings)
             {
@@ -258,7 +262,7 @@ public class FetchBoneoListingsScheduleJob(DefaultContext context, IConfiguratio
         if (!string.IsNullOrWhiteSpace(listing.Info))
             parts.Add(listing.Info);
         parts.Add($"Status: {(listing.Status == "ForSale" ? "Till salu" : "På gång")}");
-        parts.Add(listing.Url);
+        parts.Add($"<{listing.Url}>");
         return string.Join("\n", parts.Where(x => !string.IsNullOrWhiteSpace(x)));
     }
 
