@@ -168,7 +168,7 @@ public class SetBatteryDischargeLevelScheduleJobTests
 
     private static SetBatteryDischargeLevelScheduleJob CreateSut(DefaultContext context, IStateStoreService stateStoreService, IFusionSolarService fusionSolarService)
     {
-        return new SetBatteryDischargeLevelScheduleJob(context, stateStoreService, fusionSolarService, NullLogger<SetBatteryDischargeLevelScheduleJob>.Instance);
+        return new SetBatteryDischargeLevelScheduleJob(context, stateStoreService, fusionSolarService, Substitute.For<INotificationService>(), NullLogger<SetBatteryDischargeLevelScheduleJob>.Instance);
     }
 
     private static SensorDailySummaryEntity Summary(int deviceId, DateOnly date, decimal avgValue, int readingCount)
