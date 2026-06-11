@@ -71,13 +71,10 @@ public class SetBatteryDischargeLevelScheduleJob(DefaultContext context, IStateS
                 return;
             }
 
-            var payload = new[]
+            var payload = new ConfigSignalPayload
             {
-                new ConfigSignalPayload
-                {
-                    Id = FUSION_SOLAR_SIGNAL_ID,
-                    Value = desiredMode.DischargeLevel.ToString(CultureInfo.InvariantCulture)
-                }
+                Id = FUSION_SOLAR_SIGNAL_ID,
+                Value = desiredMode.DischargeLevel.ToString(CultureInfo.InvariantCulture)
             };
 
             bool success = await fusionSolarService.SetConfigSignals(FUSION_SOLAR_TYPE, payload, cancellationToken);
