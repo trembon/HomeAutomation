@@ -12,7 +12,7 @@ public interface IFusionSolarService
 {
     SensorValueKind MapTypeToSensorKind(string property);
     Task<IEnumerable<FusionSolarDeviceModel>> GetDevices();
-    Task<bool> SetConfigSignals(object payload, CancellationToken cancellationToken);
+    Task<bool> SetConfigSignals(string type, object payload, CancellationToken cancellationToken);
 }
 
 public class FusionSolarService(IConfiguration configuration, IHttpClientFactory httpClientFactory) : IFusionSolarService
@@ -42,7 +42,7 @@ public class FusionSolarService(IConfiguration configuration, IHttpClientFactory
         return await response.Content.ReadFromJsonAsync<IEnumerable<FusionSolarDeviceModel>>() ?? [];
     }
 
-    public async Task<bool> SetConfigSignals(object payload, CancellationToken cancellationToken)
+    public async Task<bool> SetConfigSignals(string type, object payload, CancellationToken cancellationToken)
     {
         string baseUrl = configuration["FusionSolar:APIUrl"] ?? "";
 
@@ -50,7 +50,7 @@ public class FusionSolarService(IConfiguration configuration, IHttpClientFactory
         var content = new StringContent(json, Encoding.UTF8, "application/json");
 
         var httpClient = httpClientFactory.CreateClient(nameof(FusionSolarService));
-        HttpResponseMessage response = await httpClient.PostAsync($"{baseUrl}set-config-signals", content, cancellationToken);
+        HttpResponseMessage response = await httpClient.PostAsync($"{baseUrl}set-config-signals?type={type}", content, cancellationToken);
         response.EnsureSuccessStatusCode();
 
         var result = await response.Content.ReadFromJsonAsync<SetConfigSignalsResponse>(cancellationToken);

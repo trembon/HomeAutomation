@@ -8,6 +8,8 @@ public interface IStateValueRepository : IRepository<StateValueEntity>
     Task<List<StateValueEntity>> GetAll(CancellationToken cancellationToken);
 
     Task<StateValueEntity?> GetByKey(string key, CancellationToken cancellationToken);
+
+    Task DeleteByKey(string key, CancellationToken cancellationToken);
 }
 
 public class StateValueRepository(DefaultContext context) : Repository<StateValueEntity>(context), IStateValueRepository
@@ -23,5 +25,15 @@ public class StateValueRepository(DefaultContext context) : Repository<StateValu
     {
         return await Table
             .SingleOrDefaultAsync(x => x.Key == key, cancellationToken);
+    }
+
+    public async Task DeleteByKey(string key, CancellationToken cancellationToken)
+    {
+        var stateValue = await Table.SingleOrDefaultAsync(x => x.Key == key, cancellationToken);
+        if (stateValue is null)
+            return;
+
+        Table.Remove(stateValue);
+        await Context.SaveChangesAsync(cancellationToken);
     }
 }

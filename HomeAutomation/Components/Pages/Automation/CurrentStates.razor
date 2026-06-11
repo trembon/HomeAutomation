@@ -1,24 +1,101 @@
 @page "/automation/current-states"
+@using HomeAutomation.Core.Constants
 @using HomeAutomation.Database.Entities
 @inject IStateValueRepository stateValueRepository
+@inject IStateStoreService stateStoreService
+@inject IJSRuntime jsRuntime
+@inject ISnackbar snackbar
 
 <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="mb-4">
     <MudText Typo="Typo.h4">Current States</MudText>
     <MudButton Variant="Variant.Outlined" OnClick="ReloadAsync">Refresh</MudButton>
 </MudStack>
 
-<MudPaper Outlined="true" Elevation="0" Class="pa-4">
+<MudGrid>
+    <MudItem xs="12" md="5">
+        <MudPaper Outlined="true" Elevation="0" Class="pa-4">
+            <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="mb-3">
+                <MudText Typo="Typo.h6">Custom States</MudText>
+                <MudButton Variant="Variant.Outlined" Size="Size.Small" OnClick="NewCustomState">New state</MudButton>
+            </MudStack>
+
+            @if (isLoading)
+            {
+                <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+            }
+            else if (customStates.Count == 0)
+            {
+                <MudAlert Severity="Severity.Info">No custom states have been stored yet.</MudAlert>
+            }
+            else
+            {
+                <MudTable Items="customStates" Dense="true" Hover="true">
+                    <HeaderContent>
+                        <MudTh>Name</MudTh>
+                        <MudTh>Value</MudTh>
+                        <MudTh>Updated</MudTh>
+                        <MudTh></MudTh>
+                    </HeaderContent>
+                    <RowTemplate>
+                        <MudTd DataLabel="Name">@GetCustomStateName(context.Key)</MudTd>
+                        <MudTd DataLabel="Value">@context.Value</MudTd>
+                        <MudTd DataLabel="Updated">@context.UpdatedAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss")</MudTd>
+                        <MudTd DataLabel="">
+                            <MudButton Variant="Variant.Text" Size="Size.Small" OnClick="() => EditCustomState(context)">Edit</MudButton>
+                        </MudTd>
+                    </RowTemplate>
+                </MudTable>
+            }
+        </MudPaper>
+    </MudItem>
+
+    <MudItem xs="12" md="7">
+        <MudPaper Outlined="true" Elevation="0" Class="pa-4">
+            <MudText Typo="Typo.h6" Class="mb-3">Custom State Details</MudText>
+            @if (customStateEditor is null)
+            {
+                <MudAlert Severity="Severity.Info">Select a custom state to edit or create a new one.</MudAlert>
+            }
+            else
+            {
+                <MudGrid>
+                    <MudItem xs="12" md="6">
+                        <MudTextField Variant="Variant.Outlined" @bind-Value="customStateEditor.Name" Label="Name" />
+                    </MudItem>
+                    <MudItem xs="12" md="6">
+                        <MudTextField Variant="Variant.Outlined" Value="@StateKeys.CustomState(NormalizeStateName(customStateEditor.Name))" Label="Stored key" ReadOnly="true" />
+                    </MudItem>
+                    <MudItem xs="12">
+                        <MudTextField Variant="Variant.Outlined" @bind-Value="customStateEditor.Value" Label="Value" />
+                    </MudItem>
+                    <MudItem xs="12">
+                        <MudStack Row="true" Spacing="2">
+                            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SaveCustomStateAsync">Save state</MudButton>
+                            @if (!string.IsNullOrWhiteSpace(customStateEditor.OriginalKey))
+                            {
+                                <MudButton Variant="Variant.Outlined" Color="Color.Error" OnClick="DeleteCustomStateAsync">Delete</MudButton>
+                            }
+                        </MudStack>
+                    </MudItem>
+                </MudGrid>
+            }
+        </MudPaper>
+    </MudItem>
+</MudGrid>
+
+<MudPaper Outlined="true" Elevation="0" Class="pa-4 mt-4">
+    <MudText Typo="Typo.h6" Class="mb-3">Runtime States</MudText>
     @if (isLoading)
     {
         <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
     }
-    else if (stateValues.Count == 0)
+    else if (runtimeStates.Count == 0)
     {
-        <MudAlert Severity="Severity.Info">No current states have been stored yet.</MudAlert>
+        <MudAlert Severity="Severity.Info">No runtime states have been stored yet.</MudAlert>
     }
     else
     {
-        <MudTable Items="stateValues" Dense="true" Hover="true">
+        <MudTable Items="runtimeStates" Dense="true" Hover="true">
             <HeaderContent>
                 <MudTh>Key</MudTh>
                 <MudTh>Value</MudTh>
@@ -36,8 +113,12 @@
 </MudPaper>
 
 @code {
+    private const string CUSTOM_STATE_PREFIX = "state:";
+
     private bool isLoading = true;
-    private List<StateValueEntity> stateValues = [];
+    private List<StateValueEntity> customStates = [];
+    private List<StateValueEntity> runtimeStates = [];
+    private CustomStateEditorModel? customStateEditor;
 
     protected override async Task OnInitializedAsync()
     {
@@ -47,11 +128,111 @@
     private async Task ReloadAsync()
     {
         isLoading = true;
-        stateValues = await stateValueRepository.GetAll(CancellationToken.None);
-        stateValues = stateValues
+
+        var stateValues = await stateValueRepository.GetAll(CancellationToken.None);
+        customStates = stateValues
+            .Where(x => IsCustomStateKey(x.Key))
+            .OrderBy(x => GetCustomStateName(x.Key))
+            .ToList();
+
+        runtimeStates = stateValues
+            .Where(x => !IsCustomStateKey(x.Key))
             .OrderBy(x => x.Key)
             .ThenByDescending(x => x.UpdatedAt)
             .ToList();
+
         isLoading = false;
+    }
+
+    private void NewCustomState()
+    {
+        customStateEditor = new CustomStateEditorModel();
+    }
+
+    private void EditCustomState(StateValueEntity stateValue)
+    {
+        customStateEditor = new CustomStateEditorModel
+        {
+            OriginalKey = stateValue.Key,
+            Name = GetCustomStateName(stateValue.Key),
+            Value = stateValue.Value
+        };
+    }
+
+    private async Task SaveCustomStateAsync()
+    {
+        if (customStateEditor is null)
+            return;
+
+        string name = NormalizeStateName(customStateEditor.Name);
+        if (string.IsNullOrWhiteSpace(name))
+        {
+            snackbar.Add("Custom state name is required.", Severity.Error);
+            return;
+        }
+
+        string key = StateKeys.CustomState(name);
+        await stateStoreService.Set(key, customStateEditor.Value, null, CancellationToken.None);
+
+        if (!string.IsNullOrWhiteSpace(customStateEditor.OriginalKey)
+            && !string.Equals(customStateEditor.OriginalKey, key, StringComparison.InvariantCultureIgnoreCase))
+            await stateStoreService.Delete(customStateEditor.OriginalKey, CancellationToken.None);
+
+        await ReloadAsync();
+        var saved = customStates.Single(x => string.Equals(x.Key, key, StringComparison.InvariantCultureIgnoreCase));
+        EditCustomState(saved);
+        snackbar.Add("Custom state saved.", Severity.Success);
+    }
+
+    private async Task DeleteCustomStateAsync()
+    {
+        if (customStateEditor is null || string.IsNullOrWhiteSpace(customStateEditor.OriginalKey))
+            return;
+
+        bool confirmed = await ConfirmDeleteAsync($"Delete custom state '{GetCustomStateName(customStateEditor.OriginalKey)}'?");
+        if (!confirmed)
+            return;
+
+        await stateStoreService.Delete(customStateEditor.OriginalKey, CancellationToken.None);
+        customStateEditor = null;
+        await ReloadAsync();
+        snackbar.Add("Custom state deleted.", Severity.Success);
+    }
+
+    private async Task<bool> ConfirmDeleteAsync(string message)
+    {
+        try
+        {
+            return await jsRuntime.InvokeAsync<bool>("confirm", message);
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    private static bool IsCustomStateKey(string key)
+    {
+        return key.StartsWith(CUSTOM_STATE_PREFIX, StringComparison.InvariantCultureIgnoreCase);
+    }
+
+    private static string GetCustomStateName(string key)
+    {
+        return IsCustomStateKey(key) ? key[CUSTOM_STATE_PREFIX.Length..] : key;
+    }
+
+    private static string NormalizeStateName(string? value)
+    {
+        var name = value?.Trim() ?? string.Empty;
+        return IsCustomStateKey(name) ? name[CUSTOM_STATE_PREFIX.Length..].Trim() : name;
+    }
+
+    private sealed class CustomStateEditorModel
+    {
+        public string? OriginalKey { get; set; }
+
+        public string Name { get; set; } = string.Empty;
+
+        public string Value { get; set; } = string.Empty;
     }
 }

@@ -4,6 +4,9 @@ namespace HomeAutomation.Core.Constants;
 
 public static class StateKeys
 {
+    public const string BatteryRoomTemperatureDeviceId = "battery-room-temperature-device-id";
+    public const string BatteryDischargeLevelMode = "battery-discharge-level-mode";
+
     public static string DeviceState(int deviceId) => $"device:{deviceId}:state";
 
     public static string SensorValue(int deviceId, SensorValueKind valueKind) => $"sensor:{deviceId}:{valueKind}";

@@ -16,6 +16,8 @@ public interface IStateStoreService
 
     Task Set(string key, string value, int? deviceId, CancellationToken cancellationToken);
 
+    Task Delete(string key, CancellationToken cancellationToken);
+
     Task SetDeviceState(int deviceId, DeviceEvent deviceEvent, CancellationToken cancellationToken);
 
     Task SetSensorValue(int deviceId, SensorValueKind valueKind, string value, CancellationToken cancellationToken);
@@ -78,6 +80,18 @@ public class StateStoreService(IServiceScopeFactory serviceScopeFactory, ILogger
         persisted.UpdatedAt = now;
         persisted.DeviceId = deviceId;
         await repository.Save(cancellationToken);
+    }
+
+    public async Task Delete(string key, CancellationToken cancellationToken)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(key);
+
+        await EnsureInitialized(cancellationToken);
+        _stateValues.TryRemove(key, out _);
+
+        using var scope = serviceScopeFactory.CreateScope();
+        var repository = scope.ServiceProvider.GetRequiredService<IStateValueRepository>();
+        await repository.DeleteByKey(key, cancellationToken);
     }
 
     public Task SetDeviceState(int deviceId, DeviceEvent deviceEvent, CancellationToken cancellationToken)
