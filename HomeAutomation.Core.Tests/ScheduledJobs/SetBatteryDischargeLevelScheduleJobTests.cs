@@ -188,7 +188,7 @@ public class SetBatteryDischargeLevelScheduleJobTests
         Assert.NotNull(payload);
 
         using var json = JsonDocument.Parse(JsonSerializer.Serialize(payload));
-        var signal = json.RootElement.EnumerateArray().Single();
+        var signal = json.RootElement;
         Assert.Equal("230320278", signal.GetProperty("id").GetString());
         Assert.Equal(expectedValue, signal.GetProperty("value").GetString());
     }
