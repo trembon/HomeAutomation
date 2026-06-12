@@ -112,7 +112,7 @@ public class FetchBoneoListingsScheduleJob(DefaultContext context, IConfiguratio
 
                 existing.Status = SoldStatus;
                 existing.LastChanged = currentExecution;
-                notifications.Add($"*Annons borttagen / sålt:*\n{existing.Address}\n{existing.Url}");
+                notifications.Add($"*Annons borttagen / sålt:*\n{existing.Address}\n<{existing.Url}>");
             }
 
             await context.SaveChangesAsync(cancellationToken);
