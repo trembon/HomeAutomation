@@ -76,7 +76,7 @@ public class FetchBoneoListingsScheduleJob(DefaultContext context, IConfiguratio
 
                 if (!string.Equals(previousPrice, listing.Price, StringComparison.Ordinal))
                 {
-                    notifications.Add($"*Prisändring:*\n{listing.Address}\n{previousPrice} -> {listing.Price}\n{listing.Url}");
+                    notifications.Add($"*Prisändring:*\n{listing.Address}\n{previousPrice} -> {listing.Price}\n<{listing.Url}>");
                     existing.Price = listing.Price;
                     changed = true;
                 }
