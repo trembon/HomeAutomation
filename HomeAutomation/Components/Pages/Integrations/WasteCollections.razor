@@ -1,0 +1,232 @@
+@page "/waste-collection"
+@using HomeAutomation.Database
+@using Microsoft.EntityFrameworkCore
+@inject DefaultContext db
+
+<PageTitle>Waste Collection</PageTitle>
+
+<MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="mb-4">
+    <MudText Typo="Typo.h4">Waste Collection</MudText>
+    <MudButton Variant="Variant.Outlined" OnClick="ReloadAsync">Refresh</MudButton>
+</MudStack>
+
+<MudGrid Class="mb-4">
+    <MudItem xs="12" md="6">
+        <MudPaper Outlined="true" Elevation="0" Class="pa-4" Style="height: 100%">
+            <MudText Typo="Typo.subtitle2" Color="Color.Secondary">Next collection</MudText>
+            @if (nextCollections.Count == 0)
+            {
+                <MudText Typo="Typo.h6" Class="mt-1">No upcoming collection found</MudText>
+            }
+            else
+            {
+                <MudText Typo="Typo.h5" Class="mt-1">@nextCollections[0].CollectionDate.ToString("yyyy-MM-dd")</MudText>
+                <MudText Typo="Typo.body1">@string.Join(", ", nextCollections.Select(x => x.Type).Distinct())</MudText>
+                <MudText Typo="Typo.body2" Color="Color.Secondary">@FormatAddress(nextCollections[0])</MudText>
+            }
+        </MudPaper>
+    </MudItem>
+    <MudItem xs="12" sm="6" md="3">
+        <MudPaper Outlined="true" Elevation="0" Class="pa-4" Style="height: 100%">
+            <MudText Typo="Typo.subtitle2" Color="Color.Secondary">Last fetched</MudText>
+            <MudText Typo="Typo.h6" Class="mt-1">@FormatTimestamp(lastFetchedAt)</MudText>
+        </MudPaper>
+    </MudItem>
+    <MudItem xs="12" sm="6" md="3">
+        <MudPaper Outlined="true" Elevation="0" Class="pa-4" Style="height: 100%">
+            <MudText Typo="Typo.subtitle2" Color="Color.Secondary">Stored collections</MudText>
+            <MudText Typo="Typo.h6" Class="mt-1">@totalRecords</MudText>
+        </MudPaper>
+    </MudItem>
+</MudGrid>
+
+<MudPaper Outlined="true" Elevation="0" Class="pa-4 mb-4">
+    <MudGrid>
+        <MudItem xs="12" sm="6" md="3">
+            <MudSelect T="CollectionView" Label="Status" Variant="Variant.Outlined" @bind-Value="selectedView">
+                <MudSelectItem T="CollectionView" Value="@CollectionView.All">All</MudSelectItem>
+                <MudSelectItem T="CollectionView" Value="@CollectionView.Active">Active</MudSelectItem>
+                <MudSelectItem T="CollectionView" Value="@CollectionView.History">History</MudSelectItem>
+            </MudSelect>
+        </MudItem>
+        <MudItem xs="12" sm="6" md="3">
+            <MudSelect T="string" Label="Type" Variant="Variant.Outlined" @bind-Value="selectedType">
+                <MudSelectItem T="string" Value="@AllTypes">All types</MudSelectItem>
+                @foreach (string type in availableTypes)
+                {
+                    <MudSelectItem T="string" Value="@type">@type</MudSelectItem>
+                }
+            </MudSelect>
+        </MudItem>
+        <MudItem xs="12" sm="6" md="2">
+            <MudDatePicker Label="From" Variant="Variant.Outlined" Editable="true" Date="@fromDateValue" DateChanged="OnFromDateChanged" />
+        </MudItem>
+        <MudItem xs="12" sm="6" md="2">
+            <MudDatePicker Label="To" Variant="Variant.Outlined" Editable="true" Date="@toDateValue" DateChanged="OnToDateChanged" />
+        </MudItem>
+        <MudItem xs="12" md="2" Class="d-flex align-center">
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" FullWidth="true" OnClick="ReloadAsync">Apply</MudButton>
+        </MudItem>
+    </MudGrid>
+</MudPaper>
+
+<MudTable Items="collections" Dense="true" Hover="true" Loading="isLoading" RowsPerPage="25">
+    <HeaderContent>
+        <MudTh>Collection date</MudTh>
+        <MudTh>Type</MudTh>
+        <MudTh>Description</MudTh>
+        <MudTh>Address</MudTh>
+        <MudTh>Status</MudTh>
+        <MudTh>Notification</MudTh>
+        <MudTh>First seen</MudTh>
+        <MudTh>Last fetched</MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd DataLabel="Collection date">@context.CollectionDate.ToString("yyyy-MM-dd")</MudTd>
+        <MudTd DataLabel="Type"><strong>@context.Type</strong></MudTd>
+        <MudTd DataLabel="Description">@context.Description</MudTd>
+        <MudTd DataLabel="Address">@FormatAddress(context)</MudTd>
+        <MudTd DataLabel="Status">
+            <MudText Typo="Typo.body2" Color="@(context.IsActive ? Color.Success : Color.Secondary)">
+                @(context.IsActive ? "Active" : "Historical")
+            </MudText>
+        </MudTd>
+        <MudTd DataLabel="Notification">@FormatNotification(context)</MudTd>
+        <MudTd DataLabel="First seen">@FormatTimestamp(context.FirstSeenAt)</MudTd>
+        <MudTd DataLabel="Last fetched">@FormatTimestamp(context.LastSeenAt)</MudTd>
+    </RowTemplate>
+    <NoRecordsContent>
+        <MudText Class="pa-4">No waste collections found for the selected filters.</MudText>
+    </NoRecordsContent>
+    <PagerContent>
+        <MudTablePager PageSizeOptions="pageSizeOptions" />
+    </PagerContent>
+</MudTable>
+
+@code {
+    private const string AllTypes = "";
+    private static readonly int[] pageSizeOptions = [10, 25, 50, 100];
+
+    private bool isLoading = true;
+    private CollectionView selectedView = CollectionView.All;
+    private string selectedType = AllTypes;
+    private DateOnly fromDate = DateOnly.FromDateTime(DateTime.Today.AddYears(-1));
+    private DateOnly toDate = DateOnly.FromDateTime(DateTime.Today.AddYears(1));
+    private DateTime? lastFetchedAt;
+    private int totalRecords;
+    private List<string> availableTypes = [];
+    private List<WasteCollectionEntity> collections = [];
+    private List<WasteCollectionEntity> nextCollections = [];
+
+    private DateTime? fromDateValue
+    {
+        get => fromDate.ToDateTime(TimeOnly.MinValue);
+        set => fromDate = value is null ? fromDate : DateOnly.FromDateTime(value.Value);
+    }
+
+    private DateTime? toDateValue
+    {
+        get => toDate.ToDateTime(TimeOnly.MinValue);
+        set => toDate = value is null ? toDate : DateOnly.FromDateTime(value.Value);
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await ReloadAsync();
+    }
+
+    private Task OnFromDateChanged(DateTime? value)
+    {
+        fromDateValue = value;
+        return Task.CompletedTask;
+    }
+
+    private Task OnToDateChanged(DateTime? value)
+    {
+        toDateValue = value;
+        return Task.CompletedTask;
+    }
+
+    private async Task ReloadAsync()
+    {
+        isLoading = true;
+
+        if (fromDate > toDate)
+            (fromDate, toDate) = (toDate, fromDate);
+
+        availableTypes = await db.WasteCollections
+            .AsNoTracking()
+            .Select(x => x.Type)
+            .Distinct()
+            .OrderBy(x => x)
+            .ToListAsync();
+
+        totalRecords = await db.WasteCollections.CountAsync();
+        lastFetchedAt = await db.WasteCollections.MaxAsync(x => (DateTime?)x.LastSeenAt);
+
+        var today = DateOnly.FromDateTime(DateTime.Today);
+        var nextDate = await db.WasteCollections
+            .Where(x => x.IsActive && x.CollectionDate >= today)
+            .MinAsync(x => (DateOnly?)x.CollectionDate);
+
+        nextCollections = nextDate.HasValue
+            ? await db.WasteCollections
+                .AsNoTracking()
+                .Where(x => x.IsActive && x.CollectionDate == nextDate.Value)
+                .OrderBy(x => x.Type)
+                .ToListAsync()
+            : [];
+
+        var query = db.WasteCollections
+            .AsNoTracking()
+            .Where(x => x.CollectionDate >= fromDate && x.CollectionDate <= toDate);
+
+        query = selectedView switch
+        {
+            CollectionView.Active => query.Where(x => x.IsActive),
+            CollectionView.History => query.Where(x => !x.IsActive),
+            _ => query
+        };
+
+        if (!string.IsNullOrWhiteSpace(selectedType))
+            query = query.Where(x => x.Type == selectedType);
+
+        collections = await query
+            .OrderByDescending(x => x.CollectionDate)
+            .ThenBy(x => x.Type)
+            .ToListAsync();
+
+        isLoading = false;
+    }
+
+    private static string FormatAddress(WasteCollectionEntity collection)
+    {
+        return string.IsNullOrWhiteSpace(collection.City)
+            ? collection.Address
+            : $"{collection.Address}, {collection.City}";
+    }
+
+    private static string FormatTimestamp(DateTime? timestamp)
+    {
+        return timestamp.HasValue
+            ? timestamp.Value.ToLocalTime().ToString("yyyy-MM-dd HH:mm")
+            : "—";
+    }
+
+    private static string FormatNotification(WasteCollectionEntity collection)
+    {
+        if (collection.NotificationSentAt.HasValue)
+            return FormatTimestamp(collection.NotificationSentAt);
+
+        return collection.IsActive && collection.CollectionDate >= DateOnly.FromDateTime(DateTime.Today)
+            ? "Pending"
+            : "—";
+    }
+
+    private enum CollectionView
+    {
+        All,
+        Active,
+        History
+    }
+}
