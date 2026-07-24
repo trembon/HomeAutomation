@@ -19,7 +19,6 @@ Currently these are things that are in plan:
 * support to set up filters on triggers
 * fetch and show weather data
 * show sensors in a good way
-* fetch information about when trash is due for pickup
 * move database.json to the postgres database
 * have a memory state for the devices to setup more advanced flows
 
@@ -32,4 +31,11 @@ Currently integrates the following:
 * [tuya-local-api](https://github.com/trembon/tuya-local-api) for sending and receiving events for Tuya devices, offline and locally.
 * [SmtpServer](http://cainosullivan.com/smtpserver) for translating mails to events from not-so-smart devices, like my IP cameras.
 * [sunrise-sunset](https://sunrise-sunset.org/) for fetching sunrise and sunset data.
+* Renhållningen Kristianstad for waste collection schedules and reminders.
 * [Slack](https://slack.com/) for free "sms" to my phone with whats happening.
+
+## Waste collection configuration
+
+Keep the address-specific API URL and unit ID outside source control. They can be set in the ignored `HomeAutomation/appsettings.Development.json` file under `WasteCollection:ApiUrl` and `WasteCollection:UnitId`, or through the `APP_WasteCollection__ApiUrl` and `APP_WasteCollection__UnitId` environment variables.
+
+The checked-in defaults fetch once per day after 02:00 and send a Slack reminder to `events` after 10:00 on the day before collection. These can be changed with `WasteCollection:FetchHour`, `WasteCollection:NotificationHour`, and `WasteCollection:SlackChannel`.

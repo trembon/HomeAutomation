@@ -35,6 +35,8 @@ public class DefaultContext(DbContextOptions<DefaultContext> options) : DbContex
 
     public DbSet<WeatherForecastEntity> WeatherForecast { get; set; }
 
+    public DbSet<WasteCollectionEntity> WasteCollections { get; set; }
+
     public DbSet<LogEntity> Logs { get; set; }
 
     public DbSet<MailMessageEntity> MailMessages { get; set; }
