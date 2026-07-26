@@ -33,9 +33,35 @@ Currently integrates the following:
 * [sunrise-sunset](https://sunrise-sunset.org/) for fetching sunrise and sunset data.
 * Renhållningen Kristianstad for waste collection schedules and reminders.
 * [Slack](https://slack.com/) for free "sms" to my phone with whats happening.
+* [Synology DSM](https://www.synology.com/dsm) for forwarding NAS warnings and critical notifications to Slack.
 
 ## Waste collection configuration
 
 Keep the address-specific API URL and unit ID outside source control. They can be set in the ignored `HomeAutomation/appsettings.Development.json` file under `WasteCollection:ApiUrl` and `WasteCollection:UnitId`, or through the `APP_WasteCollection__ApiUrl` and `APP_WasteCollection__UnitId` environment variables.
 
 The checked-in defaults fetch once per day after 02:00 and send a Slack reminder to `events` after 10:00 on the day before collection. These can be changed with `WasteCollection:FetchHour`, `WasteCollection:NotificationHour`, and `WasteCollection:SlackChannel`.
+
+## Synology DSM notification configuration
+
+HomeAutomation can receive warning and critical notifications from a Synology NAS and forward them to Slack. The webhook only accepts direct requests from IP addresses listed in `Synology:AllowedIpAddresses`; forwarded IP headers are deliberately ignored.
+
+Give the NAS a fixed IP address or DHCP reservation, then configure the address outside source control. For a container deployment, the environment settings can look like:
+
+```text
+APP_Synology__AllowedIpAddresses__0=192.168.1.20
+APP_Synology__SlackChannel=errors
+```
+
+Restart HomeAutomation after changing its configuration. The NAS must call the app directly over the LAN, using a URL such as `http://<home-automation-host>:<published-port>/webhooks/synology/notification`. Do not put a reverse proxy between DSM and this endpoint because the proxy address would replace the NAS source address.
+
+In DSM 7.3.2:
+
+1. Open **Control Panel → Notification → Webhooks** and click **Add**.
+2. Select **Custom** as the provider and the built-in **Warning** rule. This rule includes warning and critical events.
+3. Set the provider name to `HomeAutomation Slack errors`, set the subject to the NAS hostname, and enter the HomeAutomation webhook URL.
+4. Click **Next**, select `POST`, and select `application/json`.
+5. Set the HTTP body to `{"text":"@@TEXT@@"}`. Do not add an authentication header.
+6. Apply the configuration and click **Send Test Message**.
+7. Verify the notification appears in Slack channel `errors`. The configured Slack bot must have `chat:write` permission and be a member of the channel.
+
+See Synology's documentation for [notification rules](https://kb.synology.com/en-global/DSM/help/DSM/AdminCenter/system_notification_rule?version=7) and [custom webhook configuration](https://kb.synology.com/en-global/DSM/help/DSM/AdminCenter/system_notification_webhook?version=7).

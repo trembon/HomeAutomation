@@ -46,6 +46,7 @@ builder.Services.AddTransient<ISunDataService, SunDataService>();
 builder.Services.AddTransient<ITriggerService, TriggerService>();
 builder.Services.AddTransient<ISensorValueService, SensorValueService>();
 builder.Services.AddTransient<INotificationService, NotificationService>();
+builder.Services.AddTransient<ISynologyNotificationService, SynologyNotificationService>();
 builder.Services.AddTransient<IActionExecutionService, ActionExecutionService>();
 builder.Services.AddTransient<IEvaluateConditionService, EvaluateConditionService>();
 
