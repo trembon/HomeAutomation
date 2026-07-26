@@ -12,7 +12,7 @@ public class DeviceEntity : BaseEntity
 
     public DeviceKind Kind { get; set; }
 
-    public bool Disabled { get; set; } = false;
+    public bool Disabled { get; set; }
 
     public string? Url { get; set; }
 

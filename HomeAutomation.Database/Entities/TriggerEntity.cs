@@ -9,7 +9,7 @@ public class TriggerEntity : BaseEntity, IConditionedEntity
 
     public TriggerKind Kind { get; set; }
 
-    public bool Disabled { get; set; } = false;
+    public bool Disabled { get; set; }
 
     public DeviceEvent? ListenOnDeviceEvent { get; set; }
 

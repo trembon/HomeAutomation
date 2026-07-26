@@ -281,3 +281,12 @@ dotnet_style_qualification_for_property = false:silent
 dotnet_style_qualification_for_method = false:silent
 dotnet_style_qualification_for_event = false:silent
 insert_final_newline = true
+
+# EF Core migrations are generated historical artifacts. Keep analyzers and
+# code-style enforcement focused on maintained source instead of rewriting them.
+[**/Migrations/*.cs]
+generated_code = true
+dotnet_diagnostic.CA1062.severity = none
+dotnet_diagnostic.CA1861.severity = none
+dotnet_diagnostic.IDE0161.severity = none
+dotnet_diagnostic.IDE0300.severity = none

@@ -1,4 +1,5 @@
-﻿using HomeAutomation.Core.Models;
+﻿using HomeAutomation.Core.Extensions;
+using HomeAutomation.Core.Models;
 using HomeAutomation.Database.Enums;
 using Microsoft.Extensions.Configuration;
 using System.Net.Http.Json;
@@ -11,45 +12,44 @@ public interface IVerisureAPIService
 
     DeviceEvent MapStateToDeviceEvent(string state);
 
-    Task<IEnumerable<VerisureDeviceModel>> GetDevices();
+    Task<IEnumerable<VerisureDeviceModel>> GetDevices(CancellationToken cancellationToken = default);
 }
 
 public class VerisureAPIService(IConfiguration configuration, IHttpClientFactory httpClientFactory) : IVerisureAPIService
 {
     public DeviceEvent MapStateToDeviceEvent(string state)
     {
-        switch (state.ToLowerInvariant())
+        return state.ToLowerInvariant() switch
         {
-            case "open": return DeviceEvent.On;
-            case "close": return DeviceEvent.Off;
-            case "disarmed": return DeviceEvent.Off;
-            case "armed": return DeviceEvent.On;
-            case "armed_away": return DeviceEvent.On;
-            case "armed_home": return DeviceEvent.Partial;
-
-            default: return DeviceEvent.Unknown;
-        }
+            "open" => DeviceEvent.On,
+            "close" or "disarmed" => DeviceEvent.Off,
+            "armed" or "armed_away" => DeviceEvent.On,
+            "armed_home" => DeviceEvent.Partial,
+            _ => DeviceEvent.Unknown
+        };
     }
 
     public SensorValueKind MapTypeToSensorKind(string type)
     {
-        switch (type.ToLowerInvariant())
+        return type.ToLowerInvariant() switch
         {
-            case "temperature": return SensorValueKind.Temperature;
-            case "humidity": return SensorValueKind.Humidity;
-            default: return SensorValueKind.Unknown;
-        }
+            "temperature" => SensorValueKind.Temperature,
+            "humidity" => SensorValueKind.Humidity,
+            _ => SensorValueKind.Unknown
+        };
     }
 
-    public async Task<IEnumerable<VerisureDeviceModel>> GetDevices()
+    public async Task<IEnumerable<VerisureDeviceModel>> GetDevices(CancellationToken cancellationToken = default)
     {
-        string baseUrl = configuration["Verisure:APIUrl"] ?? "";
-        HttpRequestMessage request = new(HttpMethod.Get, $"{baseUrl}devices/");
-
-        var httpClient = httpClientFactory.CreateClient(nameof(VerisureAPIService));
-        var response = await httpClient.SendAsync(request);
+        Uri requestUri = new(configuration.GetRequiredHttpBaseUri("Verisure:APIUrl"), "devices/");
+        using HttpRequestMessage request = new(HttpMethod.Get, requestUri);
+        HttpClient httpClient = httpClientFactory.CreateClient(nameof(VerisureAPIService));
+        using HttpResponseMessage response = await httpClient.SendAsync(request, cancellationToken);
         response.EnsureSuccessStatusCode();
 
-        return await response.Content.ReadFromJsonAsync<IEnumerable<VerisureDeviceModel>>() ?? [];
+        if (response.Content.Headers.ContentLength == 0)
+            return [];
+
+        return await response.Content.ReadFromJsonAsync<IEnumerable<VerisureDeviceModel>>(cancellationToken) ?? [];
     }
 }

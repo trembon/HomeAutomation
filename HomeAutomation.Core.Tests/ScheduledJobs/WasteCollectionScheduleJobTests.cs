@@ -72,7 +72,7 @@ public class WasteCollectionScheduleJobTests
         Assert.False(rows.Single(x => x.Type == "Stale").IsActive);
         Assert.Equal(
             ["Kärl 1", "Kärl 2"],
-            rows.Where(x => x.IsActive).Select(x => x.Type).OrderBy(x => x).ToArray());
+            [.. rows.Where(x => x.IsActive).Select(x => x.Type).OrderBy(x => x)]);
         Assert.Equal(new DateOnly(2026, 8, 4), rows.Single(x => x.Type == "Kärl 1").CollectionDate);
         Assert.Equal(new DateOnly(2026, 8, 11), rows.Single(x => x.Type == "Kärl 2").CollectionDate);
         Assert.Equal(notifiedAt, rows.Single(x => x.Type == "Kärl 1").NotificationSentAt);
@@ -222,7 +222,7 @@ public class WasteCollectionScheduleJobTests
         };
     }
 
-    private static DefaultContext CreateContext()
+    private static TestDefaultContext CreateContext()
     {
         var options = new DbContextOptionsBuilder<DefaultContext>()
             .UseInMemoryDatabase(Guid.NewGuid().ToString())

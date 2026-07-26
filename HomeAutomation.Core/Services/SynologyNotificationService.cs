@@ -24,7 +24,7 @@ public class SynologyNotificationService(
             return false;
 
         var normalizedRemoteIpAddress = Normalize(remoteIpAddress);
-        var configuredIpAddresses = configuration
+        string[] configuredIpAddresses = configuration
             .GetSection("Synology:AllowedIpAddresses")
             .Get<string[]>() ?? [];
 

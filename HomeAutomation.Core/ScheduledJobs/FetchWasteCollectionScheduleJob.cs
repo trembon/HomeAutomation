@@ -99,7 +99,8 @@ public class FetchWasteCollectionScheduleJob(
         }
 
         await context.SaveChangesAsync(cancellationToken);
-        logger.LogInformation("Schedule.FetchWasteCollection :: stored {count} active collection(s) for {address}", payload.Data.Services.Count, payload.Data.Address);
+        if (logger.IsEnabled(LogLevel.Information))
+            logger.LogInformation("Schedule.FetchWasteCollection :: stored {count} active collection(s) for {address}", payload.Data.Services.Count, payload.Data.Address);
     }
 
     private static string ExtractAddressId(string apiUrl)

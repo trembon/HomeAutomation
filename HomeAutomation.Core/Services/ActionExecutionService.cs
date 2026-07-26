@@ -1,4 +1,4 @@
-﻿using HomeAutomation.Base.Enums;
+using HomeAutomation.Core.Enums;
 using HomeAutomation.Database;
 using HomeAutomation.Database.Entities;
 using HomeAutomation.Database.Enums;
@@ -97,7 +97,7 @@ public class ActionExecutionService(DefaultContext database, IDeviceRepository d
         {
             case ActionKind.SendMessage: return ExecuteSendMessageAction(action, source, devices, cancellationToken);
             case ActionKind.SendSnapshot: return ExecuteSendSnapshotAction(action, source, devices, cancellationToken);
-            case ActionKind.DeviceEvent: return ExecuteDeviceEventAction(action, devices);
+            case ActionKind.DeviceEvent: return ExecuteDeviceEventAction(action, devices, cancellationToken);
 
             default:
                 logger.LogError("No action is defined for action kind {kind}", action.Kind);
@@ -144,7 +144,7 @@ public class ActionExecutionService(DefaultContext database, IDeviceRepository d
         }
     }
 
-    private async Task ExecuteDeviceEventAction(ActionEntity action, List<DeviceEntity> devices)
+    private async Task ExecuteDeviceEventAction(ActionEntity action, List<DeviceEntity> devices, CancellationToken cancellationToken)
     {
         List<Task> sendCommandTasks = [];
         foreach (var device in devices)
@@ -156,7 +156,7 @@ public class ActionExecutionService(DefaultContext database, IDeviceRepository d
 
                 if (command.HasValue)
                 {
-                    var task = telldusAPIService.SendCommand(int.Parse(device.SourceId), command.Value);
+                    Task<bool> task = telldusAPIService.SendCommand(int.Parse(device.SourceId), command.Value, cancellationToken);
                     sendCommandTasks.Add(task);
                 }
             }
@@ -164,11 +164,11 @@ public class ActionExecutionService(DefaultContext database, IDeviceRepository d
             if (device.Source == DeviceSource.ZWave)
             {
                 var zwaveAPIService = serviceProvider.GetRequiredService<IZWaveAPIService>();
-                ZWaveCommandClass? command = zwaveAPIService.ConvertStateToCommand(action.DeviceEventToSend ?? DeviceEvent.Unknown, out object parameter);
+                ZWaveCommandClass? command = zwaveAPIService.ConvertStateToCommand(action.DeviceEventToSend ?? DeviceEvent.Unknown, out object? parameter);
 
-                if (command.HasValue)
+                if (command.HasValue && parameter is not null)
                 {
-                    var task = zwaveAPIService.SendCommand(byte.Parse(device.SourceId), command.Value, parameter);
+                    Task<bool> task = zwaveAPIService.SendCommand(byte.Parse(device.SourceId), command.Value, parameter, cancellationToken);
                     sendCommandTasks.Add(task);
                 }
             }
@@ -180,7 +180,7 @@ public class ActionExecutionService(DefaultContext database, IDeviceRepository d
 
                 if (dpsData.Count != 0)
                 {
-                    var task = tuyaAPIService.SendCommand(device.SourceId, dpsData);
+                    Task<bool> task = tuyaAPIService.SendCommand(device.SourceId, dpsData, cancellationToken);
                     sendCommandTasks.Add(task);
                 }
             }
@@ -188,11 +188,11 @@ public class ActionExecutionService(DefaultContext database, IDeviceRepository d
             if (device.Source == DeviceSource.IkeaDirigera)
             {
                 var ikeaDirigeraService = serviceProvider.GetRequiredService<IIkeaDirigeraService>();
-                var payload = ikeaDirigeraService.ConvertStateToAction(action.DeviceEventToSend ?? DeviceEvent.Unknown);
+                object? payload = ikeaDirigeraService.ConvertStateToAction(action.DeviceEventToSend ?? DeviceEvent.Unknown);
 
                 if (payload is not null)
                 {
-                    var task = ikeaDirigeraService.SendAction(device.SourceId, payload);
+                    Task<bool> task = ikeaDirigeraService.SendAction(device.SourceId, payload, cancellationToken);
                     sendCommandTasks.Add(task);
                 }
             }

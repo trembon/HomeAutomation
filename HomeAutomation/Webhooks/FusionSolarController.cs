@@ -13,7 +13,7 @@ public class FusionSolarController(IDeviceRepository deviceRepository, IFusionSo
     [HttpPost("sensorupdate")]
     public async Task<ActionResult> SensorUpdate(SensorUpdateModel model, CancellationToken cancellationToken)
     {
-        var device = await deviceRepository.Get(DeviceSource.FusionSolar, model.Id, cancellationToken);
+        var device = await deviceRepository.GetBySource(DeviceSource.FusionSolar, model.Id, cancellationToken);
 
         if (device != null && device.Kind == DeviceKind.Sensor)
         {
@@ -26,7 +26,8 @@ public class FusionSolarController(IDeviceRepository deviceRepository, IFusionSo
         }
         else
         {
-            logger.LogInformation("FusionSolar.SensorUpdate :: Sensor update from {sourceId}, but device is not mapped in database. (Value: {value}, Type: {})", model?.Id, model?.Value, model?.Property);
+            if (logger.IsEnabled(LogLevel.Information))
+                logger.LogInformation("FusionSolar.SensorUpdate :: Sensor update from {sourceId}, but device is not mapped in database. (Value: {value}, Type: {type})", model?.Id, model?.Value, model?.Property);
         }
 
         return Ok();

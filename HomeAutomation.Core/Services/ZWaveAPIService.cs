@@ -1,4 +1,5 @@
-﻿using HomeAutomation.Base.Enums;
+using HomeAutomation.Core.Enums;
+using HomeAutomation.Core.Extensions;
 using HomeAutomation.Core.Models;
 using HomeAutomation.Database.Enums;
 using Microsoft.Extensions.Configuration;
@@ -9,54 +10,49 @@ namespace HomeAutomation.Core.Services;
 
 public interface IZWaveAPIService
 {
-    event Action<ZWaveEventModel> ZWaveEventReceived;
+    event Action<ZWaveEventModel>? ZWaveEventReceived;
 
-    Task<IEnumerable<ZWaveDeviceModel>> GetNodes();
+    Task<IEnumerable<ZWaveDeviceModel>> GetNodes(CancellationToken cancellationToken = default);
 
-    Task<bool> SendCommand(byte id, ZWaveCommandClass command, object value);
+    Task<bool> SendCommand(byte id, ZWaveCommandClass command, object parameter, CancellationToken cancellationToken = default);
 
     void SendEventMessage(string message);
 
     void SendEventMessage(string message, DateTime timestamp);
 
-    ZWaveCommandClass? ConvertStateToCommand(DeviceEvent state, out object value);
+    ZWaveCommandClass? ConvertStateToCommand(DeviceEvent state, out object? value);
 
     DeviceEvent ConvertParameterToEvent(DeviceKind deviceKind, ZWaveEventParameter? parameter, object? value);
 }
 
-public class ZWaveAPIService : IZWaveAPIService
+public class ZWaveAPIService(IConfiguration configuration, IHttpClientFactory httpClientFactory) : IZWaveAPIService
 {
-    private readonly HttpClient httpClient;
-    private readonly IConfiguration configuration;
+    public event Action<ZWaveEventModel>? ZWaveEventReceived;
 
-    public event Action<ZWaveEventModel> ZWaveEventReceived;
-
-    public ZWaveAPIService(IConfiguration configuration)
+    public async Task<IEnumerable<ZWaveDeviceModel>> GetNodes(CancellationToken cancellationToken = default)
     {
-        this.httpClient = new HttpClient();
-        this.configuration = configuration;
-    }
-
-    public async Task<IEnumerable<ZWaveDeviceModel>> GetNodes()
-    {
-        string baseUrl = configuration.GetSection("ZWave:APIUrl").Get<string>();
-        HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, $"{baseUrl}nodes/");
-
-        var response = await httpClient.SendAsync(request);
+        Uri requestUri = new(configuration.GetRequiredHttpBaseUri("ZWave:APIUrl"), "nodes/");
+        using HttpRequestMessage request = new(HttpMethod.Get, requestUri);
+        HttpClient httpClient = httpClientFactory.CreateClient(nameof(ZWaveAPIService));
+        using HttpResponseMessage response = await httpClient.SendAsync(request, cancellationToken);
         response.EnsureSuccessStatusCode();
 
-        return await response.Content.ReadFromJsonAsync<IEnumerable<ZWaveDeviceModel>>();
+        if (response.Content.Headers.ContentLength == 0)
+            return [];
+
+        return await response.Content.ReadFromJsonAsync<IEnumerable<ZWaveDeviceModel>>(cancellationToken) ?? [];
     }
 
-    public async Task<bool> SendCommand(byte id, ZWaveCommandClass command, object parameter)
+    public async Task<bool> SendCommand(byte id, ZWaveCommandClass command, object parameter, CancellationToken cancellationToken = default)
     {
-        string baseUrl = configuration.GetSection("ZWave:APIUrl").Get<string>();
-        HttpRequestMessage request = new(HttpMethod.Post, $"{baseUrl}nodes/{id}/send/{command}?parameter={parameter}");
+        string escapedParameter = Uri.EscapeDataString(Convert.ToString(parameter, System.Globalization.CultureInfo.InvariantCulture) ?? string.Empty);
+        Uri requestUri = new(configuration.GetRequiredHttpBaseUri("ZWave:APIUrl"), $"nodes/{id}/send/{command}?parameter={escapedParameter}");
+        using HttpRequestMessage request = new(HttpMethod.Post, requestUri);
+        HttpClient httpClient = httpClientFactory.CreateClient(nameof(ZWaveAPIService));
+        using HttpResponseMessage response = await httpClient.SendAsync(request, cancellationToken);
+        response.EnsureSuccessStatusCode();
 
-        var sendResult = await httpClient.SendAsync(request);
-        sendResult.EnsureSuccessStatusCode();
-
-        return true; // TODO: check for real response
+        return true;
     }
 
     public void SendEventMessage(string message)
@@ -69,7 +65,7 @@ public class ZWaveAPIService : IZWaveAPIService
         ZWaveEventReceived?.Invoke(new ZWaveEventModel { Message = message, Timestamp = timestamp });
     }
 
-    public ZWaveCommandClass? ConvertStateToCommand(DeviceEvent state, out object value)
+    public ZWaveCommandClass? ConvertStateToCommand(DeviceEvent state, out object? value)
     {
         switch (state)
         {
@@ -80,42 +76,25 @@ public class ZWaveAPIService : IZWaveAPIService
             case DeviceEvent.Off:
                 value = 0;
                 return ZWaveCommandClass.Basic;
-        }
 
-        value = null;
-        return null;
+            default:
+                value = null;
+                return null;
+        }
     }
 
     public DeviceEvent ConvertParameterToEvent(DeviceKind deviceKind, ZWaveEventParameter? parameter, object? value)
     {
-        if (value is JsonElement je)
+        if (value is JsonElement jsonElement)
         {
-            switch (je.ValueKind)
+            value = jsonElement.ValueKind switch
             {
-                case JsonValueKind.String:
-                    value = je.GetString();
-                    break;
-
-                case JsonValueKind.Number:
-                    if (je.TryGetInt32(out int intValue))
-                    {
-                        value = intValue;
-                    }
-                    else if (je.TryGetDecimal(out decimal decimalValue))
-                    {
-                        value = decimalValue;
-                    }
-                    break;
-
-                case JsonValueKind.True:
-                case JsonValueKind.False:
-                    value = je.GetBoolean();
-                    break;
-
-                default:
-                    value = null;
-                    break;
-            }
+                JsonValueKind.String => jsonElement.GetString(),
+                JsonValueKind.Number when jsonElement.TryGetInt32(out int integerValue) => integerValue,
+                JsonValueKind.Number when jsonElement.TryGetDecimal(out decimal decimalValue) => decimalValue,
+                JsonValueKind.True or JsonValueKind.False => jsonElement.GetBoolean(),
+                _ => null
+            };
         }
 
         if (deviceKind == DeviceKind.MotionSensor)
@@ -127,27 +106,13 @@ public class ZWaveAPIService : IZWaveAPIService
                 return DeviceEvent.Off;
         }
 
-        switch (value)
+        return value switch
         {
-            case int intValue:
-                if (parameter == ZWaveEventParameter.Basic)
-                    return intValue == 255 ? DeviceEvent.On : DeviceEvent.Off;
-
-                if (parameter == ZWaveEventParameter.SwitchBinary)
-                    return intValue == 255 ? DeviceEvent.On : DeviceEvent.Off;
-
-                break;
-
-            case byte byteValue:
-                if (parameter == ZWaveEventParameter.Basic)
-                    return byteValue == 255 ? DeviceEvent.On : DeviceEvent.Off;
-
-                if (parameter == ZWaveEventParameter.SwitchBinary)
-                    return byteValue == 255 ? DeviceEvent.On : DeviceEvent.Off;
-
-                break;
-        }
-
-        return DeviceEvent.Unknown;
+            int integerValue when parameter is ZWaveEventParameter.Basic or ZWaveEventParameter.SwitchBinary
+                => integerValue == 255 ? DeviceEvent.On : DeviceEvent.Off,
+            byte byteValue when parameter is ZWaveEventParameter.Basic or ZWaveEventParameter.SwitchBinary
+                => byteValue == 255 ? DeviceEvent.On : DeviceEvent.Off,
+            _ => DeviceEvent.Unknown
+        };
     }
 }

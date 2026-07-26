@@ -44,7 +44,7 @@ public class SunDataService(DefaultContext context, ILogger<SunDataService> logg
             }
             catch (Exception ex)
             {
-                logger.LogError(ex, $"Failed to store sun information in database ({date.ToShortDateString()}).");
+                logger.LogError(ex, "Failed to store sun information in database for {Date}.", date);
                 return false;
             }
         }
@@ -62,7 +62,7 @@ public class SunDataService(DefaultContext context, ILogger<SunDataService> logg
                 }
                 catch (Exception ex)
                 {
-                    logger.LogError(ex, $"Failed to fetch sun information from database.");
+                    logger.LogError(ex, "Failed to fetch sun information from database.");
                 }
             }
 

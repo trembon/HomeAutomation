@@ -1,4 +1,5 @@
-﻿using HomeAutomation.Core.Enums;
+using HomeAutomation.Core.Enums;
+using HomeAutomation.Core.Extensions;
 using HomeAutomation.Core.Models;
 using HomeAutomation.Database.Enums;
 using Microsoft.Extensions.Configuration;
@@ -8,15 +9,15 @@ namespace HomeAutomation.Core.Services;
 
 public interface ITelldusAPIService
 {
-    event Action<TelldusEventModel> TelldusEventReceived;
+    event Action<TelldusEventModel>? TelldusEventReceived;
 
-    event Action<TelldusEventModel> TelldusRawEventReceived;
+    event Action<TelldusEventModel>? TelldusRawEventReceived;
 
-    Task<bool> SendCommand(int id, TelldusDeviceMethods command);
+    Task<bool> SendCommand(int id, TelldusDeviceMethods command, CancellationToken cancellationToken = default);
 
-    Task<IEnumerable<TelldusDeviceModel>> GetDevices();
+    Task<IEnumerable<TelldusDeviceModel>> GetDevices(CancellationToken cancellationToken = default);
 
-    Task<TelldusDeviceMethods> GetLastCommand(int id);
+    Task<TelldusDeviceMethods> GetLastCommand(int id, CancellationToken cancellationToken = default);
 
     void SendLogMessage(string message);
 
@@ -29,50 +30,45 @@ public interface ITelldusAPIService
     TelldusDeviceMethods? ConvertStateToCommand(DeviceEvent state);
 }
 
-public class TelldusAPIService(IConfiguration configuration) : ITelldusAPIService
+public class TelldusAPIService(IConfiguration configuration, IHttpClientFactory httpClientFactory) : ITelldusAPIService
 {
-    private readonly HttpClient httpClient = new();
-    private readonly IConfiguration configuration = configuration;
-
     public event Action<TelldusEventModel>? TelldusEventReceived;
 
     public event Action<TelldusEventModel>? TelldusRawEventReceived;
 
-    public async Task<IEnumerable<TelldusDeviceModel>> GetDevices()
+    public async Task<IEnumerable<TelldusDeviceModel>> GetDevices(CancellationToken cancellationToken = default)
     {
-        string baseUrl = configuration["Telldus:APIUrl"] ?? "";
-
-        HttpRequestMessage request = new(HttpMethod.Get, $"{baseUrl}devices/");
-
-        var response = await httpClient.SendAsync(request);
+        Uri requestUri = new(configuration.GetRequiredHttpBaseUri("Telldus:APIUrl"), "devices/");
+        using HttpRequestMessage request = new(HttpMethod.Get, requestUri);
+        HttpClient httpClient = httpClientFactory.CreateClient(nameof(TelldusAPIService));
+        using HttpResponseMessage response = await httpClient.SendAsync(request, cancellationToken);
         response.EnsureSuccessStatusCode();
 
-        return await response.Content.ReadFromJsonAsync<TelldusDeviceModel[]>() ?? [];
+        if (response.Content.Headers.ContentLength == 0)
+            return [];
+
+        return await response.Content.ReadFromJsonAsync<TelldusDeviceModel[]>(cancellationToken) ?? [];
     }
 
-    public async Task<bool> SendCommand(int id, TelldusDeviceMethods command)
+    public async Task<bool> SendCommand(int id, TelldusDeviceMethods command, CancellationToken cancellationToken = default)
     {
-        string baseUrl = configuration["Telldus:APIUrl"] ?? "";
+        Uri requestUri = new(configuration.GetRequiredHttpBaseUri("Telldus:APIUrl"), $"devices/{id}/send/{command}");
+        using HttpRequestMessage request = new(HttpMethod.Post, requestUri);
+        HttpClient httpClient = httpClientFactory.CreateClient(nameof(TelldusAPIService));
+        using HttpResponseMessage response = await httpClient.SendAsync(request, cancellationToken);
 
-        // send the request to the controller
-        HttpRequestMessage request = new(HttpMethod.Post, $"{baseUrl}devices/{id}/send/{command}");
-
-        // wait for an OK
-        var result = await httpClient.SendAsync(request);
-
-        return result.IsSuccessStatusCode;
+        return response.IsSuccessStatusCode;
     }
 
-    public async Task<TelldusDeviceMethods> GetLastCommand(int id)
+    public async Task<TelldusDeviceMethods> GetLastCommand(int id, CancellationToken cancellationToken = default)
     {
-        string baseUrl = configuration["Telldus:APIUrl"] ?? "";
-
-        HttpRequestMessage request = new(HttpMethod.Get, $"{baseUrl}devices/{id}/lastcommand");
-
-        var response = await httpClient.SendAsync(request);
+        Uri requestUri = new(configuration.GetRequiredHttpBaseUri("Telldus:APIUrl"), $"devices/{id}/lastcommand");
+        using HttpRequestMessage request = new(HttpMethod.Get, requestUri);
+        HttpClient httpClient = httpClientFactory.CreateClient(nameof(TelldusAPIService));
+        using HttpResponseMessage response = await httpClient.SendAsync(request, cancellationToken);
         response.EnsureSuccessStatusCode();
 
-        return await response.Content.ReadFromJsonAsync<TelldusDeviceMethods>();
+        return await response.Content.ReadFromJsonAsync<TelldusDeviceMethods>(cancellationToken);
     }
 
     public void SendLogMessage(string message)
@@ -92,22 +88,21 @@ public class TelldusAPIService(IConfiguration configuration) : ITelldusAPIServic
 
     public DeviceEvent ConvertCommandToEvent(TelldusDeviceMethods command)
     {
-        switch (command)
+        return command switch
         {
-            case TelldusDeviceMethods.TurnOn: return DeviceEvent.On;
-            case TelldusDeviceMethods.TurnOff: return DeviceEvent.Off;
-
-            default: return DeviceEvent.Unknown;
-        }
+            TelldusDeviceMethods.TurnOn => DeviceEvent.On,
+            TelldusDeviceMethods.TurnOff => DeviceEvent.Off,
+            _ => DeviceEvent.Unknown
+        };
     }
 
     public TelldusDeviceMethods? ConvertStateToCommand(DeviceEvent state)
     {
-        switch (state)
+        return state switch
         {
-            case DeviceEvent.On: return TelldusDeviceMethods.TurnOn;
-            case DeviceEvent.Off: return TelldusDeviceMethods.TurnOff;
-        }
-        return null;
+            DeviceEvent.On => TelldusDeviceMethods.TurnOn,
+            DeviceEvent.Off => TelldusDeviceMethods.TurnOff,
+            _ => null
+        };
     }
 }

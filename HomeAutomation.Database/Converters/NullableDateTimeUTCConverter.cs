@@ -2,7 +2,7 @@
 
 namespace HomeAutomation.Database.Converters;
 
-internal class NullableDateTimeUTCConverter : ValueConverter<DateTime?, DateTime?>
+internal sealed class NullableDateTimeUTCConverter : ValueConverter<DateTime?, DateTime?>
 {
     public override bool ConvertsNulls => true;
 

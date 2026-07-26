@@ -11,7 +11,7 @@ public class ActionEntity : BaseEntity, IConditionedEntity
 
     public ActionKind Kind { get; set; }
 
-    public bool Disabled { get; set; } = false;
+    public bool Disabled { get; set; }
 
     public DeviceEvent? DeviceEventToSend { get; set; }
 

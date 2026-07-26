@@ -7,39 +7,39 @@ namespace HomeAutomation.Database;
 
 public class DefaultContext(DbContextOptions<DefaultContext> options) : DbContext(options)
 {
-    public DbSet<HouseListingEntity> HouseListings { get; set; }
+    public DbSet<HouseListingEntity> HouseListings => Set<HouseListingEntity>();
 
-    public DbSet<ActionEntity> Actions { get; set; }
+    public DbSet<ActionEntity> Actions => Set<ActionEntity>();
 
-    public DbSet<ActionDeviceEntity> ActionDevices { get; set; }
+    public DbSet<ActionDeviceEntity> ActionDevices => Set<ActionDeviceEntity>();
 
-    public DbSet<ConditionEntity> Conditions { get; set; }
+    public DbSet<ConditionEntity> Conditions => Set<ConditionEntity>();
 
-    public DbSet<DeviceEntity> Devices { get; set; }
+    public DbSet<DeviceEntity> Devices => Set<DeviceEntity>();
 
-    public DbSet<EnergyPricingEntity> EnergyPricing { get; set; }
+    public DbSet<EnergyPricingEntity> EnergyPricing => Set<EnergyPricingEntity>();
 
-    public DbSet<TriggerEntity> Triggers { get; set; }
+    public DbSet<TriggerEntity> Triggers => Set<TriggerEntity>();
 
-    public DbSet<TriggerActionEntity> TriggerActions { get; set; }
+    public DbSet<TriggerActionEntity> TriggerActions => Set<TriggerActionEntity>();
 
-    public DbSet<SensorValueEntity> SensorValues { get; set; }
+    public DbSet<SensorValueEntity> SensorValues => Set<SensorValueEntity>();
 
-    public DbSet<SensorDailySummaryEntity> SensorDailySummaries { get; set; }
+    public DbSet<SensorDailySummaryEntity> SensorDailySummaries => Set<SensorDailySummaryEntity>();
 
-    public DbSet<StateValueEntity> StateValues { get; set; }
+    public DbSet<StateValueEntity> StateValues => Set<StateValueEntity>();
 
-    public DbSet<SolarGenerationSummaryEntity> SolarGenerationSummaries { get; set; }
+    public DbSet<SolarGenerationSummaryEntity> SolarGenerationSummaries => Set<SolarGenerationSummaryEntity>();
 
-    public DbSet<SunDataEntity> SunData { get; set; }
+    public DbSet<SunDataEntity> SunData => Set<SunDataEntity>();
 
-    public DbSet<WeatherForecastEntity> WeatherForecast { get; set; }
+    public DbSet<WeatherForecastEntity> WeatherForecast => Set<WeatherForecastEntity>();
 
-    public DbSet<WasteCollectionEntity> WasteCollections { get; set; }
+    public DbSet<WasteCollectionEntity> WasteCollections => Set<WasteCollectionEntity>();
 
-    public DbSet<LogEntity> Logs { get; set; }
+    public DbSet<LogEntity> Logs => Set<LogEntity>();
 
-    public DbSet<MailMessageEntity> MailMessages { get; set; }
+    public DbSet<MailMessageEntity> MailMessages => Set<MailMessageEntity>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

@@ -137,7 +137,7 @@ public class SetBatteryDischargeLevelScheduleJobTests
         _ = stateStoreService.DidNotReceive().Set(ModeStateKey, Arg.Any<string>(), Arg.Any<int?>(), Arg.Any<CancellationToken>());
     }
 
-    private static DefaultContext CreateContext()
+    private static TestDefaultContext CreateContext()
     {
         var options = new DbContextOptionsBuilder<DefaultContext>()
             .UseInMemoryDatabase(Guid.NewGuid().ToString())

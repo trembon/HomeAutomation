@@ -12,7 +12,7 @@ namespace HomeAutomation.Core.Services;
 
 public interface IIkeaDirigeraService
 {
-    event Action<IkeaDirigeraEventModel> EventReceived;
+    event Action<IkeaDirigeraEventModel>? EventReceived;
 
     Task<IEnumerable<IkeaDirigeraDeviceModel>> GetDevices(CancellationToken cancellationToken = default);
 
@@ -42,7 +42,7 @@ public class IkeaDirigeraService(IConfiguration configuration, IHttpClientFactor
         using var request = new HttpRequestMessage(HttpMethod.Get, BuildUrl("devices"));
         request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
 
-        var response = await httpClient.SendAsync(request, cancellationToken);
+        using HttpResponseMessage response = await httpClient.SendAsync(request, cancellationToken);
         response.EnsureSuccessStatusCode();
 
         var responseData = await response.Content.ReadFromJsonAsync<JsonElement>(_jsonOptions, cancellationToken);
@@ -88,8 +88,7 @@ public class IkeaDirigeraService(IConfiguration configuration, IHttpClientFactor
         };
         request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
 
-        var response = await httpClient.SendAsync(request, cancellationToken);
-        string responseContent = await response.Content.ReadAsStringAsync(cancellationToken);
+        using HttpResponseMessage response = await httpClient.SendAsync(request, cancellationToken);
         response.EnsureSuccessStatusCode();
         return true;
     }
@@ -117,7 +116,6 @@ public class IkeaDirigeraService(IConfiguration configuration, IHttpClientFactor
         }
 
         return null;
-        ;
     }
 
     public async IAsyncEnumerable<IkeaDirigeraEventModel> ListenToEvents([EnumeratorCancellation] CancellationToken cancellationToken = default)

@@ -41,7 +41,8 @@ public class ScheduledJobHandler<TScheduledJob>(IServiceScopeFactory serviceScop
 
         if (!attribute.SupportsParallelism && Interlocked.CompareExchange(ref _isRunning, 1, 0) != 0)
         {
-            logger.LogInformation("Skipping scheduled job {class}, previous execution is still running", typeof(TScheduledJob).Name);
+            if (logger.IsEnabled(LogLevel.Information))
+                logger.LogInformation("Skipping scheduled job {class}, previous execution is still running", typeof(TScheduledJob).Name);
             return;
         }
 

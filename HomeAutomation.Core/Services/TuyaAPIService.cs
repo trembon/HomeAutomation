@@ -1,4 +1,4 @@
-﻿using HomeAutomation.Base.Extensions;
+using HomeAutomation.Core.Extensions;
 using HomeAutomation.Core.Models;
 using HomeAutomation.Database.Enums;
 using Microsoft.Extensions.Configuration;
@@ -9,9 +9,9 @@ namespace HomeAutomation.Core.Services;
 
 public interface ITuyaAPIService
 {
-    Task<IEnumerable<TuyaDeviceModel>> GetDevices();
+    Task<IEnumerable<TuyaDeviceModel>> GetDevices(CancellationToken cancellationToken = default);
 
-    Task<bool> SendCommand(string deviceId, Dictionary<int, object> dps);
+    Task<bool> SendCommand(string deviceId, Dictionary<int, object> dps, CancellationToken cancellationToken = default);
 
     Dictionary<int, object> ConvertStateToDPS(DeviceEvent state, DeviceKind deviceKind, Dictionary<string, string> parameters);
 
@@ -47,7 +47,7 @@ public class TuyaAPIService(IConfiguration configuration, IHttpClientFactory htt
 
     public Dictionary<int, object> ConvertStateToDPS(DeviceEvent state, DeviceKind deviceKind, Dictionary<string, string> parameters)
     {
-        Dictionary<int, object> result = new();
+        Dictionary<int, object> result = [];
 
         switch (deviceKind)
         {
@@ -85,11 +85,11 @@ public class TuyaAPIService(IConfiguration configuration, IHttpClientFactory htt
                         // if not specified, always go for 100%
                         if (parameters.TryGetValue("temperature", out string? temperature) && temperature is not null)
                         {
-                            result[22] = int.Parse(temperature) * 10;
+                            result[23] = int.Parse(temperature) * 10;
                         }
                         else
                         {
-                            result[22] = 1000;
+                            result[23] = 1000;
                         }
                     }
                 }
@@ -115,28 +115,31 @@ public class TuyaAPIService(IConfiguration configuration, IHttpClientFactory htt
         return result;
     }
 
-    public async Task<IEnumerable<TuyaDeviceModel>> GetDevices()
+    public async Task<IEnumerable<TuyaDeviceModel>> GetDevices(CancellationToken cancellationToken = default)
     {
-        string baseUrl = configuration["Tuya:APIUrl"] ?? "";
-        HttpRequestMessage request = new(HttpMethod.Get, $"{baseUrl}devices/");
-
-        var httpClient = httpClientFactory.CreateClient(nameof(TuyaAPIService));
-        var response = await httpClient.SendAsync(request);
+        Uri requestUri = new(configuration.GetRequiredHttpBaseUri("Tuya:APIUrl"), "devices/");
+        using HttpRequestMessage request = new(HttpMethod.Get, requestUri);
+        HttpClient httpClient = httpClientFactory.CreateClient(nameof(TuyaAPIService));
+        using HttpResponseMessage response = await httpClient.SendAsync(request, cancellationToken);
         response.EnsureSuccessStatusCode();
 
-        return await response.Content.ReadFromJsonAsync<IEnumerable<TuyaDeviceModel>>() ?? [];
+        if (response.Content.Headers.ContentLength == 0)
+            return [];
+
+        return await response.Content.ReadFromJsonAsync<IEnumerable<TuyaDeviceModel>>(cancellationToken) ?? [];
     }
 
-    public async Task<bool> SendCommand(string deviceId, Dictionary<int, object> dps)
+    public async Task<bool> SendCommand(string deviceId, Dictionary<int, object> dps, CancellationToken cancellationToken = default)
     {
-        string baseUrl = configuration["Tuya:APIUrl"] ?? "";
-        HttpRequestMessage request = new(HttpMethod.Post, $"{baseUrl}devices/{deviceId}/send")
+        ArgumentException.ThrowIfNullOrWhiteSpace(deviceId);
+        Uri requestUri = new(configuration.GetRequiredHttpBaseUri("Tuya:APIUrl"), $"devices/{Uri.EscapeDataString(deviceId)}/send");
+        using HttpRequestMessage request = new(HttpMethod.Post, requestUri)
         {
             Content = JsonContent.Create(new { data = dps })
         };
 
-        var httpClient = httpClientFactory.CreateClient(nameof(TuyaAPIService));
-        var sendResult = await httpClient.SendAsync(request);
+        HttpClient httpClient = httpClientFactory.CreateClient(nameof(TuyaAPIService));
+        using HttpResponseMessage sendResult = await httpClient.SendAsync(request, cancellationToken);
         sendResult.EnsureSuccessStatusCode();
 
         return true; // TODO: check for real response

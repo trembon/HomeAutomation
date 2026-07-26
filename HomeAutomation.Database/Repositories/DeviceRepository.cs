@@ -8,7 +8,7 @@ public interface IDeviceRepository : IRepository<DeviceEntity>
 {
     Task Add(string name, DeviceSource source, string sourceId, DeviceKind deviceKind, CancellationToken cancellationToken);
 
-    Task<DeviceEntity?> Get(DeviceSource source, string? sourceId, CancellationToken cancellationToken);
+    Task<DeviceEntity?> GetBySource(DeviceSource source, string? sourceId, CancellationToken cancellationToken);
 
     Task<List<DeviceEntity>> GetForAction(int actionId, CancellationToken cancellationToken);
 
@@ -34,7 +34,7 @@ public class DeviceRepository(DefaultContext context) : Repository<DeviceEntity>
         }, cancellationToken);
     }
 
-    public async Task<DeviceEntity?> Get(DeviceSource source, string? sourceId, CancellationToken cancellationToken)
+    public async Task<DeviceEntity?> GetBySource(DeviceSource source, string? sourceId, CancellationToken cancellationToken)
     {
         if (string.IsNullOrWhiteSpace(sourceId))
             return null;

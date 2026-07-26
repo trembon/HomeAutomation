@@ -60,6 +60,7 @@ public class NotifyWasteCollectionScheduleJob(
             collection.NotificationSentAt = currentExecution;
 
         await context.SaveChangesAsync(cancellationToken);
-        logger.LogInformation("Schedule.NotifyWasteCollection :: notified {channel} about {count} collection(s)", channel, collections.Count);
+        if (logger.IsEnabled(LogLevel.Information))
+            logger.LogInformation("Schedule.NotifyWasteCollection :: notified {channel} about {count} collection(s)", channel, collections.Count);
     }
 }

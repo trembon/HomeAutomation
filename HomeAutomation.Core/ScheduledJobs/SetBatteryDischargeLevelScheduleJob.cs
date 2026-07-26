@@ -62,8 +62,8 @@ public class SetBatteryDischargeLevelScheduleJob(DefaultContext context, IStateS
                 ? new BatteryDischargeMode(SUMMER_MODE, SUMMER_DISCHARGE_LEVEL)
                 : new BatteryDischargeMode(WINTER_MODE, WINTER_DISCHARGE_LEVEL);
 
-            var modeStateKey = StateKeys.CustomState(StateKeys.BatteryDischargeLevelMode);
-            var currentMode = stateStoreService.Get(modeStateKey);
+            string modeStateKey = StateKeys.CustomState(StateKeys.BatteryDischargeLevelMode);
+            string? currentMode = stateStoreService.Get(modeStateKey);
             if (string.Equals(currentMode, desiredMode.Name, StringComparison.InvariantCultureIgnoreCase))
             {
                 if (logger.IsEnabled(LogLevel.Information))

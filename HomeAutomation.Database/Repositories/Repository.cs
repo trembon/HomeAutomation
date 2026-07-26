@@ -13,7 +13,7 @@ public interface IRepository<TEntity> : IRepository where TEntity : BaseEntity
 {
     DbSet<TEntity> Table { get; }
 
-    Task<TEntity?> Get(int id, CancellationToken cancellationToken);
+    Task<TEntity?> GetById(int id, CancellationToken cancellationToken);
 
     Task AddAndSave(TEntity entity, CancellationToken cancellationToken);
 
@@ -32,7 +32,7 @@ public class Repository<TEntity>(DefaultContext context) : IRepository<TEntity>,
         await Context.SaveChangesAsync(cancellationToken);
     }
 
-    public async Task<TEntity?> Get(int id, CancellationToken cancellationToken)
+    public async Task<TEntity?> GetById(int id, CancellationToken cancellationToken)
     {
         IQueryable<TEntity> query = Table;
 

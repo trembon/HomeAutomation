@@ -60,7 +60,8 @@ public class SummarizeSensorValuesScheduleJob(DefaultContext context, ILogger<Su
             return;
         }
 
-        logger.LogInformation("Schedule.SummarizeSensorValues :: processing {count} day(s) from {fromDate} to {toDate}", datesToProcess.Count, datesToProcess.First(), datesToProcess.Last());
+        if (logger.IsEnabled(LogLevel.Information))
+            logger.LogInformation("Schedule.SummarizeSensorValues :: processing {count} day(s) from {fromDate} to {toDate}", datesToProcess.Count, datesToProcess.First(), datesToProcess.Last());
 
         foreach (var date in datesToProcess)
             await SummarizeDate(date, cancellationToken);
@@ -120,12 +121,13 @@ public class SummarizeSensorValuesScheduleJob(DefaultContext context, ILogger<Su
 
         await context.SaveChangesAsync(cancellationToken);
 
-        logger.LogInformation("Schedule.SummarizeSensorValues :: {date} -> {summaryCount} summaries from {readingCount} valid readings", date, groupedSummaries.Count, parsedValues.Count);
+        if (logger.IsEnabled(LogLevel.Information))
+            logger.LogInformation("Schedule.SummarizeSensorValues :: {date} -> {summaryCount} summaries from {readingCount} valid readings", date, groupedSummaries.Count, parsedValues.Count);
     }
 
     private static bool TryParse(RawSensorValueRow raw, out ParsedSensorValueRow? parsed)
     {
-        if (decimal.TryParse(raw.Value, NumberStyles.Float, CultureInfo.InvariantCulture, out var value))
+        if (decimal.TryParse(raw.Value, NumberStyles.Float, CultureInfo.InvariantCulture, out decimal value))
         {
             parsed = new ParsedSensorValueRow(raw.DeviceId, raw.Type, raw.Timestamp, value);
             return true;

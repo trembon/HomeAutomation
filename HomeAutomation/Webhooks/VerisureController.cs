@@ -13,12 +13,13 @@ public class VerisureController(ISensorValueService sensorValueService, IDeviceR
     [HttpPost("deviceupdate")]
     public async Task<ActionResult> DeviceUpdate(DeviceUpdateModel model, CancellationToken cancellationToken)
     {
-        var device = await deviceRepository.Get(DeviceSource.Verisure, model.Id, cancellationToken);
+        var device = await deviceRepository.GetBySource(DeviceSource.Verisure, model.Id, cancellationToken);
         if (device != null)
         {
             var state = verisureAPIService.MapStateToDeviceEvent(model.State);
 
-            logger.LogInformation("Verisure.DeviceUpdate :: {deviceId} :: DeviceId:{sourceId}, MappedState:{state}", device.Id, model?.Id, state);
+            if (logger.IsEnabled(LogLevel.Information))
+                logger.LogInformation("Verisure.DeviceUpdate :: {deviceId} :: DeviceId:{sourceId}, MappedState:{state}", device.Id, model?.Id, state);
             await stateStoreService.SetDeviceState(device.Id, state, cancellationToken);
             await triggerService.FireTriggersFromDevice(device, state, cancellationToken);
         }
@@ -34,18 +35,20 @@ public class VerisureController(ISensorValueService sensorValueService, IDeviceR
     {
         //zwaveAPIService.SendEventMessage($"NodeUpdate: {model.NodeId}, {model.ValueType}: {model.Value}", model.Timestamp.ToLocalTime());
 
-        var device = await deviceRepository.Get(DeviceSource.Verisure, model.Id, cancellationToken);
+        var device = await deviceRepository.GetBySource(DeviceSource.Verisure, model.Id, cancellationToken);
 
         if (device != null && device.Kind == DeviceKind.Sensor)
         {
             var sensorType = verisureAPIService.MapTypeToSensorKind(model.Type);
 
-            logger.LogInformation("Verisure.SensorUpdate :: {deviceId} :: NodeId:{nodeId}, ValueType:{valueType}: Value:{value}", device.Id, model.Id, sensorType, model?.Value);
+            if (logger.IsEnabled(LogLevel.Information))
+                logger.LogInformation("Verisure.SensorUpdate :: {deviceId} :: NodeId:{nodeId}, ValueType:{valueType}: Value:{value}", device.Id, model.Id, sensorType, model?.Value);
             await sensorValueService.AddValue(device.Id, sensorType, model?.Value.ToString() ?? "", model?.Timestamp, cancellationToken);
         }
         else
         {
-            logger.LogInformation("Verisure.SensorUpdate :: Sensor update from {sourceId}, but device is not mapped in database. (Value: {value}, Type: {})", model?.Id, model?.Value, model?.Type);
+            if (logger.IsEnabled(LogLevel.Information))
+                logger.LogInformation("Verisure.SensorUpdate :: Sensor update from {sourceId}, but device is not mapped in database. (Value: {value}, Type: {type})", model?.Id, model?.Value, model?.Type);
         }
 
         return Ok();

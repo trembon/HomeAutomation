@@ -208,8 +208,8 @@ public partial class EvaluateConditionService(ISunDataService sunDataService, IS
             };
         }
 
-        if (left is string leftString && decimal.TryParse(leftString, NumberStyles.Float, CultureInfo.InvariantCulture, out var leftDecimal)
-            && decimal.TryParse(rawRight, NumberStyles.Float, CultureInfo.InvariantCulture, out var rightDecimal))
+        if (left is string leftString && decimal.TryParse(leftString, NumberStyles.Float, CultureInfo.InvariantCulture, out decimal leftDecimal)
+            && decimal.TryParse(rawRight, NumberStyles.Float, CultureInfo.InvariantCulture, out decimal rightDecimal))
         {
             return op switch
             {

@@ -1,4 +1,4 @@
-﻿using HomeAutomation.Base.Enums;
+using HomeAutomation.Core.Enums;
 
 namespace HomeAutomation.Core.Models;
 
@@ -6,11 +6,11 @@ public class ZWaveDeviceModel
 {
     public byte ID { get; set; }
 
-    public NodeCapabilities ProtocolInfo { get; set; }
+    public NodeCapabilities ProtocolInfo { get; set; } = new();
 
-    public ManufacturerSpecificInfo ManufacturerSpecific { get; set; }
+    public ManufacturerSpecificInfo ManufacturerSpecific { get; set; } = new();
 
-    public List<NodeCommandClass> SupportedCommands { get; set; }
+    public List<NodeCommandClass> SupportedCommands { get; set; } = [];
 
     public class NodeCapabilities
     {
@@ -26,9 +26,9 @@ public class ZWaveDeviceModel
 
     public class ManufacturerSpecificInfo
     {
-        public string ManufacturerId { get; set; }
-        public string TypeId { get; set; }
-        public string ProductId { get; set; }
+        public string ManufacturerId { get; set; } = string.Empty;
+        public string TypeId { get; set; } = string.Empty;
+        public string ProductId { get; set; } = string.Empty;
 
         public override string ToString()
         {

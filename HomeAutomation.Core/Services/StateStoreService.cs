@@ -43,7 +43,7 @@ public class StateStoreService(IServiceScopeFactory serviceScopeFactory, ILogger
         await EnsureInitialized(cancellationToken);
 
         var now = DateTime.UtcNow;
-        _stateValues.AddOrUpdate(
+        StateValueEntity stateValue = _stateValues.AddOrUpdate(
             key,
             _ => new StateValueEntity
             {
@@ -63,7 +63,7 @@ public class StateStoreService(IServiceScopeFactory serviceScopeFactory, ILogger
         using var scope = serviceScopeFactory.CreateScope();
         var repository = scope.ServiceProvider.GetRequiredService<IStateValueRepository>();
 
-        var persisted = await repository.GetByKey(key, cancellationToken);
+        var persisted = await repository.GetByKey(stateValue.Key, cancellationToken);
         if (persisted is null)
         {
             await repository.AddAndSave(new StateValueEntity
@@ -87,11 +87,11 @@ public class StateStoreService(IServiceScopeFactory serviceScopeFactory, ILogger
         ArgumentException.ThrowIfNullOrWhiteSpace(key);
 
         await EnsureInitialized(cancellationToken);
-        _stateValues.TryRemove(key, out _);
+        _stateValues.TryRemove(key, out StateValueEntity? removedState);
 
         using var scope = serviceScopeFactory.CreateScope();
         var repository = scope.ServiceProvider.GetRequiredService<IStateValueRepository>();
-        await repository.DeleteByKey(key, cancellationToken);
+        await repository.DeleteByKey(removedState?.Key ?? key, cancellationToken);
     }
 
     public Task SetDeviceState(int deviceId, DeviceEvent deviceEvent, CancellationToken cancellationToken)

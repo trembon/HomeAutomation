@@ -1,7 +1,7 @@
-﻿using System;
+using System;
 using System.Drawing;
 
-namespace HomeAutomation.Base.Extensions;
+namespace HomeAutomation.Core.Extensions;
 
 public static class ColorExtensions
 {

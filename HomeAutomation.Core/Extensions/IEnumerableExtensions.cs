@@ -1,9 +1,9 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace HomeAutomation.Base.Extensions;
+namespace HomeAutomation.Core.Extensions;
 
 internal static class IEnumerableExtensions
 {

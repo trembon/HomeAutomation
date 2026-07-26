@@ -27,31 +27,33 @@ public class EmailReceiveService(IServiceScopeFactory serviceScopeFactory, ILogg
                 await stream.WriteAsync(memory, cancellationToken);
 
             stream.Position = 0;
-            var message = await MimeMessage.LoadAsync(stream, cancellationToken);
-            logger.LogInformation("Mail.Receive :: subject:{subject}, sender:{from}", message.Subject, message.From);
+            MimeMessage message = await MimeMessage.LoadAsync(stream, cancellationToken);
+            if (logger.IsEnabled(LogLevel.Information))
+                logger.LogInformation("Mail.Receive :: subject:{subject}, sender:{from}", message.Subject, message.From);
 
             bool saved = false;
-            if (message.Subject.Equals("motion", StringComparison.OrdinalIgnoreCase))
+            byte[] emlData = stream.ToArray();
+            string messageId = message.MessageId ?? Guid.NewGuid().ToString("N", System.Globalization.CultureInfo.InvariantCulture);
+            if (string.Equals(message.Subject, "motion", StringComparison.OrdinalIgnoreCase))
             {
-                string? sourceId = message.From.FirstOrDefault()?.ToString();
-                if (sourceId is not null)
+                string? senderAddress = message.From.Mailboxes.FirstOrDefault()?.Address;
+                int separatorIndex = senderAddress?.IndexOf('@', StringComparison.Ordinal) ?? -1;
+                if (separatorIndex > 0)
                 {
-                    sourceId = sourceId[..sourceId.IndexOf('@')];
-
-                    var deviceService = scope.ServiceProvider.GetRequiredService<IDeviceRepository>();
-
-                    var device = await deviceService.Get(DeviceSource.ONVIF, sourceId, cancellationToken);
+                    string sourceId = senderAddress![..separatorIndex];
+                    IDeviceRepository deviceService = scope.ServiceProvider.GetRequiredService<IDeviceRepository>();
+                    DeviceEntity? device = await deviceService.GetBySource(DeviceSource.ONVIF, sourceId, cancellationToken);
                     if (device != null)
                     {
                         await scope.ServiceProvider.GetRequiredService<ITriggerService>().FireTriggersFromDevice(device, DeviceEvent.Motion, cancellationToken);
-                        await SaveToEml(scope, message.MessageId, stream.ToArray(), device.Id, cancellationToken);
+                        await SaveToEml(scope, messageId, emlData, device.Id, cancellationToken);
                         saved = true;
                     }
                 }
             }
 
             if (!saved)
-                await SaveToEml(scope, message.MessageId, stream.ToArray(), null, cancellationToken);
+                await SaveToEml(scope, messageId, emlData, null, cancellationToken);
         }
         catch (Exception ex)
         {
@@ -62,7 +64,7 @@ public class EmailReceiveService(IServiceScopeFactory serviceScopeFactory, ILogg
         return SmtpResponse.Ok;
     }
 
-    private async Task SaveToEml(IServiceScope scope, string messageId, byte[] emlData, int? deviceId, CancellationToken cancellationToken)
+    private static async Task SaveToEml(IServiceScope scope, string messageId, byte[] emlData, int? deviceId, CancellationToken cancellationToken)
     {
         MailMessageEntity mailMessage = new()
         {
@@ -71,7 +73,7 @@ public class EmailReceiveService(IServiceScopeFactory serviceScopeFactory, ILogg
             EmlData = emlData
         };
 
-        var repository = scope.ServiceProvider.GetRequiredService<IRepository<MailMessageEntity>>();
+        IRepository<MailMessageEntity> repository = scope.ServiceProvider.GetRequiredService<IRepository<MailMessageEntity>>();
         await repository.AddAndSave(mailMessage, cancellationToken);
     }
 }

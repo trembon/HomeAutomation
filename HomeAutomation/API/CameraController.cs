@@ -10,7 +10,7 @@ public class CameraController(IDeviceRepository deviceRepository, IHttpClientFac
     [Route("capture/{deviceId}/{size}")]
     public async Task<IActionResult> Index(int deviceId, string size, CancellationToken cancellationToken)
     {
-        var camera = await deviceRepository.Get(deviceId, cancellationToken);
+        var camera = await deviceRepository.GetById(deviceId, cancellationToken);
         if (camera == null)
             return NotFound();
 

@@ -1,6 +1,9 @@
 name: Build app
 
 on:
+  pull_request:
+    branches:
+      - "main"
   push:
     branches:
       - "main"
@@ -19,14 +22,41 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '10.x'
+          global-json-file: global.json
 
-      - name: Run tests
-        run: dotnet test --configuration Release --verbosity normal
+      - name: Restore and audit dependencies
+        run: dotnet restore HomeAutomation.sln -p:NuGetAudit=true -p:NuGetAuditMode=all
+
+      - name: Check vulnerable packages
+        run: dotnet list HomeAutomation.sln package --vulnerable --include-transitive --no-restore
+
+      - name: Verify analyzer diagnostics
+        run: dotnet format HomeAutomation.sln analyzers --verify-no-changes --severity info --no-restore --exclude HomeAutomation.Database/Migrations
+
+      - name: Verify code style diagnostics
+        run: dotnet format HomeAutomation.sln style --verify-no-changes --severity info --no-restore --exclude HomeAutomation.Database/Migrations
+
+      - name: Build without warnings
+        run: dotnet build HomeAutomation.sln --configuration Release --no-restore --target Rebuild
+
+      - name: Run tests with coverage
+        run: dotnet test HomeAutomation.sln --configuration Release --no-build --collect:"XPlat Code Coverage" --settings coverlet.runsettings --results-directory TestResults
+
+      - name: Enforce coverage baseline
+        shell: pwsh
+        run: ./Tools/Assert-Coverage.ps1 -ResultsDirectory TestResults -MinimumLineCoverage 29
+
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage
+          path: TestResults/**/coverage.cobertura.xml
+          if-no-files-found: error
 
   build-and-push-image:
     runs-on: ubuntu-latest
     needs: test
+    if: github.event_name == 'push'
 
     permissions:
       contents: read

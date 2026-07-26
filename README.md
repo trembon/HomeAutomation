@@ -9,6 +9,23 @@ Well, why not? Its fun to build stuff and tinker around with smart devices. Curr
 
 Also, this way I can keep all of the device data and logic offline and have full control over that while I also can try to connect the cheaper devices I get a hold on instead of just buying one brand or one type of device.
 
+## Quality and security
+
+Pull requests run .NET analyzer and style checks at information severity, a warning-free Release build, the full test suite, dependency auditing, and maintained-code coverage enforcement.
+
+Run the same checks locally with:
+
+```powershell
+dotnet restore HomeAutomation.sln -p:NuGetAudit=true -p:NuGetAuditMode=all
+dotnet format HomeAutomation.sln analyzers --verify-no-changes --severity info --no-restore --exclude HomeAutomation.Database/Migrations
+dotnet format HomeAutomation.sln style --verify-no-changes --severity info --no-restore --exclude HomeAutomation.Database/Migrations
+dotnet build HomeAutomation.sln -c Release --no-restore -t:Rebuild
+dotnet test HomeAutomation.sln -c Release --no-build --collect:"XPlat Code Coverage" --settings coverlet.runsettings --results-directory TestResults
+./Tools/Assert-Coverage.ps1 -ResultsDirectory TestResults -MinimumLineCoverage 29
+```
+
+See [SECURITY_REVIEW.md](SECURITY_REVIEW.md) for the current threat model, prioritized findings, and implementation guidance.
+
 ## Roadmap
 
 Currently these are things that are in plan:

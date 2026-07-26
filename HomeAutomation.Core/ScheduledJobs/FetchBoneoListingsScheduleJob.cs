@@ -28,7 +28,7 @@ public class FetchBoneoListingsScheduleJob(DefaultContext context, IConfiguratio
         if (!ShouldRunToday(currentExecution, lastExecution))
             return;
 
-        var url = configuration.GetSection("Boneo:Url").Get<string>();
+        string? url = configuration.GetSection("Boneo:Url").Get<string>();
         if (string.IsNullOrWhiteSpace(url))
         {
             logger.LogWarning("Schedule.FetchBoneoListings :: skipped, Boneo:Url is not configured");
@@ -120,7 +120,8 @@ public class FetchBoneoListingsScheduleJob(DefaultContext context, IConfiguratio
             foreach (string message in notifications)
                 await notificationService.SendToSlack(NotificationChannel, message, cancellationToken);
 
-            logger.LogInformation("Schedule.FetchBoneoListings :: done, processed {count} listings and sent {notifications} notifications", scrapedListings.Count, notifications.Count);
+            if (logger.IsEnabled(LogLevel.Information))
+                logger.LogInformation("Schedule.FetchBoneoListings :: done, processed {count} listings and sent {notifications} notifications", scrapedListings.Count, notifications.Count);
         }
         catch (Exception ex)
         {
@@ -145,7 +146,7 @@ public class FetchBoneoListingsScheduleJob(DefaultContext context, IConfiguratio
         using var response = await Http.SendAsync(request, cancellationToken);
         response.EnsureSuccessStatusCode();
 
-        var html = await response.Content.ReadAsStringAsync(cancellationToken);
+        string html = await response.Content.ReadAsStringAsync(cancellationToken);
         var doc = new HtmlDocument();
         doc.LoadHtml(html);
 
@@ -159,8 +160,8 @@ public class FetchBoneoListingsScheduleJob(DefaultContext context, IConfiguratio
         foreach (var row in rows)
         {
             // Extract ID from class like "property-row list-no-3621595"
-            var rowClass = row.GetAttributeValue("class", string.Empty);
-            var boneoId = ExtractBoneoId(rowClass);
+            string rowClass = row.GetAttributeValue("class", string.Empty);
+            string boneoId = ExtractBoneoId(rowClass);
             if (string.IsNullOrWhiteSpace(boneoId))
                 continue;
 
@@ -169,38 +170,38 @@ public class FetchBoneoListingsScheduleJob(DefaultContext context, IConfiguratio
             if (anchor is null)
                 continue;
 
-            var href = anchor.GetAttributeValue("href", string.Empty);
-            var listingUrl = href.StartsWith("http", StringComparison.OrdinalIgnoreCase)
+            string href = anchor.GetAttributeValue("href", string.Empty);
+            string listingUrl = href.StartsWith("http", StringComparison.OrdinalIgnoreCase)
                 ? href
                 : $"https://www.boneo.se{href}";
 
             // Address: <h2 class="propertyTitle">
             var titleNode = row.SelectSingleNode(".//h2[@class='propertyTitle']");
-            var streetAddress = titleNode is not null
+            string streetAddress = titleNode is not null
                 ? HtmlEntity.DeEntitize(titleNode.InnerText).Trim()
                 : "Okänd adress";
 
             // Area: <span class="addressInfo">
             var areaNode = row.SelectSingleNode(".//span[@class='addressInfo']");
-            var area = areaNode is not null
+            string area = areaNode is not null
                 ? HtmlEntity.DeEntitize(areaNode.InnerText).Trim()
                 : string.Empty;
 
-            var address = string.IsNullOrWhiteSpace(area)
+            string address = string.IsNullOrWhiteSpace(area)
                 ? streetAddress
                 : $"{streetAddress}, {area}";
 
             // Price: <span class="property-price">
             var priceNode = row.SelectSingleNode(".//span[@class='property-price ']")
                          ?? row.SelectSingleNode(".//span[contains(@class,'property-price')]");
-            var price = priceNode is not null
+            string price = priceNode is not null
                 ? HtmlEntity.DeEntitize(priceNode.InnerText).Trim()
                 : string.Empty;
 
             // Info: <div class="object-other-detail"> contains spans like "Villa", "6 rok", "166 + 9 m²", "1 308 m² tomt"
             var infoNode = row.SelectSingleNode(".//div[@class='object-other-detail ']")
                         ?? row.SelectSingleNode(".//div[contains(@class,'object-other-detail')]");
-            var info = string.Empty;
+            string info = string.Empty;
             if (infoNode is not null)
             {
                 var parts = infoNode.SelectNodes(".//span")?
@@ -212,7 +213,7 @@ public class FetchBoneoListingsScheduleJob(DefaultContext context, IConfiguratio
             }
 
             // Status: check for "På G!" badge
-            var status = ExtractStatus(row);
+            string status = ExtractStatus(row);
 
             listings.Add(new BoneoListing
             {
@@ -232,11 +233,11 @@ public class FetchBoneoListingsScheduleJob(DefaultContext context, IConfiguratio
     {
         // class="property-row list-no-3621595"
         const string prefix = "list-no-";
-        var idx = cssClass.IndexOf(prefix, StringComparison.Ordinal);
+        int idx = cssClass.IndexOf(prefix, StringComparison.Ordinal);
         if (idx < 0) return string.Empty;
 
-        var start = idx + prefix.Length;
-        var end = cssClass.IndexOf(' ', start);
+        int start = idx + prefix.Length;
+        int end = cssClass.IndexOf(' ', start);
         return end < 0
             ? cssClass[start..]
             : cssClass[start..end];
@@ -248,7 +249,7 @@ public class FetchBoneoListingsScheduleJob(DefaultContext context, IConfiguratio
         var badge = row.SelectSingleNode(".//*[contains(@class,'status-badge')]");
         if (badge is not null)
         {
-            var badgeText = HtmlEntity.DeEntitize(badge.InnerText).Trim();
+            string badgeText = HtmlEntity.DeEntitize(badge.InnerText).Trim();
             if (badgeText.Contains(PendingLabel, StringComparison.OrdinalIgnoreCase))
                 return PendingStatus;
         }

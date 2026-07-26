@@ -22,18 +22,20 @@ public class TuyaController(IDeviceRepository deviceRepository, ITuyaAPIService 
             }
         }
 
-        var device = await deviceRepository.Get(DeviceSource.Tuya, model?.DeviceId, cancellationToken);
+        var device = await deviceRepository.GetBySource(DeviceSource.Tuya, model?.DeviceId, cancellationToken);
         if (device != null)
         {
             var state = tuyaAPIService.ConvertPropertyToEvent(device.Kind, model?.Data);
 
-            logger.LogInformation("Tuya.DeviceUpdate :: {deviceId} :: DeviceId:{sourceId}, DPS:{json} MappedState:{state}", device.Id, model?.DeviceId, JsonSerializer.Serialize(model?.Data), state);
+            if (logger.IsEnabled(LogLevel.Information))
+                logger.LogInformation("Tuya.DeviceUpdate :: {deviceId} :: DeviceId:{sourceId}, DPS:{json} MappedState:{state}", device.Id, model?.DeviceId, JsonSerializer.Serialize(model?.Data), state);
             await stateStoreService.SetDeviceState(device.Id, state, cancellationToken);
             await triggerService.FireTriggersFromDevice(device, state, cancellationToken);
         }
         else
         {
-            logger.LogInformation("Tuya.DeviceUpdate :: Event from {sourceId}, but device is not mapped in database", model?.DeviceId);
+            if (logger.IsEnabled(LogLevel.Information))
+                logger.LogInformation("Tuya.DeviceUpdate :: Event from {sourceId}, but device is not mapped in database", model?.DeviceId);
         }
 
         return Ok();

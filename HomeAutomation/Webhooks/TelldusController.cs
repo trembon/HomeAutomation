@@ -25,15 +25,17 @@ public class TelldusController(ISensorValueService sensorValueService, IDeviceRe
 
         telldusAPIService.SendLogMessage($"DEVICE {model?.SensorID}: {model?.Type.ToString()} - {model?.Value}", model?.Timestamp ?? DateTime.Now);
 
-        var sensor = await deviceRepository.Get(DeviceSource.Telldus, model?.SensorID.ToString() ?? string.Empty, cancellationToken);
+        var sensor = await deviceRepository.GetBySource(DeviceSource.Telldus, model?.SensorID.ToString() ?? string.Empty, cancellationToken);
         if (model is not null && sensor is not null)
         {
-            logger.LogInformation("Telldus.Sensor :: Received sensor update from device '{sensor}', type {type}, value {value}.", sensor, model.Type, model.Value);
+            if (logger.IsEnabled(LogLevel.Information))
+                logger.LogInformation("Telldus.Sensor :: Received sensor update from device '{sensor}', type {type}, value {value}.", sensor, model.Type, model.Value);
             await sensorValueService.AddValue(sensor.Id, model.Type, model.Value, model.Timestamp, cancellationToken);
         }
         else
         {
-            logger.LogInformation("Telldus.Sensor :: Received sensor update from unmapped telldus sensor with ID '{sensorId}' of type {type}.", model?.SensorID, model?.Type);
+            if (logger.IsEnabled(LogLevel.Information))
+                logger.LogInformation("Telldus.Sensor :: Received sensor update from unmapped telldus sensor with ID '{sensorId}' of type {type}.", model?.SensorID, model?.Type);
         }
 
         return Ok(true);
@@ -50,12 +52,13 @@ public class TelldusController(ISensorValueService sensorValueService, IDeviceRe
 
         telldusAPIService.SendLogMessage($"DEVICEID {model?.DeviceID}: {model?.Command.ToString()} ({model?.Parameter})");
 
-        var device = await deviceRepository.Get(DeviceSource.Telldus, model?.DeviceID.ToString() ?? string.Empty, cancellationToken);
+        var device = await deviceRepository.GetBySource(DeviceSource.Telldus, model?.DeviceID.ToString() ?? string.Empty, cancellationToken);
         if (model is not null && device is not null)
         {
             var state = telldusAPIService.ConvertCommandToEvent(model.Command);
 
-            logger.LogInformation("Telldus.DeviceEvent :: {deviceId} :: DeviceId:{requestDeviceID}, Command:{command}, Parameter:{parameters}, MappedState:{state}", device.Id, model?.DeviceID, model?.Command, model?.Parameter, state);
+            if (logger.IsEnabled(LogLevel.Information))
+                logger.LogInformation("Telldus.DeviceEvent :: {deviceId} :: DeviceId:{requestDeviceID}, Command:{command}, Parameter:{parameters}, MappedState:{state}", device.Id, model?.DeviceID, model?.Command, model?.Parameter, state);
             await stateStoreService.SetDeviceState(device.Id, state, cancellationToken);
             await triggerService.FireTriggersFromDevice(device, state, cancellationToken);
         }
@@ -73,7 +76,8 @@ public class TelldusController(ISensorValueService sensorValueService, IDeviceRe
         }
 
         telldusAPIService.SendRawLogMessage($"RAW: {model?.RawData} (Controller {model?.ControllerID})");
-        logger.LogInformation("Telldus.Raw :: {rawData}", model?.RawData);
+        if (logger.IsEnabled(LogLevel.Information))
+            logger.LogInformation("Telldus.Raw :: {rawData}", model?.RawData);
         return Ok(true);
     }
 

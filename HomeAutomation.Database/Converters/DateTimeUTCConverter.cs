@@ -2,7 +2,7 @@
 
 namespace HomeAutomation.Database.Converters;
 
-internal class DateTimeUTCConverter : ValueConverter<DateTime, DateTime>
+internal sealed class DateTimeUTCConverter : ValueConverter<DateTime, DateTime>
 {
     public DateTimeUTCConverter()
         : base(
