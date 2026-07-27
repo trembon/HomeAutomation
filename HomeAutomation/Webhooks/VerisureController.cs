@@ -25,7 +25,8 @@ public class VerisureController(ISensorValueService sensorValueService, IDeviceR
         }
         else
         {
-            logger.LogError("Verisure.DeviceUpdate :: Event from {sourceId}, but device is not mapped in database (State: {state})", model.Id, model.State);
+            if (logger.IsEnabled(LogLevel.Information))
+                logger.LogInformation("Verisure.DeviceUpdate :: Event from {sourceId}, but device is not mapped in database (State: {state})", model.Id, model.State);
         }
         return Ok();
     }
@@ -33,8 +34,6 @@ public class VerisureController(ISensorValueService sensorValueService, IDeviceR
     [HttpPost("sensorupdate")]
     public async Task<ActionResult> SensorUpdate(SensorUpdateModel model, CancellationToken cancellationToken)
     {
-        //zwaveAPIService.SendEventMessage($"NodeUpdate: {model.NodeId}, {model.ValueType}: {model.Value}", model.Timestamp.ToLocalTime());
-
         var device = await deviceRepository.GetBySource(DeviceSource.Verisure, model.Id, cancellationToken);
 
         if (device != null && device.Kind == DeviceKind.Sensor)
