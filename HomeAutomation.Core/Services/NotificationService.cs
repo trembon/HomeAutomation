@@ -29,13 +29,13 @@ public class NotificationService(ISlackApiClient slackApiClient, IHttpClientFact
             }
             else
             {
-                logger.LogError($"Failed to send notification to slack.");
+                logger.LogError("Failed to send notification to slack (channel: {Channel}).", channel);
                 return false;
             }
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Failed to send notification to slack. ({Name}: {Message})", ex.GetType().Name, ex.Message);
+            logger.LogError(ex, "Failed to send notification to slack (channel: {Channel}). ({Name}: {Message})", channel, ex.GetType().Name, ex.Message);
             return false;
         }
     }
@@ -60,12 +60,12 @@ public class NotificationService(ISlackApiClient slackApiClient, IHttpClientFact
                     return true;
             }
 
-            logger.LogError($"Failed to send file notification to slack.");
+            logger.LogError("Failed to send file notification to slack (channel: {Channel}).", channel);
             return false;
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Failed to send file notification to slack. ({Name}: {Message})", ex.GetType().Name, ex.Message);
+            logger.LogError(ex, "Failed to send file notification to slack (channel: {Channel}). ({Name}: {Message})", channel, ex.GetType().Name, ex.Message);
             return false;
         }
     }

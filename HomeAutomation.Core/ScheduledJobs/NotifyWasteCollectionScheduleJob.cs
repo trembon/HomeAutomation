@@ -16,7 +16,7 @@ public class NotifyWasteCollectionScheduleJob(
     ILogger<NotifyWasteCollectionScheduleJob> logger) : IScheduledJob
 {
     private const int DefaultNotificationHour = 10;
-    private const string DefaultSlackChannel = "events";
+    private const string DefaultSlackChannel = "event";
 
     public async Task Execute(DateTime currentExecution, DateTime? lastExecution, CancellationToken cancellationToken)
     {
