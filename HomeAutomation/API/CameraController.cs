@@ -1,11 +1,12 @@
-﻿using HomeAutomation.Database.Repositories;
+﻿using HomeAutomation.Core.Services;
+using HomeAutomation.Database.Repositories;
 using Microsoft.AspNetCore.Mvc;
 
 namespace HomeAutomation.API;
 
 [ApiController]
 [Route("api/camera")]
-public class CameraController(IDeviceRepository deviceRepository, IHttpClientFactory httpClientFactory) : Controller
+public class CameraController(IDeviceRepository deviceRepository, ICameraSnapshotService cameraSnapshotService) : Controller
 {
     [Route("capture/{deviceId}/{size}")]
     public async Task<IActionResult> Index(int deviceId, string size, CancellationToken cancellationToken)
@@ -14,12 +15,12 @@ public class CameraController(IDeviceRepository deviceRepository, IHttpClientFac
         if (camera == null)
             return NotFound();
 
-        string? captureUrl = size == "thumbnail" ? camera.ThumbnailUrl : camera.Url;
         try
         {
-            var client = httpClientFactory.CreateClient("cameras");
-            var stream = await client.GetStreamAsync(captureUrl, cancellationToken);
-            return File(stream, "image/png");
+            string? captureUrl = size == "thumbnail" ? camera.ThumbnailUrl : camera.Url;
+            CameraSnapshotSize snapshotSize = size == "thumbnail" ? CameraSnapshotSize.Thumbnail : CameraSnapshotSize.Full;
+            CameraSnapshot snapshot = await cameraSnapshotService.Capture(captureUrl, snapshotSize, cancellationToken);
+            return File(snapshot.Content, snapshot.ContentType);
         }
         catch
         {

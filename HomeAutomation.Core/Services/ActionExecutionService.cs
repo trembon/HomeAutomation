@@ -123,10 +123,8 @@ public class ActionExecutionService(DefaultContext database, IDeviceRepository d
         if (string.IsNullOrWhiteSpace(action.MessageChannel))
             return;
 
-        var httpClientFactory = serviceProvider.GetRequiredService<IHttpClientFactory>();
         var notificationService = serviceProvider.GetRequiredService<INotificationService>();
-
-        var client = httpClientFactory.CreateClient(nameof(ActionExecutionService));
+        var cameraSnapshotService = serviceProvider.GetRequiredService<ICameraSnapshotService>();
 
         foreach (var device in devices.Where(x => x.Kind == Database.Enums.DeviceKind.Camera))
         {
@@ -134,8 +132,8 @@ public class ActionExecutionService(DefaultContext database, IDeviceRepository d
             {
                 string message = GetMessageToSend(action, source, devices);
 
-                byte[] imageBytes = await client.GetByteArrayAsync(device.Url, cancellationToken);
-                await notificationService.SendToSlack(action.MessageChannel, message, imageBytes, $"snapshot_{DateTime.Now:yyyy-MM-dd HHmm}.jpg", "jpg", cancellationToken);
+                CameraSnapshot snapshot = await cameraSnapshotService.Capture(device.Url, CameraSnapshotSize.Full, cancellationToken);
+                await notificationService.SendToSlack(action.MessageChannel, message, snapshot.Content, $"snapshot_{DateTime.Now:yyyy-MM-dd HHmm}.jpg", "jpg", cancellationToken);
             }
             catch (Exception ex)
             {

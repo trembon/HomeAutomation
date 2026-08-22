@@ -13,9 +13,14 @@ RUN dotnet publish HomeAutomation/HomeAutomation.csproj \
     -p:PublishTrimmed=false
 
 # runtime
-FROM mcr.microsoft.com/dotnet/aspnet:10.0 
+FROM mcr.microsoft.com/dotnet/aspnet:10.0
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends ffmpeg \
+    && rm -rf /var/lib/apt/lists/*
+
 WORKDIR /app 
 EXPOSE 8080
 COPY --from=build /app/publish .
 USER $APP_UID 
-ENTRYPOINT ["./HomeAutomation"] 
+ENTRYPOINT ["./HomeAutomation"]

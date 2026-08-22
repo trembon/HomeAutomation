@@ -39,6 +39,8 @@ builder.Services.AddSingleton<IVerisureAPIService, VerisureAPIService>();
 builder.Services.AddSingleton<IFusionSolarService, FusionSolarService>();
 builder.Services.AddSingleton<IIkeaDirigeraService, IkeaDirigeraService>();
 builder.Services.AddSingleton<IStateStoreService, StateStoreService>();
+builder.Services.AddSingleton<IFFmpegService, FFmpegService>();
+builder.Services.AddTransient<ICameraSnapshotService, CameraSnapshotService>();
 
 builder.Services.AddHostedService<IkeaDirigeraEventBackgroundService>();
 

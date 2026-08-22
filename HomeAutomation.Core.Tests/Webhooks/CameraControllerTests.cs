@@ -1,11 +1,10 @@
 using HomeAutomation.API;
-using HomeAutomation.Core.Tests.TestSupport;
+using HomeAutomation.Core.Services;
 using HomeAutomation.Database.Entities;
 using HomeAutomation.Database.Enums;
 using HomeAutomation.Database.Repositories;
 using Microsoft.AspNetCore.Mvc;
 using NSubstitute;
-using System.Net;
 
 namespace HomeAutomation.Core.Tests.Webhooks;
 
@@ -16,35 +15,34 @@ public class CameraControllerTests
     {
         IDeviceRepository repository = Substitute.For<IDeviceRepository>();
         repository.GetById(123, Arg.Any<CancellationToken>()).Returns((DeviceEntity?)null);
-        IHttpClientFactory httpClientFactory = Substitute.For<IHttpClientFactory>();
-        CameraController controller = new(repository, httpClientFactory);
+        ICameraSnapshotService snapshotService = Substitute.For<ICameraSnapshotService>();
+        CameraController controller = new(repository, snapshotService);
 
         IActionResult result = await controller.Index(123, "full", CancellationToken.None);
 
         Assert.IsType<NotFoundResult>(result);
-        _ = httpClientFactory.DidNotReceiveWithAnyArgs().CreateClient(default!);
+        _ = snapshotService.DidNotReceiveWithAnyArgs().Capture(default, default, default);
     }
 
     [Fact]
     public async Task Capture_Thumbnail_UsesThumbnailUrlAndReturnsImage()
     {
         IDeviceRepository repository = Repository(Camera());
-        StubHttpMessageHandler handler = new((_, _) =>
-        {
-            HttpResponseMessage response = new(HttpStatusCode.OK)
-            {
-                Content = new ByteArrayContent([1, 2, 3])
-            };
-            return Task.FromResult(response);
-        });
-        CameraController controller = new(repository, HttpClientFactory(handler));
+        ICameraSnapshotService snapshotService = Substitute.For<ICameraSnapshotService>();
+        snapshotService
+            .Capture("https://camera.test/thumbnail.png", CameraSnapshotSize.Thumbnail, Arg.Any<CancellationToken>())
+            .Returns(new CameraSnapshot([1, 2, 3], "image/png"));
+        CameraController controller = new(repository, snapshotService);
 
         IActionResult result = await controller.Index(1, "thumbnail", CancellationToken.None);
 
-        FileStreamResult file = Assert.IsType<FileStreamResult>(result);
+        FileContentResult file = Assert.IsType<FileContentResult>(result);
         Assert.Equal("image/png", file.ContentType);
-        Assert.Equal("https://camera.test/thumbnail.png", handler.LastRequestUri?.AbsoluteUri);
-        await file.FileStream.DisposeAsync();
+        Assert.Equal([1, 2, 3], file.FileContents);
+        _ = snapshotService.Received(1).Capture(
+            "https://camera.test/thumbnail.png",
+            CameraSnapshotSize.Thumbnail,
+            Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -52,7 +50,7 @@ public class CameraControllerTests
     {
         CameraController controller = new(
             Repository(Camera()),
-            HttpClientFactory(StubHttpMessageHandler.Respond(HttpStatusCode.BadGateway)));
+            FailingSnapshotService());
 
         IActionResult result = await controller.Index(1, "full", CancellationToken.None);
 
@@ -66,11 +64,13 @@ public class CameraControllerTests
         return repository;
     }
 
-    private static IHttpClientFactory HttpClientFactory(HttpMessageHandler handler)
+    private static ICameraSnapshotService FailingSnapshotService()
     {
-        IHttpClientFactory factory = Substitute.For<IHttpClientFactory>();
-        factory.CreateClient(Arg.Any<string>()).Returns(new HttpClient(handler));
-        return factory;
+        ICameraSnapshotService service = Substitute.For<ICameraSnapshotService>();
+        service
+            .Capture(Arg.Any<string?>(), Arg.Any<CameraSnapshotSize>(), Arg.Any<CancellationToken>())
+            .Returns<Task<CameraSnapshot>>(_ => throw new HttpRequestException());
+        return service;
     }
 
     private static DeviceEntity Camera()
