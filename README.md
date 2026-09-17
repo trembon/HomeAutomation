@@ -52,6 +52,25 @@ Currently integrates the following:
 * [Slack](https://slack.com/) for free "sms" to my phone with whats happening.
 * [Synology DSM](https://www.synology.com/dsm) for forwarding NAS warnings and critical notifications to Slack.
 
+## IKEA Dirigera light actions
+
+IKEA Dirigera devices mapped as `Lightbulb` support the same action properties as Tuya lightbulbs. Add these properties to a device-event action:
+
+```json
+{
+  "color": "#FF0000"
+}
+```
+
+```json
+{
+  "brightness": "75",
+  "temperature": "50"
+}
+```
+
+`color` is a hexadecimal RGB color. `brightness` and `temperature` use percentages from 0 to 100. Temperature percentages are mapped across the fixed IKEA range of 2202 K to 6535 K. Light actions are sent as sequential DIRIGERA commands because power, color, brightness, and temperature changes are separate hub operations. On/off events continue to drive device state and triggers; color and temperature events do not create additional trigger types.
+
 ## Waste collection configuration
 
 Keep the address-specific API URL and unit ID outside source control. They can be set in the ignored `HomeAutomation/appsettings.Development.json` file under `WasteCollection:ApiUrl` and `WasteCollection:UnitId`, or through the `APP_WasteCollection__ApiUrl` and `APP_WasteCollection__UnitId` environment variables.

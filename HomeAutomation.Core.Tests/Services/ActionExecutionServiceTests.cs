@@ -198,19 +198,26 @@ public class ActionExecutionServiceTests
     {
         await using TestDefaultContext context = TestContextFactory.Create();
         ActionEntity action = await AddAction(context, ActionKind.DeviceEvent);
-        action.DeviceEventToSend = DeviceEvent.Off;
+        action.DeviceEventToSend = DeviceEvent.On;
+        action.DeviceEventProperties = new Dictionary<string, string> { ["color"] = "#FF0000" };
         await context.SaveChangesAsync();
 
         DeviceEntity device = Device("IKEA switch");
         device.Source = DeviceSource.IkeaDirigera;
         device.SourceId = "ikea-1";
-        object payload = new[] { new { attributes = new { isOn = false } } };
+        device.Kind = DeviceKind.Lightbulb;
+        object powerPayload = new[] { new { attributes = new { isOn = true } } };
+        object colorPayload = new[] { new { attributes = new { colorHue = 0d, colorSaturation = 1d } } };
+        object brightnessPayload = new[] { new { attributes = new { lightLevel = 100 } } };
+        object[] payloads = [powerPayload, colorPayload, brightnessPayload];
         IDeviceRepository deviceRepository = Substitute.For<IDeviceRepository>();
         deviceRepository.GetForAction(action.Id, Arg.Any<CancellationToken>()).Returns([device]);
         IIkeaDirigeraService ikeaService = Substitute.For<IIkeaDirigeraService>();
-        ikeaService.ConvertStateToAction(DeviceEvent.Off).Returns(payload);
         ikeaService
-            .SendAction(device.SourceId, payload, Arg.Any<CancellationToken>())
+            .ConvertStateToActions(DeviceEvent.On, device.Kind, Arg.Any<Dictionary<string, string>>())
+            .Returns(payloads);
+        ikeaService
+            .SendAction(device.SourceId, Arg.Any<object>(), Arg.Any<CancellationToken>())
             .Returns(true);
         ActionExecutionService service = CreateService(
             context,
@@ -222,8 +229,21 @@ public class ActionExecutionServiceTests
 
         _ = ikeaService.Received(1).SendAction(
             device.SourceId,
-            payload,
+            powerPayload,
             Arg.Any<CancellationToken>());
+        _ = ikeaService.Received(1).SendAction(
+            device.SourceId,
+            colorPayload,
+            Arg.Any<CancellationToken>());
+        _ = ikeaService.Received(1).SendAction(
+            device.SourceId,
+            brightnessPayload,
+            Arg.Any<CancellationToken>());
+
+        _ = ikeaService.Received(1).ConvertStateToActions(
+            DeviceEvent.On,
+            device.Kind,
+            Arg.Is<Dictionary<string, string>>(properties => properties.Count == 1 && properties["color"] == "#FF0000"));
     }
 
     [Fact]

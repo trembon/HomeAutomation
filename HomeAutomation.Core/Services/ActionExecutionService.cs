@@ -186,17 +186,23 @@ public class ActionExecutionService(DefaultContext database, IDeviceRepository d
             if (device.Source == DeviceSource.IkeaDirigera)
             {
                 var ikeaDirigeraService = serviceProvider.GetRequiredService<IIkeaDirigeraService>();
-                object? payload = ikeaDirigeraService.ConvertStateToAction(action.DeviceEventToSend ?? DeviceEvent.Unknown);
+                IReadOnlyList<object> payloads = ikeaDirigeraService.ConvertStateToActions(
+                    action.DeviceEventToSend ?? DeviceEvent.Unknown,
+                    device.Kind,
+                    action.DeviceEventProperties ?? []);
 
-                if (payload is not null)
-                {
-                    Task<bool> task = ikeaDirigeraService.SendAction(device.SourceId, payload, cancellationToken);
-                    sendCommandTasks.Add(task);
-                }
+                if (payloads.Count != 0)
+                    sendCommandTasks.Add(SendIkeaActions(ikeaDirigeraService, device.SourceId, payloads, cancellationToken));
             }
         }
 
         await Task.WhenAll(sendCommandTasks);
+    }
+
+    private static async Task SendIkeaActions(IIkeaDirigeraService service, string deviceId, IReadOnlyList<object> payloads, CancellationToken cancellationToken)
+    {
+        foreach (object payload in payloads)
+            await service.SendAction(deviceId, payload, cancellationToken);
     }
 
     private static string GetMessageToSend(ActionEntity action, object? source, List<DeviceEntity> devices)

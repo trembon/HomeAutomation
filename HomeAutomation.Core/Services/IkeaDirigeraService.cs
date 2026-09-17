@@ -2,6 +2,8 @@ using HomeAutomation.Core.Models;
 using HomeAutomation.Database.Enums;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using System.Drawing;
+using System.Globalization;
 using System.Net.Http.Json;
 using System.Net.WebSockets;
 using System.Runtime.CompilerServices;
@@ -18,13 +20,16 @@ public interface IIkeaDirigeraService
 
     Task<bool> SendAction(string deviceId, object payload, CancellationToken cancellationToken = default);
 
-    object? ConvertStateToAction(DeviceEvent state);
+    IReadOnlyList<object> ConvertStateToActions(DeviceEvent state, DeviceKind deviceKind, Dictionary<string, string> parameters);
 
     IAsyncEnumerable<IkeaDirigeraEventModel> ListenToEvents(CancellationToken cancellationToken = default);
 }
 
 public class IkeaDirigeraService(IConfiguration configuration, IHttpClientFactory httpClientFactory, ILogger<IkeaDirigeraService> logger) : IIkeaDirigeraService
 {
+    private const int ColorTemperatureMin = 2202;
+    private const int ColorTemperatureMax = 6535;
+
     private static readonly JsonSerializerOptions _jsonOptions = new() { PropertyNameCaseInsensitive = true };
 
     public event Action<IkeaDirigeraEventModel>? EventReceived;
@@ -89,33 +94,92 @@ public class IkeaDirigeraService(IConfiguration configuration, IHttpClientFactor
         request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
 
         using HttpResponseMessage response = await httpClient.SendAsync(request, cancellationToken);
+        if (logger.IsEnabled(LogLevel.Information))
+            logger.LogInformation("IkeaDirigera.Action :: Device:{deviceId}, StatusCode:{statusCode}, Payload:{payload}", deviceId, (int)response.StatusCode, JsonSerializer.Serialize(payload));
+
         response.EnsureSuccessStatusCode();
         return true;
     }
 
-    public object? ConvertStateToAction(DeviceEvent state)
+    public IReadOnlyList<object> ConvertStateToActions(DeviceEvent state, DeviceKind deviceKind, Dictionary<string, string> parameters)
     {
-        // different light types have different attributes
-        // keeps last known color in memory and reuses it when turning on the light again, so only isOn attribute is needed to be sent when turning on/off
-        // white in different shades: "colorMode":"temperature","colorTemperature":2202
+        if (state != DeviceEvent.On && state != DeviceEvent.Off)
+            return [];
 
-        if (state == DeviceEvent.On)
-        {
-            return new[]
+        List<object> actions =
+        [
+            CreateAction(new Dictionary<string, object>
             {
-                new { attributes = new { isOn = true } }
-            };
+                ["isOn"] = state == DeviceEvent.On
+            })
+        ];
+
+        if (state == DeviceEvent.On && deviceKind == DeviceKind.Lightbulb)
+            AddLightActions(actions, parameters);
+
+        return actions;
+    }
+
+    private static void AddLightActions(List<object> actions, Dictionary<string, string> parameters)
+    {
+        if (parameters.TryGetValue("color", out string? hexColor) && !string.IsNullOrWhiteSpace(hexColor))
+        {
+            Color color = ParseHexColor(hexColor);
+            int max = Math.Max(color.R, Math.Max(color.G, color.B));
+            int min = Math.Min(color.R, Math.Min(color.G, color.B));
+
+            actions.Add(CreateAction(new Dictionary<string, object>
+            {
+                ["colorHue"] = (double)color.GetHue(),
+                ["colorSaturation"] = max == 0 ? 0d : 1d - (double)min / max
+            }));
+            actions.Add(CreateAction(new Dictionary<string, object>
+            {
+                ["lightLevel"] = Math.Clamp((int)Math.Round(max / 255d * 100, MidpointRounding.AwayFromZero), 1, 100)
+            }));
+            return;
         }
 
-        if (state == DeviceEvent.Off)
+        if (parameters.TryGetValue("temperature", out string? temperature) && !string.IsNullOrWhiteSpace(temperature))
         {
-            return new[]
+            int percentage = ParsePercentage(temperature, "temperature");
+            actions.Add(CreateAction(new Dictionary<string, object>
             {
-                new { attributes = new { isOn = false } }
-            };
+                ["colorTemperature"] = ColorTemperatureMin + (int)Math.Round(
+                    (ColorTemperatureMax - ColorTemperatureMin) * percentage / 100d,
+                    MidpointRounding.AwayFromZero)
+            }));
         }
 
-        return null;
+        if (parameters.TryGetValue("brightness", out string? brightness) && !string.IsNullOrWhiteSpace(brightness))
+        {
+            actions.Add(CreateAction(new Dictionary<string, object>
+            {
+                ["lightLevel"] = Math.Max(1, ParsePercentage(brightness, "brightness"))
+            }));
+        }
+    }
+
+    private static object[] CreateAction(Dictionary<string, object> attributes)
+    {
+        return [new { attributes }];
+    }
+
+    private static Color ParseHexColor(string value)
+    {
+        string hexColor = value.Trim();
+        if (hexColor.Length != 7 || hexColor[0] != '#' || hexColor.Skip(1).Any(c => !Uri.IsHexDigit(c)))
+            throw new ArgumentException("Color must be a hexadecimal value in the format #RRGGBB.", nameof(value));
+
+        return ColorTranslator.FromHtml(hexColor);
+    }
+
+    private static int ParsePercentage(string value, string parameterName)
+    {
+        if (!int.TryParse(value.Trim(), NumberStyles.Integer, CultureInfo.InvariantCulture, out int percentage) || percentage < 0 || percentage > 100)
+            throw new ArgumentException($"{parameterName} must be an integer between 0 and 100.", parameterName);
+
+        return percentage;
     }
 
     public async IAsyncEnumerable<IkeaDirigeraEventModel> ListenToEvents([EnumeratorCancellation] CancellationToken cancellationToken = default)

@@ -67,6 +67,14 @@ public class IkeaDirigeraEventBackgroundService(IServiceScopeFactory serviceScop
             return;
         }
 
+        if (device.Kind == DeviceKind.Lightbulb && eventItem.Attributes.Keys.Any(IsLightAttribute))
+        {
+            if (logger.IsEnabled(LogLevel.Information))
+                logger.LogInformation("IkeaDirigera.Event :: {deviceId} :: SourceId:{sourceId}, Mapped light attributes: {attributes}", device.Id, eventItem.DeviceId, string.Join(',', eventItem.Attributes.Keys));
+
+            return;
+        }
+
         SensorValueKind sensorValueKind = SensorValueKind.Unknown;
         decimal? sensorValueDecimals = null;
         if (eventItem.Attributes.TryGetValue("currentActivePower", out object? currentActivePowerValue) && currentActivePowerValue is decimal currentActivePower)
@@ -99,5 +107,10 @@ public class IkeaDirigeraEventBackgroundService(IServiceScopeFactory serviceScop
 
         if (logger.IsEnabled(LogLevel.Information))
             logger.LogInformation("IkeaDirigera.Event :: {deviceId} :: Unknown event, sourceId: {sourceId}, rawData: {rawData}", device.Id, eventItem.DeviceId, eventItem.RawPayload);
+    }
+
+    private static bool IsLightAttribute(string attributeName)
+    {
+        return attributeName is "colorMode" or "colorHue" or "colorSaturation" or "colorTemperature" or "lightLevel";
     }
 }
