@@ -87,7 +87,10 @@ public class CalculateBatteryChargingScheduleJob(DefaultContext context, IFusion
             else
                 (schedule, notificationMessage) = BuildWinterSchedule([.. rows]);
 
-            var payload = new SchedulePayload { Id = "230190101", Value = JsonSerializer.Serialize(schedule) };
+            SchedulePayload[] payload = [
+                new SchedulePayload { Id = "230190100", Value = "5" },
+                new SchedulePayload { Id = "230190101", Value = JsonSerializer.Serialize(schedule) }
+            ];
 
             bool success = await fusionSolarService.SetConfigSignals("dongle", payload, cancellationToken);
             if (success)
