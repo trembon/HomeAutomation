@@ -841,7 +841,7 @@ public class FusionSolarService(
         if (element.ValueKind != JsonValueKind.Object)
             return element.ValueKind.ToString();
 
-        List<string> fields = element.EnumerateObject().Select(property => property.Name).Take(16).ToList();
+        List<string> fields = [.. element.EnumerateObject().Select(property => property.Name).Take(16)];
         if (TryGetProperty(element, "data", out JsonElement data) && data.ValueKind == JsonValueKind.Object)
             fields.AddRange(data.EnumerateObject().Select(property => $"data.{property.Name}").Take(16 - fields.Count));
 
