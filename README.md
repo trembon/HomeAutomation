@@ -101,3 +101,19 @@ In DSM 7.3.2:
 7. Verify the notification appears in Slack channel `errors`. The configured Slack bot must have `chat:write` permission and be a member of the channel.
 
 See Synology's documentation for [notification rules](https://kb.synology.com/en-global/DSM/help/DSM/AdminCenter/system_notification_rule?version=7) and [custom webhook configuration](https://kb.synology.com/en-global/DSM/help/DSM/AdminCenter/system_notification_webhook?version=7).
+
+## FusionSolar configuration and cutover
+
+HomeAutomation polls FusionSolar every two minutes with `FetchFusionSolarEnergyFlowScheduleJob`. Configure the FusionSolar login host and credentials on the HomeAutomation process. For a container deployment, set:
+
+```text
+APP_FusionSolar__Host=<FusionSolar login host>
+APP_FusionSolar__Username=<FusionSolar username>
+APP_FusionSolar__Password=<FusionSolar password>
+```
+
+The host is the HTTPS login hostname (for example, the host currently used by the FusionSolar bridge). Keep the username and password in local ignored settings or deployment secrets; do not commit them. `HomeAutomation/appsettings.Development.json` is ignored by Git. The existing development scheduled-job allowlist is preserved; add `FetchFusionSolarEnergyFlowScheduleJob` to that allowlist only when local live polling is wanted. If a production deployment uses a job allowlist, include this job there.
+
+The bridge's `/devices` list represented four virtual sensors, not FusionSolar's physical inverter inventory. HomeAutomation keeps the same source IDs (`<station>_panels`, `<station>_battery`, `<station>_grid`, and `<station>_house`) so existing mappings and readings stay attached. Physical dongle and battery IDs are discovered privately for configuration updates.
+
+For cutover, configure and restart HomeAutomation, stop the old FusionSolar polling container, then enable the new scheduled job. Confirm new readings appear for mapped sensors and review the FusionSolar device page for the four virtual sensors. Configuration writes go directly to FusionSolar; use the existing battery automations only after confirming the new session can discover the dongle and battery. No live FusionSolar configuration write is part of local validation.

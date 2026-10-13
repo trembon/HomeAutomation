@@ -4,6 +4,18 @@
 
 <MudText Typo="Typo.h2" Class="mb-5">FusionSolar - Devices</MudText>
 
+@if (loadError is not null)
+{
+    <MudAlert Severity="Severity.Error" Class="mb-4">
+        @loadError
+        <MudButton Color="Color.Error" Variant="Variant.Text" OnClick="LoadDevices">Retry</MudButton>
+    </MudAlert>
+}
+else if (devices is { Length: 0 })
+{
+    <MudAlert Severity="Severity.Warning" Class="mb-4">No FusionSolar devices were returned. Check the station and connection settings.</MudAlert>
+}
+
 <MudTable Items="@devices" Hover="true" Loading="@(devices == null)" LoadingProgressColor="Color.Info">
     <HeaderContent>
         <MudTh>Id</MudTh>
@@ -31,13 +43,28 @@
 @code {
     private Core.Models.FusionSolarDeviceModel[]? devices;
     private HashSet<string> mappedDevices = [];
+    private string? loadError;
 
     protected override async Task OnInitializedAsync()
     {
-        var result = await fusionSolarService.GetDevices();
-        devices = result.ToArray();
+        await LoadDevices();
+    }
 
-        var fusionSolarDevices = await deviceRepository.GetOfSource(DeviceSource.FusionSolar, CancellationToken.None);
-        fusionSolarDevices?.ForEach(x => mappedDevices.Add(x.SourceId));
+    private async Task LoadDevices()
+    {
+        devices = null;
+        loadError = null;
+        try
+        {
+            var result = await fusionSolarService.GetDevices();
+            var fusionSolarDevices = await deviceRepository.GetOfSource(DeviceSource.FusionSolar, CancellationToken.None);
+            devices = result.ToArray();
+            mappedDevices = fusionSolarDevices.Select(x => x.SourceId).ToHashSet(StringComparer.Ordinal);
+        }
+        catch (Exception)
+        {
+            devices = [];
+            loadError = "Unable to load FusionSolar devices. Check HomeAutomation logs and the FusionSolar settings, then retry.";
+        }
     }
 }

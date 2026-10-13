@@ -2,10 +2,8 @@ using HomeAutomation.Core.ScheduledJobs;
 using HomeAutomation.Core.Services;
 using HomeAutomation.Core.Tests.TestSupport;
 using HomeAutomation.Database.Entities;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging.Abstractions;
 using NSubstitute;
-using System.Net;
 using System.Text.Json;
 
 namespace HomeAutomation.Core.Tests.ScheduledJobs;
@@ -48,17 +46,15 @@ public class CalculateBatteryChargingScheduleJobTests
         }
         await context.SaveChangesAsync();
 
-        StubHttpMessageHandler handler = StubHttpMessageHandler.Respond(HttpStatusCode.OK, "{\"result\":true}");
-        using HttpClient client = new(handler);
-        IHttpClientFactory httpClientFactory = Substitute.For<IHttpClientFactory>();
-        httpClientFactory.CreateClient(nameof(FusionSolarService)).Returns(client);
-        IConfiguration configuration = new ConfigurationBuilder()
-            .AddInMemoryCollection(new Dictionary<string, string?>
+        object? actualPayload = null;
+        IFusionSolarService fusionSolarService = Substitute.For<IFusionSolarService>();
+        fusionSolarService
+            .SetConfigSignals("dongle", Arg.Any<object>(), Arg.Any<CancellationToken>())
+            .Returns(callInfo =>
             {
-                ["FusionSolar:APIUrl"] = "https://fusionsolar.test/"
-            })
-            .Build();
-        FusionSolarService fusionSolarService = new(configuration, httpClientFactory);
+                actualPayload = callInfo.ArgAt<object>(1);
+                return Task.FromResult(true);
+            });
         CalculateBatteryChargingScheduleJob job = new(
             context,
             fusionSolarService,
@@ -67,10 +63,8 @@ public class CalculateBatteryChargingScheduleJobTests
 
         await job.Execute(execution, null, CancellationToken.None);
 
-        Assert.Equal(1, handler.RequestCount);
-        Assert.Equal(HttpMethod.Post, handler.LastMethod);
-        Assert.Equal("https://fusionsolar.test/set-config-signals?type=dongle", handler.LastRequestUri?.AbsoluteUri);
-        using JsonDocument payload = JsonDocument.Parse(handler.LastContent!);
+        await fusionSolarService.Received(1).SetConfigSignals("dongle", Arg.Any<object>(), Arg.Any<CancellationToken>());
+        using JsonDocument payload = JsonDocument.Parse(JsonSerializer.Serialize(actualPayload));
         JsonElement signals = payload.RootElement;
         Assert.Equal(JsonValueKind.Array, signals.ValueKind);
         Assert.Equal(2, signals.GetArrayLength());

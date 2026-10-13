@@ -7,6 +7,7 @@ using HomeAutomation.Core.Services;
 using HomeAutomation.Database;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using MudBlazor.Services;
+using System.Net;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -19,6 +20,14 @@ builder.Services.AddRazorComponents()
 builder.Services.AddControllers();
 builder.Services.AddMudServices();
 builder.Services.AddHttpClient();
+builder.Services.AddHttpClient(nameof(FusionSolarService), client => client.Timeout = TimeSpan.FromSeconds(30))
+    .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
+    {
+        AllowAutoRedirect = false,
+        AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate | DecompressionMethods.Brotli,
+        UseCookies = false
+    });
+builder.Services.AddSingleton(TimeProvider.System);
 
 builder.Services.AddHttpClient(nameof(IkeaDirigeraService)).ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
 {
