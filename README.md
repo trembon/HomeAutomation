@@ -102,6 +102,57 @@ In DSM 7.3.2:
 
 See Synology's documentation for [notification rules](https://kb.synology.com/en-global/DSM/help/DSM/AdminCenter/system_notification_rule?version=7) and [custom webhook configuration](https://kb.synology.com/en-global/DSM/help/DSM/AdminCenter/system_notification_webhook?version=7).
 
+## Current sensor readings in Homepage
+
+HomeAutomation exposes the latest stored readings for mapped sensor devices at `GET /api/sensors/current`. Pass one or more HomeAutomation device IDs as a comma-separated `deviceIds` query value. The endpoint is unauthenticated, so use it from Homepage on the trusted home network.
+
+For example, `GET http://home-automation:5226/api/sensors/current?deviceIds=12,13,14,15` returns an object keyed by device ID, with one property for each available sensor reading:
+
+```json
+{
+  "12": {
+    "ChargeLevel": "59",
+    "EnergyFlow": "-0.412"
+  },
+  "13": { "EnergyFlow": "0.503" },
+  "14": { "EnergyFlow": "0.088" },
+  "15": { "EnergyFlow": "-0.003" }
+}
+```
+
+Replace those example IDs with the corresponding sensor IDs from HomeAutomation. In Homepage's `services.yaml`, a Custom API widget can map these readings into a list like the existing FusionSolar card:
+
+```yaml
+- FusionSolar:
+    icon: solar-panel.png
+    description: Gökvägen solceller
+    href: http://home-automation:5226
+    widget:
+      type: customapi
+      url: http://home-automation:5226/api/sensors/current?deviceIds=12,13,14,15
+      refreshInterval: 10000
+      display: list
+      mappings:
+        - field: "12.ChargeLevel"
+          label: Battery Charge Level
+          format: percent
+          scale: "1/100"
+        - field: "12.EnergyFlow"
+          label: Battery Usage
+          format: text
+        - field: "13.EnergyFlow"
+          label: House Consumption
+          format: text
+        - field: "14.EnergyFlow"
+          label: Solar Panel Generation
+          format: text
+        - field: "15.EnergyFlow"
+          label: Grid Usage
+          format: text
+```
+
+The example refreshes Homepage every ten seconds while FusionSolar readings are stored by the scheduled job every two minutes. Repeated reads return the last stored values and do not initiate another FusionSolar request.
+
 ## FusionSolar configuration and cutover
 
 HomeAutomation polls FusionSolar every two minutes with `FetchFusionSolarEnergyFlowScheduleJob`. Configure the FusionSolar login host and credentials on the HomeAutomation process. For a container deployment, set:

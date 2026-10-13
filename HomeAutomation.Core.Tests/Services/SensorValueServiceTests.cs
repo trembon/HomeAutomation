@@ -59,4 +59,28 @@ public class SensorValueServiceTests
         SensorValueEntity reading = await context.SensorValues.SingleAsync();
         Assert.InRange(reading.Timestamp, before, after);
     }
+
+    [Fact]
+    public async Task GetCurrentValues_ReturnsRequestedReadingsAsStoredAndOmitsMissingValues()
+    {
+        await using TestDefaultContext context = TestContextFactory.Create();
+        IStateStoreService stateStore = Substitute.For<IStateStoreService>();
+        Dictionary<string, string> values = new()
+        {
+            ["sensor:7:ChargeLevel"] = "59",
+            ["sensor:7:EnergyFlow"] = "-0.412",
+            ["sensor:8:EnergyFlow"] = "0"
+        };
+        stateStore.Get(Arg.Any<string>()).Returns(call => values.GetValueOrDefault(call.Arg<string>()));
+        SensorValueService service = new(new Repository<SensorValueEntity>(context), stateStore);
+
+        Dictionary<int, Dictionary<string, string>> result = service.GetCurrentValues([7, 8, 7]);
+
+        Assert.Equal(2, result.Count);
+        Assert.Equal("59", result[7][nameof(SensorValueKind.ChargeLevel)]);
+        Assert.Equal("-0.412", result[7][nameof(SensorValueKind.EnergyFlow)]);
+        Assert.Single(result[8]);
+        Assert.Equal("0", result[8][nameof(SensorValueKind.EnergyFlow)]);
+        await stateStore.DidNotReceiveWithAnyArgs().SetSensorValue(default, default, default!, default);
+    }
 }

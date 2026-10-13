@@ -10,6 +10,8 @@ public interface IDeviceRepository : IRepository<DeviceEntity>
 
     Task<DeviceEntity?> GetBySource(DeviceSource source, string? sourceId, CancellationToken cancellationToken);
 
+    Task<List<DeviceEntity>> GetSensorsByIds(IReadOnlyCollection<int> deviceIds, CancellationToken cancellationToken);
+
     Task<List<DeviceEntity>> GetForAction(int actionId, CancellationToken cancellationToken);
 
     Task<List<DeviceEntity>> GetOfKind(DeviceKind kind, CancellationToken cancellationToken);
@@ -44,6 +46,15 @@ public class DeviceRepository(DefaultContext context) : Repository<DeviceEntity>
             .AsNoTracking()
             .FirstOrDefaultAsync(cancellationToken);
     }
+
+    public async Task<List<DeviceEntity>> GetSensorsByIds(IReadOnlyCollection<int> deviceIds, CancellationToken cancellationToken)
+    {
+        return await Table
+            .Where(x => x.Kind == DeviceKind.Sensor && deviceIds.Contains(x.Id))
+            .AsNoTracking()
+            .ToListAsync(cancellationToken);
+    }
+
     public async Task<List<DeviceEntity>> GetForAction(int actionId, CancellationToken cancellationToken)
     {
         return await Context

@@ -65,3 +65,8 @@ Content-Type: application/json
 }
 
 ###
+
+GET {{HomeAutomation_HostAddress}}/api/sensors/current?deviceIds=259,263,264,265
+Accept: application/json
+
+###
